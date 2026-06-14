@@ -6,6 +6,7 @@ import {
   setQty,
   removeFromCart,
   clearCart,
+  addProductToCart,
   FREE_SHIP_THRESHOLD,
 } from "./cart";
 import { formatUSD } from "@/data/build";
@@ -17,6 +18,8 @@ import { ProductMedia } from "@/features/menu/ProductMedia";
 import { cn } from "@/lib/cn";
 
 const GIFT_WRAP = 5;
+// Gentle "complete the set" cross-sell — small add-ons that lift AOV.
+const CROSS_SELL_IDS = ["car-diffuser", "banana-pudding", "body-butters"];
 
 /*
   Slide-out cart (Baymard: drawer cart + free-shipping progress bar lift AOV and
@@ -225,6 +228,8 @@ export function CartDrawer() {
                       />
                     )}
                   </div>
+
+                  <CrossSell inCart={cart.items.map((i) => i.refId)} />
                 </div>
 
                 {/* footer */}
@@ -247,5 +252,38 @@ export function CartDrawer() {
         </motion.div>
       )}
     </AnimatePresence>
+  );
+}
+
+/** "Complete the set" — gentle small add-ons, no judgment (kiosk effect). */
+function CrossSell({ inCart }: { inCart: string[] }) {
+  const picks = CROSS_SELL_IDS.map((id) => PRODUCT_BY_ID[id]).filter(
+    (p) => p && !inCart.includes(p.id),
+  );
+  if (picks.length === 0) return null;
+  return (
+    <div className="mt-5">
+      <p className="label-caps mb-2">Complete the set</p>
+      <div className="space-y-2">
+        {picks.slice(0, 2).map((p) => (
+          <div
+            key={p.id}
+            className="flex items-center gap-3 rounded-2xl border hairline bg-porcelain/50 p-2"
+          >
+            <div className="h-12 w-12 shrink-0 overflow-hidden rounded-xl bg-blush-soft/30">
+              <ProductMedia product={p} />
+            </div>
+            <span className="flex-1 text-sm text-cocoa">{p.name}</span>
+            <span className="price text-xs text-muted">{formatUSD(p.price)}</span>
+            <button
+              onClick={() => addProductToCart(p)}
+              className="rounded-full bg-cocoa px-3 py-1.5 text-[0.65rem] uppercase tracking-[0.14em] text-canvas hover:bg-espresso"
+            >
+              Add
+            </button>
+          </div>
+        ))}
+      </div>
+    </div>
   );
 }
