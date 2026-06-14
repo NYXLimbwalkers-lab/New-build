@@ -43,6 +43,7 @@ export function CartDrawer() {
   const [address, setAddress] = useState("");
   const [placed, setPlaced] = useState(false);
   const [orderNo, setOrderNo] = useState("");
+  const [pickupNo, setPickupNo] = useState<number | undefined>(undefined);
   const [earnedPts, setEarnedPts] = useState(0);
 
   useEffect(() => {
@@ -90,6 +91,7 @@ export function CartDrawer() {
     await clearCart();
     const earned = addPoints(total);
     setOrderNo(result.orderNo);
+    setPickupNo(result.pickupNumber);
     setEarnedPts(earned);
     setPlaced(true);
   }
@@ -134,6 +136,12 @@ export function CartDrawer() {
                 {orderNo && (
                   <p className="mt-2 rounded-full bg-blush-soft/50 px-4 py-1.5 text-sm text-cocoa">
                     Order {orderNo}
+                  </p>
+                )}
+                {pickupNo != null && (
+                  <p className="mt-2 font-serif text-plum">
+                    Pickup number <span className="price text-espresso">#{pickupNo}</span> —
+                    show this at the counter.
                   </p>
                 )}
                 <p className="mt-3 font-serif text-lg text-plum">
