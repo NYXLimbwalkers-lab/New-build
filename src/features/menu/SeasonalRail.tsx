@@ -35,7 +35,7 @@ export function SeasonalRail({ onOpen }: { onOpen: (p: Product) => void }) {
             whileTap={{ scale: 0.98 }}
             className="group relative w-64 shrink-0 snap-start overflow-hidden rounded-3xl border hairline bg-porcelain/70 text-left shadow-[var(--shadow-soft)]"
           >
-            <div className="aspect-[4/3] w-full overflow-hidden">
+            <div className="aspect-square w-full overflow-hidden">
               <ProductMedia product={p} />
             </div>
             <div className="flex items-center justify-between px-4 py-3">

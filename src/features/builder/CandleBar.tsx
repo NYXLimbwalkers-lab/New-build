@@ -21,17 +21,27 @@ import {
 } from "@/data/ingredients";
 import { Button } from "@/components/ui/Button";
 import { CandleRenderer } from "./renderer";
-import { useCandleBuild, STEP_LABEL } from "./useCandleBuild";
+import { useCandleBuild, STEP_LABEL, type StepId } from "./useCandleBuild";
 import { StepRail } from "./StepRail";
 import { StepContent } from "./StepContent";
 import { RevealCard } from "./RevealCard";
 import { FavoritePicker } from "./FavoritePicker";
 import { SPRING, swipePower, SWIPE_CONFIDENCE } from "@/lib/motionPresets";
+import { cn } from "@/lib/cn";
 
 const variants = {
   enter: (dir: number) => ({ x: dir > 0 ? 56 : -56, opacity: 0 }),
   center: { x: 0, opacity: 1 },
   exit: (dir: number) => ({ x: dir < 0 ? 56 : -56, opacity: 0 }),
+};
+
+/* Tap-a-part-to-edit: hotspots over the candle that jump to that step (Nike). */
+const HOTSPOTS: Partial<Record<StepId, { top: string; left: string; label: string }>> = {
+  toppings: { top: "20%", left: "37%", label: "Toppings" },
+  whip: { top: "27%", left: "57%", label: "Whip" },
+  drizzle: { top: "38%", left: "67%", label: "Drizzle" },
+  wax: { top: "60%", left: "40%", label: "Wax" },
+  vessel: { top: "80%", left: "55%", label: "Vessel" },
 };
 
 export function CandleBar({ initial }: { initial?: BuildConfig }) {
@@ -96,6 +106,44 @@ export function CandleBar({ initial }: { initial?: BuildConfig }) {
             <div className="relative">
               <CandleRenderer config={config} revealed={reveal} />
             </div>
+
+            {/* tap-a-part hotspots (hidden during the lit reveal) */}
+            {!reveal && (
+              <div className="absolute inset-0 z-10">
+                {steps.map((s) => {
+                  const h = HOTSPOTS[s];
+                  if (!h) return null;
+                  const idx = steps.indexOf(s);
+                  const active = s === stepId;
+                  return (
+                    <button
+                      key={s}
+                      onClick={() => setPage([idx, idx > current ? 1 : -1])}
+                      style={{ top: h.top, left: h.left }}
+                      className="group absolute flex -translate-x-1/2 -translate-y-1/2 items-center gap-1.5"
+                      aria-label={`Edit ${h.label}`}
+                    >
+                      <motion.span
+                        animate={active ? { scale: [1, 1.35, 1] } : { scale: 1 }}
+                        transition={active ? { repeat: Infinity, duration: 1.8 } : {}}
+                        className={cn(
+                          "block h-3 w-3 rounded-full border shadow-sm transition-colors",
+                          active ? "border-gold bg-gold" : "border-gold/60 bg-porcelain/90",
+                        )}
+                      />
+                      <span
+                        className={cn(
+                          "rounded-full bg-porcelain/85 px-2 py-0.5 text-[0.58rem] uppercase tracking-[0.12em] text-cocoa shadow-sm backdrop-blur transition-opacity",
+                          active ? "opacity-100" : "opacity-0 group-hover:opacity-100",
+                        )}
+                      >
+                        {h.label}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+            )}
           </motion.div>
 
           {/* running recipe summary — glanceable */}

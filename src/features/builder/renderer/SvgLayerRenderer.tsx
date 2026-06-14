@@ -112,6 +112,11 @@ export function SvgLayerRenderer({
 
         <ToppingCluster geo={geo} ids={toppings} />
 
+        {/* Live foil label on the vessel — the name appears as you type it. */}
+        {config.name.trim() && (
+          <NameLabel name={config.name} geo={geo} />
+        )}
+
         <AnimatePresence>{revealed && <Flame key="flame" geo={geo} />}</AnimatePresence>
       </svg>
 
@@ -143,5 +148,45 @@ export function SvgLayerRenderer({
         <div className="pointer-events-none absolute inset-0 rounded-[inherit] ring-1 ring-gold/20" />
       )}
     </div>
+  );
+}
+
+function NameLabel({ name, geo }: { name: string; geo: VesselGeometry }) {
+  const { top, w, bottom } = geo.fill;
+  const labelW = Math.min(w * 0.82, 150);
+  const labelH = 44;
+  const cx = 200;
+  const cy = top + (bottom - top) * 0.54;
+  const text = name.trim().length > 16 ? name.trim().slice(0, 15) + "…" : name.trim();
+  return (
+    <motion.g
+      initial={{ opacity: 0, scale: 0.9 }}
+      animate={{ opacity: 1, scale: 1 }}
+      transition={{ type: "spring", stiffness: 300, damping: 26 }}
+      style={{ transformOrigin: `${cx}px ${cy}px` }}
+    >
+      <rect
+        x={cx - labelW / 2}
+        y={cy - labelH / 2}
+        width={labelW}
+        height={labelH}
+        rx="8"
+        fill="#FFFAF7"
+        fillOpacity="0.92"
+        stroke="#C8A15A"
+        strokeWidth="1"
+      />
+      <text
+        x={cx}
+        y={cy + 1}
+        textAnchor="middle"
+        dominantBaseline="middle"
+        fontFamily="'Playfair Display', Georgia, serif"
+        fontSize="17"
+        fill="#3A2C2A"
+      >
+        {text}
+      </text>
+    </motion.g>
   );
 }

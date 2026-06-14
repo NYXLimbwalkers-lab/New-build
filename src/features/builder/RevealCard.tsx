@@ -1,9 +1,11 @@
 import { motion } from "motion/react";
+import { useRef, useState } from "react";
 import type { BuildConfig } from "@/data/types";
 import { formatUSD } from "@/data/build";
 import { Sheet } from "@/components/ui/Sheet";
 import { Button } from "@/components/ui/Button";
 import { CandleRenderer } from "./renderer";
+import { buildShareCard, shareOrDownload } from "@/lib/shareCard";
 
 /*
   The reveal moment — wick lights, glow blooms, shimmer sweeps — then a
@@ -23,14 +25,32 @@ export function RevealCard({
   onAddToCart: () => void;
 }) {
   const name = config.name.trim() || "Your Creation";
+  const stageRef = useRef<HTMLDivElement>(null);
+  const [sharing, setSharing] = useState(false);
 
   async function share() {
-    const text = `I just made "${name}" at the DéLa Já Candle Bar 🕯️`;
+    setSharing(true);
     try {
+      // Auto-render the candle into a shareable boutique card (PNG).
+      const svg = stageRef.current?.querySelector("svg");
+      if (svg) {
+        const blob = await buildShareCard(svg as SVGSVGElement, {
+          name,
+          price: formatUSD(price),
+        });
+        if (blob) {
+          await shareOrDownload(blob, name);
+          return;
+        }
+      }
+      // Fallback: text share.
+      const text = `I just made "${name}" at the DéLa Já Candle Bar 🕯️`;
       if (navigator.share) await navigator.share({ title: name, text });
       else await navigator.clipboard.writeText(text);
     } catch {
       /* user dismissed */
+    } finally {
+      setSharing(false);
     }
   }
 
@@ -47,7 +67,7 @@ export function RevealCard({
           className="mx-auto max-w-xs overflow-hidden rounded-3xl border border-gold/40 bg-gradient-to-b from-porcelain to-blush-soft/40 p-5 shadow-[var(--shadow-lift)]"
         >
           <p className="label-caps !tracking-[0.3em] text-gold">DéLa Já · made just for you</p>
-          <div className="my-3">
+          <div className="my-3" ref={stageRef}>
             <CandleRenderer config={config} revealed showcase />
           </div>
           <h3 className="font-display text-2xl text-espresso">{name}</h3>
@@ -62,8 +82,8 @@ export function RevealCard({
           <Button variant="primary" size="lg" onClick={onAddToCart}>
             Add to Cart · {formatUSD(price)}
           </Button>
-          <Button variant="gold" size="md" onClick={share}>
-            Save &amp; Share
+          <Button variant="gold" size="md" onClick={share} disabled={sharing}>
+            {sharing ? "Creating your card…" : "Save & Share"}
           </Button>
           <Button variant="ghost" size="sm" onClick={onClose}>
             Keep tweaking
