@@ -2,6 +2,7 @@ import { createBrowserRouter } from "react-router-dom";
 import { RootLayout } from "./shell/RootLayout";
 import { StorefrontHome } from "./routes/StorefrontHome";
 import { BuilderPage } from "./routes/BuilderPage";
+import { CreationsPage } from "./routes/CreationsPage";
 import { AboutPage } from "./routes/AboutPage";
 import { KioskPage } from "./routes/KioskPage";
 import { PartyPage } from "./routes/PartyPage";
@@ -23,6 +24,7 @@ export const router = createBrowserRouter(
       children: [
         { index: true, element: <StorefrontHome /> },
         { path: "build", element: <BuilderPage /> },
+        { path: "creations", element: <CreationsPage /> },
         { path: "about", element: <AboutPage /> },
       ],
     },

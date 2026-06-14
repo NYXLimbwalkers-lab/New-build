@@ -151,6 +151,8 @@ export function CartDrawer() {
                       <div className="h-20 w-20 shrink-0 overflow-hidden rounded-2xl bg-blush-soft/30">
                         {item.kind === "build" && item.config ? (
                           <CandleRenderer config={item.config} />
+                        ) : item.kind === "bundle" ? (
+                          <div className="flex h-full w-full items-center justify-center text-2xl">🎁</div>
                         ) : (
                           PRODUCT_BY_ID[item.refId] && (
                             <ProductMedia product={PRODUCT_BY_ID[item.refId]} />
@@ -167,7 +169,11 @@ export function CartDrawer() {
                           </span>
                         </div>
                         <span className="mt-0.5 text-[0.65rem] uppercase tracking-[0.16em] text-muted">
-                          {item.kind === "build" ? "Custom · Candle Bar" : "From the case"}
+                          {item.kind === "build"
+                            ? "Custom · Candle Bar"
+                            : item.kind === "bundle"
+                              ? "Gift set"
+                              : "From the case"}
                         </span>
                         <div className="mt-auto flex items-center gap-3">
                           <div className="flex items-center gap-2 rounded-full border hairline px-2 py-0.5">

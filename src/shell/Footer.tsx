@@ -31,6 +31,7 @@ export function Footer() {
         <nav className="mt-8 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-xs uppercase tracking-[0.16em] text-muted">
           <Link to="/" viewTransition className="hover:text-cocoa">Shop</Link>
           <Link to="/build" viewTransition className="hover:text-cocoa">Candle Bar</Link>
+          <Link to="/creations" viewTransition className="hover:text-cocoa">My Creations</Link>
           <Link to="/about" viewTransition className="hover:text-cocoa">Our Story</Link>
         </nav>
         <p className="mt-6 text-xs text-muted">

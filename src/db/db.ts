@@ -9,8 +9,8 @@ import type { BuildConfig, SavedBuild } from "@/data/types";
 
 export interface CartItem {
   id: string;
-  kind: "product" | "build";
-  refId: string; // productId or savedBuildId
+  kind: "product" | "build" | "bundle";
+  refId: string; // productId, savedBuildId, or bundleId
   name: string;
   unitPrice: number;
   qty: number;

@@ -51,6 +51,23 @@ export async function addBuildToCart(
   logEvent("add_to_cart", { kind: "build", price }, mode);
 }
 
+export async function addBundleToCart(
+  bundle: { id: string; name: string; price: number },
+  mode: AppMode = "storefront",
+) {
+  const item: CartItem = {
+    id: uid(),
+    kind: "bundle",
+    refId: bundle.id,
+    name: bundle.name,
+    unitPrice: bundle.price,
+    qty: 1,
+    addedAt: Date.now(),
+  };
+  await db.cart.add(item);
+  logEvent("add_to_cart", { kind: "bundle", refId: bundle.id }, mode);
+}
+
 export const setQty = (id: string, qty: number) =>
   qty <= 0 ? db.cart.delete(id) : db.cart.update(id, { qty });
 
