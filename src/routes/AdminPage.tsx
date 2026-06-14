@@ -4,6 +4,7 @@ import { db } from "@/db/db";
 import { PRODUCTS } from "@/data/products";
 import { formatUSD } from "@/data/build";
 import { useOverrides, setOverride } from "@/features/admin/overrides";
+import { BuildRecipe } from "@/features/builder/BuildRecipe";
 import { cn } from "@/lib/cn";
 import { useDocumentTitle } from "@/lib/useTitle";
 
@@ -66,9 +67,21 @@ function Orders() {
             </span>
             <span className="price text-lg text-espresso">{formatUSD(o.total)}</span>
           </div>
-          <p className="mt-1 text-sm text-cocoa">
-            {o.items.map((i) => `${i.qty}× ${i.name}`).join(", ")}
-          </p>
+          <div className="mt-1 space-y-1.5">
+            {o.items.map((i) => (
+              <div key={i.id} className="text-sm text-cocoa">
+                <span>
+                  {i.qty}× {i.name}
+                </span>
+                {i.kind === "build" && i.config && (
+                  <BuildRecipe
+                    config={i.config}
+                    className="mt-1 rounded-xl border hairline bg-porcelain/50 px-3 py-2"
+                  />
+                )}
+              </div>
+            ))}
+          </div>
           {o.contact && (
             <p className="mt-1 text-sm text-plum">
               {o.contact.name}

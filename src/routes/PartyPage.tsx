@@ -11,16 +11,8 @@ import { Button } from "@/components/ui/Button";
 import { useDocumentTitle } from "@/lib/useTitle";
 import { db } from "@/db/db";
 import type { BuildConfig } from "@/data/types";
-import { formatUSD, usedScents } from "@/data/build";
+import { describeBuild, formatUSD } from "@/data/build";
 import { PARTY_PACKAGES, PKG_BY_ID, DEPOSIT, TRAVEL_FEE } from "@/data/party";
-import {
-  VESSEL_BY_ID,
-  WAX_BY_ID,
-  SCENT_BY_ID,
-  WHIP_BY_ID,
-  DRIZZLE_BY_ID,
-  TOPPING_BY_ID,
-} from "@/data/ingredients";
 
 /*
   PHASE 4 — RV / PARTY MODE.
@@ -204,26 +196,7 @@ function GuestBuilder({ sessionId }: { sessionId: string }) {
   );
 }
 
-function recipeLines(c: BuildConfig): [string, string][] {
-  const lines: [string, string][] = [
-    ["Vessel", VESSEL_BY_ID[c.vesselId]?.name ?? c.vesselId],
-    [
-      "Wax",
-      [c.waxColorId, ...c.extraLayers].map((id) => WAX_BY_ID[id]?.name ?? id).join(" → "),
-    ],
-    [
-      "Scent",
-      usedScents(c).map((id) => SCENT_BY_ID[id]?.name).filter(Boolean).join(" + ") +
-        ` (${c.strength})`,
-    ],
-  ];
-  if (c.whipId) lines.push(["Whip", WHIP_BY_ID[c.whipId]?.name ?? c.whipId]);
-  if (c.drizzleId) lines.push(["Drizzle", DRIZZLE_BY_ID[c.drizzleId]?.name ?? c.drizzleId]);
-  if (c.toppingIds.length)
-    lines.push(["Toppings", c.toppingIds.map((id) => TOPPING_BY_ID[id]?.name ?? id).join(", ")]);
-  lines.push(["Wick", c.wick === "wood" ? "Wood (crackle)" : "Cotton (silent)"]);
-  return lines;
-}
+const recipeLines = describeBuild;
 
 function MakeTakeCard({ config, onClose }: { config: BuildConfig; onClose: () => void }) {
   return (

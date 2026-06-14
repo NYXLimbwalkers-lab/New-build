@@ -1,11 +1,15 @@
 import {
+  DRIZZLE_BY_ID,
   FINISHING_PRICES,
   MAX_LAYERS,
   SCENTS,
+  SCENT_BY_ID,
   TOPPING_BY_ID,
   VESSEL_BY_ID,
   VESSELS,
+  WAX_BY_ID,
   WAX_COLORS,
+  WHIP_BY_ID,
 } from "./ingredients";
 import { PRODUCT_BY_ID } from "./products";
 import type {
@@ -102,6 +106,51 @@ export function priceBuild(config: BuildConfig): PriceBreakdown {
 
 export const formatUSD = (n: number) =>
   n.toLocaleString("en-US", { style: "currency", currency: "USD" });
+
+/**
+ * The full, human-readable recipe as [label, value] pairs — what she needs to
+ * actually pour the candle: each layer's color + scent, the whip/drizzle/topping
+ * scents, strength, wick, gift box. Shared by the cart, owner dashboard, and
+ * party card so the build is never reduced to just a name.
+ */
+export function describeBuild(c: BuildConfig): [string, string][] {
+  const lines: [string, string][] = [
+    ["Vessel", VESSEL_BY_ID[c.vesselId]?.name ?? c.vesselId],
+  ];
+  const layers = [c.waxColorId, ...c.extraLayers];
+  const sName = (id?: string | null) => (id ? SCENT_BY_ID[id]?.name ?? id : "");
+  layers.forEach((colorId, i) => {
+    const label =
+      layers.length === 1
+        ? "Wax"
+        : i === 0
+          ? "Base wax"
+          : i === layers.length - 1
+            ? "Top wax"
+            : `Wax layer ${i + 1}`;
+    const color = WAX_BY_ID[colorId]?.name ?? colorId;
+    const scent = sName(c.layerScents[i] ?? DEFAULT_SCENT);
+    lines.push([label, scent ? `${color} · ${scent}` : color]);
+  });
+  if (!isDrinkBuild(c)) {
+    if (c.whipId) {
+      const s = sName(c.whipScentId);
+      lines.push(["Whip", `${WHIP_BY_ID[c.whipId]?.name ?? c.whipId}${s ? ` · ${s}` : ""}`]);
+    }
+    if (c.drizzleId) {
+      const s = sName(c.drizzleScentId);
+      lines.push(["Drizzle", `${DRIZZLE_BY_ID[c.drizzleId]?.name ?? c.drizzleId}${s ? ` · ${s}` : ""}`]);
+    }
+    for (const t of c.toppingIds) {
+      const s = sName(c.toppingScents[t]);
+      lines.push(["Topping", `${TOPPING_BY_ID[t]?.name ?? t}${s ? ` · ${s}` : ""}`]);
+    }
+  }
+  lines.push(["Strength", c.strength]);
+  lines.push(["Wick", c.wick === "wood" ? "Wood (crackle)" : "Cotton (silent)"]);
+  if (c.giftBox) lines.push(["Gift box", "Yes"]);
+  return lines;
+}
 
 /* ── Invisible validity rules — no hard errors, ever ──────────────────── */
 

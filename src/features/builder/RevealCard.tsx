@@ -5,6 +5,7 @@ import { formatUSD } from "@/data/build";
 import { Sheet } from "@/components/ui/Sheet";
 import { Button } from "@/components/ui/Button";
 import { CandleRenderer } from "./renderer";
+import { BuildRecipe } from "./BuildRecipe";
 import { buildShareCard, shareOrDownload } from "@/lib/shareCard";
 import { addProductToCart } from "@/features/cart/cart";
 import { PRODUCT_BY_ID } from "@/data/products";
@@ -76,6 +77,7 @@ export function RevealCard({
           </div>
           <h3 className="font-display text-2xl text-espresso">{name}</h3>
           <p className="price mt-1 text-lg text-cocoa">{formatUSD(price)}</p>
+          <BuildRecipe config={config} className="mx-auto mt-3 max-w-[15rem] text-left" />
           <div className="mt-2 h-px w-16 mx-auto bg-gold/40" />
           <p className="mt-2 text-[0.65rem] uppercase tracking-[0.2em] text-muted">
             Hand-poured · small-batch

@@ -15,6 +15,7 @@ import { getAdapter } from "@/features/commerce";
 import { addPoints } from "@/features/loyalty/loyalty";
 import { Button } from "@/components/ui/Button";
 import { CandleRenderer } from "@/features/builder/renderer";
+import { BuildRecipe } from "@/features/builder/BuildRecipe";
 import { PRODUCT_BY_ID } from "@/data/products";
 import { ProductMedia } from "@/features/menu/ProductMedia";
 import { cn } from "@/lib/cn";
@@ -223,7 +224,16 @@ export function CartDrawer() {
                               ? "Gift set"
                               : "From the case"}
                         </span>
-                        <div className="mt-auto flex items-center gap-3">
+                        {item.kind === "build" && item.config && (
+                          <details className="mt-1 group">
+                            <summary className="cursor-pointer list-none text-[0.65rem] uppercase tracking-[0.14em] text-cocoa hover:text-espresso">
+                              <span className="group-open:hidden">View recipe ▾</span>
+                              <span className="hidden group-open:inline">Hide recipe ▴</span>
+                            </summary>
+                            <BuildRecipe config={item.config} className="mt-1.5 rounded-xl bg-porcelain/60 px-3 py-2" />
+                          </details>
+                        )}
+                        <div className="mt-2 flex items-center gap-3">
                           <div className="flex items-center gap-1 rounded-full border hairline">
                             <button
                               onClick={() => setQty(item.id, item.qty - 1)}
