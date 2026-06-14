@@ -28,6 +28,7 @@ import { StepRail } from "./StepRail";
 import { StepContent } from "./StepContent";
 import { RevealCard } from "./RevealCard";
 import { FavoritePicker } from "./FavoritePicker";
+import { GuidedTour, shouldShowTour } from "./GuidedTour";
 import { SPRING, swipePower, SWIPE_CONFIDENCE } from "@/lib/motionPresets";
 import { cn } from "@/lib/cn";
 
@@ -62,6 +63,7 @@ export function CandleBar({
   const [[page, dir], setPage] = useState<[number, number]>([0, 0]);
   const [reveal, setReveal] = useState(false);
   const [favOpen, setFavOpen] = useState(false);
+  const [tourOpen, setTourOpen] = useState(() => shouldShowTour());
   const [hint, setHint] = useState(() => localStorage.getItem("delaja-builder-hint") !== "1");
 
   function dismissHint() {
@@ -178,6 +180,8 @@ export function CandleBar({
             <TextAction onClick={surprise}>✨ Surprise me</TextAction>
             <Dot />
             <TextAction onClick={undo} disabled={!canUndo}>↶ Undo</TextAction>
+            <Dot />
+            <TextAction onClick={() => setTourOpen(true)}>? How it works</TextAction>
           </div>
         </div>
 
@@ -267,6 +271,7 @@ export function CandleBar({
         onClose={() => setReveal(false)}
         onAddToCart={addToCart}
       />
+      <GuidedTour open={tourOpen} onClose={() => setTourOpen(false)} />
       <FavoritePicker
         open={favOpen}
         onClose={() => setFavOpen(false)}
