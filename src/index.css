@@ -201,6 +201,17 @@ a {
   touch-action: manipulation;
 }
 
+/* Readable form fields; ≥16px prevents iOS zoom-on-focus. Comfortable height. */
+input,
+textarea,
+select {
+  font-size: 1rem;
+}
+input:not([type="checkbox"]):not([type="range"]),
+select {
+  min-height: 46px;
+}
+
 /* Honor reduced-motion everywhere — non-negotiable. */
 @media (prefers-reduced-motion: reduce) {
   *,

@@ -2,6 +2,7 @@ import { useLiveQuery } from "dexie-react-hooks";
 import { db, logEvent, type CartItem } from "@/db/db";
 import type { BuildConfig, Product } from "@/data/types";
 import type { AppMode } from "@/lib/mode";
+import { toast } from "@/lib/toast";
 
 /*
   Local-first cart (Dexie). Works offline + on the kiosk; a Phase-2 commerce
@@ -30,6 +31,7 @@ export async function addProductToCart(product: Product, mode: AppMode = "storef
     await db.cart.add(item);
   }
   logEvent("add_to_cart", { kind: "product", refId: product.id }, mode);
+  toast(`Added ${product.name} to your bag ✓`);
 }
 
 export async function addBuildToCart(
@@ -49,6 +51,7 @@ export async function addBuildToCart(
   };
   await db.cart.add(item);
   logEvent("add_to_cart", { kind: "build", price }, mode);
+  toast("Added your candle to the bag ✓");
 }
 
 export async function addBundleToCart(
@@ -66,6 +69,7 @@ export async function addBundleToCart(
   };
   await db.cart.add(item);
   logEvent("add_to_cart", { kind: "bundle", refId: bundle.id }, mode);
+  toast(`Added the ${bundle.name} to your bag ✓`);
 }
 
 export const setQty = (id: string, qty: number) =>

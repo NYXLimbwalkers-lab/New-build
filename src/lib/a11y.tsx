@@ -5,6 +5,8 @@ import {
   useState,
   type ReactNode,
 } from "react";
+import { AnimatePresence, motion } from "motion/react";
+import { subscribeToast } from "./toast";
 
 /*
   Accessibility preferences — Bigger Text + High Contrast — persisted and applied
@@ -51,7 +53,38 @@ export function A11yProvider({ children }: { children: ReactNode }) {
     >
       {children}
       <A11yFab />
+      <Toaster />
     </Ctx.Provider>
+  );
+}
+
+/** Global confirmation toast (top-center). */
+function Toaster() {
+  const [msg, setMsg] = useState<string | null>(null);
+  useEffect(
+    () =>
+      subscribeToast((m) => {
+        setMsg(m);
+        window.setTimeout(() => setMsg((cur) => (cur === m ? null : cur)), 2500);
+      }),
+    [],
+  );
+  return (
+    <AnimatePresence>
+      {msg && (
+        <motion.div
+          key={msg}
+          role="status"
+          aria-live="polite"
+          initial={{ opacity: 0, y: -16 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -16 }}
+          className="fixed left-1/2 top-5 z-[90] -translate-x-1/2 rounded-full border border-gold/50 bg-cocoa px-6 py-3 text-base text-canvas shadow-[var(--shadow-lift)] print:hidden"
+        >
+          {msg}
+        </motion.div>
+      )}
+    </AnimatePresence>
   );
 }
 
