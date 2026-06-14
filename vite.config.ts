@@ -9,6 +9,22 @@ import { fileURLToPath, URL } from "node:url";
 // dev + other hosts stay at root.
 export default defineConfig({
   base: process.env.BASE_PATH || "/",
+  build: {
+    chunkSizeWarningLimit: 900,
+    rollupOptions: {
+      output: {
+        // Split big vendors into long-cached chunks for faster repeat loads.
+        manualChunks(id) {
+          if (id.includes("node_modules")) {
+            if (id.includes("motion")) return "motion";
+            if (id.includes("dexie")) return "db";
+            if (id.includes("react")) return "react";
+            return "vendor";
+          }
+        },
+      },
+    },
+  },
   plugins: [
     react(),
     tailwindcss(),
