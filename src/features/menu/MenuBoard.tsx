@@ -11,6 +11,7 @@ import { SeasonalRail } from "./SeasonalRail";
 import { ScentQuiz } from "./ScentQuiz";
 import { Button } from "@/components/ui/Button";
 import { getRating } from "@/data/reviews";
+import { useFavorites, toggleFavorite } from "@/features/favorites/favorites";
 import { STAGGER } from "@/lib/motionPresets";
 
 type SortKey = "featured" | "price-asc" | "price-desc" | "rating";
@@ -40,8 +41,10 @@ export function MenuBoard() {
   const [category, setCategory] = useState<CategoryId | "all">("all");
   const [scent, setScent] = useState<ScentFamily | "All">("All");
   const [sort, setSort] = useState<SortKey>("featured");
+  const [savedOnly, setSavedOnly] = useState(false);
   const [selected, setSelected] = useState<Product | null>(null);
   const [quizOpen, setQuizOpen] = useState(false);
+  const favorites = useFavorites();
   const [params, setParams] = useSearchParams();
 
   // Deep link: /?product=<id> (e.g. from search) opens the detail sheet.
@@ -58,11 +61,13 @@ export function MenuBoard() {
     }
   }
 
+  const favKey = [...favorites].sort().join(",");
   const visible = useMemo(() => {
     const list = PRODUCTS.filter(
       (p) =>
         (category === "all" || p.category === category) &&
-        (scent === "All" || p.scentFamily === scent),
+        (scent === "All" || p.scentFamily === scent) &&
+        (!savedOnly || favorites.has(p.id)),
     );
     const score = (p: Product) =>
       (p.badges?.includes("bestseller") ? 2 : 0) +
@@ -79,7 +84,8 @@ export function MenuBoard() {
       default:
         return [...list].sort((a, b) => score(b) - score(a));
     }
-  }, [category, scent, sort]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [category, scent, sort, savedOnly, favKey]);
 
   return (
     <section id="menu" className="mx-auto max-w-6xl px-5 py-10">
@@ -100,14 +106,17 @@ export function MenuBoard() {
 
         {/* category nav */}
         <div className="no-scrollbar -mx-5 flex gap-2 overflow-x-auto px-5 pb-1">
-          <Chip active={category === "all"} onClick={() => setCategory("all")}>
+          <Chip active={category === "all" && !savedOnly} onClick={() => { setCategory("all"); setSavedOnly(false); }}>
             All
+          </Chip>
+          <Chip active={savedOnly} onClick={() => setSavedOnly((v) => !v)}>
+            ♥ Saved{favorites.size ? ` (${favorites.size})` : ""}
           </Chip>
           {CATEGORIES.map((c) => (
             <Chip
               key={c.id}
-              active={category === c.id}
-              onClick={() => setCategory(c.id)}
+              active={category === c.id && !savedOnly}
+              onClick={() => { setCategory(c.id); setSavedOnly(false); }}
             >
               {c.name}
             </Chip>
@@ -148,7 +157,12 @@ export function MenuBoard() {
         >
           {visible.map((p) => (
             <motion.div key={p.id} layout variants={STAGGER.item}>
-              <ProductCard product={p} onOpen={setSelected} />
+              <ProductCard
+                product={p}
+                onOpen={setSelected}
+                favorite={favorites.has(p.id)}
+                onToggleFavorite={() => toggleFavorite(p.id)}
+              />
             </motion.div>
           ))}
         </motion.div>
@@ -156,7 +170,9 @@ export function MenuBoard() {
 
       {visible.length === 0 && (
         <p className="py-16 text-center font-serif text-lg text-muted">
-          Nothing in that pairing just yet — try another scent.
+          {savedOnly
+            ? "No saved candles yet — tap the ♥ on any you love."
+            : "Nothing in that pairing just yet — try another scent."}
         </p>
       )}
 

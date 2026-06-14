@@ -37,11 +37,17 @@ export interface AnalyticsEvent {
   at: number;
 }
 
+export interface Favorite {
+  id: string; // productId
+  addedAt: number;
+}
+
 const db = new Dexie("delaja") as Dexie & {
   builds: EntityTable<SavedBuild, "id">;
   cart: EntityTable<CartItem, "id">;
   orders: EntityTable<QueuedOrder, "id">;
   events: EntityTable<AnalyticsEvent, "id">;
+  favorites: EntityTable<Favorite, "id">;
 };
 
 db.version(1).stores({
@@ -49,6 +55,14 @@ db.version(1).stores({
   cart: "id, addedAt",
   orders: "id, createdAt, synced",
   events: "id, at, type",
+});
+
+db.version(2).stores({
+  builds: "id, createdAt, mode",
+  cart: "id, addedAt",
+  orders: "id, createdAt, synced",
+  events: "id, at, type",
+  favorites: "id, addedAt",
 });
 
 export { db };

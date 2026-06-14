@@ -24,9 +24,13 @@ const BADGE_LABEL: Record<string, string> = {
 export function ProductCard({
   product,
   onOpen,
+  favorite,
+  onToggleFavorite,
 }: {
   product: Product;
   onOpen: (p: Product) => void;
+  favorite?: boolean;
+  onToggleFavorite?: () => void;
 }) {
   const [hot, setHot] = useState(false);
   const mag = useMagnetic<HTMLButtonElement>();
@@ -52,6 +56,24 @@ export function ProductCard({
     >
       {/* arched patisserie-case window */}
       <div className="relative aspect-square w-full overflow-hidden rounded-b-[2.5rem] bg-gradient-to-b from-blush-soft/40 to-canvas-deep/30">
+        {/* favorite heart */}
+        {onToggleFavorite && (
+          <span
+            role="button"
+            tabIndex={0}
+            aria-label={favorite ? "Remove from saved" : "Save to favorites"}
+            onClick={(e) => {
+              e.stopPropagation();
+              onToggleFavorite();
+            }}
+            className="absolute right-3 top-3 z-10 flex h-8 w-8 items-center justify-center rounded-full bg-porcelain/80 text-rose shadow-sm backdrop-blur transition-transform hover:scale-110"
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill={favorite ? "currentColor" : "none"} stroke="currentColor" strokeWidth="1.6" aria-hidden>
+              <path d="M12 21s-7-4.6-9.3-8.3C1 9.6 2.4 6 5.6 6 7.6 6 9 7.3 12 10c3-2.7 4.4-4 6.4-4 3.2 0 4.6 3.6 2.9 6.7C19 16.4 12 21 12 21z" strokeLinejoin="round" />
+            </svg>
+          </span>
+        )}
+
         {/* badges */}
         {product.badges && product.badges.length > 0 && (
           <div className="absolute left-3 top-3 z-10 flex flex-col gap-1.5">
