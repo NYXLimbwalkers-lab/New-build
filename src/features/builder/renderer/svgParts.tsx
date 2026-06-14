@@ -31,6 +31,10 @@ export function GlowDefs() {
         <stop offset="0" stopColor="#ffffff" stopOpacity=".85" />
         <stop offset="100%" stopColor="#ffffff" stopOpacity="0" />
       </radialGradient>
+      <radialGradient id="ccreamShade" cx="50%" cy="18%" r="95%">
+        <stop offset="58%" stopColor="#3A2C2A" stopOpacity="0" />
+        <stop offset="100%" stopColor="#3A2C2A" stopOpacity=".13" />
+      </radialGradient>
       <radialGradient id="cglow" cx="50%" cy="50%" r="50%">
         <stop offset="0" stopColor="#F8D89A" stopOpacity=".8" />
         <stop offset="55%" stopColor="#F0C0A0" stopOpacity=".25" />
@@ -75,6 +79,8 @@ export function JarVessel({ waxHex, tin }: { waxHex: string; tin?: boolean }) {
       {!tin && <path d={JAR_GLASS} fill="url(#cglass)" />}
       <rect x="184" y="372" width="16" height="250" rx="8" fill="#fff" opacity={tin ? 0.3 : 0.5} />
       <rect x="408" y="380" width="8" height="220" rx="4" fill="#fff" opacity=".22" />
+      {/* inner bottom shadow for depth */}
+      <ellipse cx="300" cy="628" rx="118" ry="18" fill="#3A2C2A" opacity=".10" />
       {/* rim */}
       <ellipse cx="300" cy="350" rx="129" ry="20" fill={tin ? "#D8CFC4" : "#E7E0DB"} stroke="#D2C8C1" strokeWidth="2" />
       <ellipse cx="300" cy="350" rx="118" ry="14" fill={waxHex} fillOpacity=".5" />
@@ -112,37 +118,54 @@ export function WineGlass({ waxHex }: { waxHex: string }) {
   );
 }
 
-/* ── Whipped cream swirl (piped dollops, parametric color) ────────────── */
-const DOLLOPS = [
-  { x: 300, y: 330, r: 116, ry: 60 },
-  { x: 268, y: 300, r: 78 },
-  { x: 336, y: 292, r: 70 },
-  { x: 286, y: 256, r: 64 },
-  { x: 322, y: 224, r: 52 },
-  { x: 300, y: 196, r: 40 },
-  { x: 300, y: 168, r: 26 },
+/* ── Piped soft-serve cream: scalloped silhouette + swirl ridges ──────── */
+const CTIERS = [
+  { y: 348, hw: 118 }, { y: 322, hw: 116 }, { y: 294, hw: 106 }, { y: 266, hw: 92 },
+  { y: 238, hw: 77 }, { y: 210, hw: 60 }, { y: 184, hw: 44 }, { y: 160, hw: 28 }, { y: 140, hw: 13 },
 ];
 
+const CREAM_D = (() => {
+  const cx = 300;
+  let d = `M${cx - CTIERS[0].hw} ${CTIERS[0].y}`;
+  for (let i = 0; i < CTIERS.length - 1; i++) {
+    const a = CTIERS[i], b = CTIERS[i + 1];
+    const bulge = Math.max(a.hw, b.hw) + 15;
+    d += ` Q${cx - bulge} ${(a.y + b.y) / 2} ${cx - b.hw} ${b.y}`;
+  }
+  const top = CTIERS[CTIERS.length - 1];
+  d += ` Q${cx} ${top.y - 16} ${cx + top.hw} ${top.y}`;
+  for (let i = CTIERS.length - 1; i > 0; i--) {
+    const a = CTIERS[i], b = CTIERS[i - 1];
+    const bulge = Math.max(a.hw, b.hw) + 15;
+    d += ` Q${cx + bulge} ${(a.y + b.y) / 2} ${cx + b.hw} ${b.y}`;
+  }
+  return d + " Z";
+})();
+
 export function CreamSwirl({ hex }: { hex: string }) {
+  const cx = 300;
   return (
     <motion.g
       initial={{ scale: 0.4, y: 26, opacity: 0 }}
       animate={{ scale: 1, y: 0, opacity: 1 }}
       transition={SPRING.pipe}
-      style={{ transformOrigin: "300px 330px" }}
+      style={{ transformOrigin: "300px 348px" }}
     >
-      <ellipse cx="300" cy="334" rx="118" ry="22" fill="#3A2C2A" opacity=".14" />
       <g filter="url(#csoft)">
-        {DOLLOPS.map((d, i) => (
-          <ellipse key={i} cx={d.x} cy={d.y} rx={d.r} ry={d.ry ?? d.r * 0.9} fill={hex} />
-        ))}
+        <ellipse cx={cx} cy="348" rx="126" ry="20" fill="#3A2C2A" opacity=".14" />
+        <path d={CREAM_D} fill={hex} />
+        <path d={CREAM_D} fill="url(#ccreamShade)" />
       </g>
-      {DOLLOPS.map((d, i) => {
-        const ry = d.ry ?? d.r * 0.9;
+      {/* volume: highlight upper-left, soft shadow right */}
+      <ellipse cx={cx - 30} cy="250" rx="86" ry="120" fill="url(#ccreamHi)" opacity=".7" />
+      <ellipse cx={cx + 58} cy="262" rx="56" ry="116" fill="#3A2C2A" opacity=".05" />
+      {/* swirl ridges at every tier */}
+      {CTIERS.slice(0, -1).map((t, i) => {
+        const w = t.hw * 0.9;
         return (
-          <g key={`s${i}`}>
-            <ellipse cx={d.x + d.r * 0.22} cy={d.y + ry * 0.34} rx={d.r * 0.62} ry={ry * 0.5} fill="#3A2C2A" opacity=".07" />
-            <ellipse cx={d.x - d.r * 0.28} cy={d.y - ry * 0.42} rx={d.r * 0.5} ry={ry * 0.4} fill="url(#ccreamHi)" />
+          <g key={i}>
+            <path d={`M${cx - w} ${t.y} Q${cx} ${t.y + 13} ${cx + w} ${t.y}`} fill="none" stroke="#3A2C2A" strokeOpacity=".12" strokeWidth="6" strokeLinecap="round" />
+            <path d={`M${cx - w} ${t.y - 7} Q${cx} ${t.y + 4} ${cx + w} ${t.y - 7}`} fill="none" stroke="#fff" strokeOpacity=".55" strokeWidth="3.2" strokeLinecap="round" />
           </g>
         );
       })}
@@ -271,7 +294,7 @@ function placedShape(id: string, hex: string): React.ReactNode {
     default:
       return (
         <g>
-          <path d="M0 -12 q26 -34 52 -42" stroke="#5E7D3A" strokeWidth="4" fill="none" />
+          <path d="M0 -14 q14 -14 6 -30" stroke="#5E7D3A" strokeWidth="4" fill="none" strokeLinecap="round" />
           <circle cx="0" cy="0" r="17" fill={hex} />
           <ellipse cx="-7" cy="-7" rx="5" ry="3.5" fill="#fff" fillOpacity=".55" />
         </g>

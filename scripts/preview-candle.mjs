@@ -111,7 +111,7 @@ function placed(id) {
       return `<g><ellipse cx="0" cy="0" rx="16" ry="12" fill="#8A5A33"/><path d="M0 -10 V10 M-10 -4 q10 4 20 0 M-10 4 q10 -4 20 0" stroke="#5e3c1f" stroke-width="1.6" fill="none"/></g>`;
     case "cherry":
     default:
-      return `<g><path d="M0 -12 q26 -34 52 -42" stroke="#5E7D3A" stroke-width="4" fill="none"/><circle cx="0" cy="0" r="17" fill="url(#berry)"/><ellipse cx="-7" cy="-7" rx="5" ry="3.5" fill="#fff" opacity=".55"/></g>`;
+      return `<g><path d="M0 -14 q14 -14 6 -30" stroke="#5E7D3A" stroke-width="4" fill="none" stroke-linecap="round"/><circle cx="0" cy="0" r="17" fill="url(#berry)"/><ellipse cx="-7" cy="-7" rx="5" ry="3.5" fill="#fff" opacity=".55"/></g>`;
   }
 }
 
@@ -130,6 +130,7 @@ export function candleSVG(opts = {}) {
     <linearGradient id="glass" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#ffffff" stop-opacity=".55"/><stop offset=".16" stop-color="#ffffff" stop-opacity=".10"/><stop offset=".5" stop-color="#e9e2dd" stop-opacity=".05"/><stop offset=".84" stop-color="#9b908a" stop-opacity=".10"/><stop offset="1" stop-color="#8c817b" stop-opacity=".22"/></linearGradient>
     <linearGradient id="depth" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffffff" stop-opacity=".18"/><stop offset=".5" stop-color="#3A2C2A" stop-opacity="0"/><stop offset="1" stop-color="#3A2C2A" stop-opacity=".22"/></linearGradient>
     <radialGradient id="creamHi" cx="38%" cy="26%" r="60%"><stop offset="0" stop-color="#ffffff" stop-opacity=".85"/><stop offset="100%" stop-color="#ffffff" stop-opacity="0"/></radialGradient>
+    <radialGradient id="creamShade" cx="50%" cy="18%" r="95%"><stop offset="58%" stop-color="#3A2C2A" stop-opacity="0"/><stop offset="100%" stop-color="#3A2C2A" stop-opacity=".13"/></radialGradient>
     <radialGradient id="berry" cx="35%" cy="30%" r="75%"><stop offset="0" stop-color="#F06A78"/><stop offset="1" stop-color="#B92038"/></radialGradient>
     <radialGradient id="glow" cx="50%" cy="50%" r="50%"><stop offset="0" stop-color="#F8D89A" stop-opacity=".8"/><stop offset="55%" stop-color="#F0C0A0" stop-opacity=".25"/><stop offset="100%" stop-color="#F0C0A0" stop-opacity="0"/></radialGradient>
     <filter id="soft" x="-40%" y="-40%" width="180%" height="180%"><feDropShadow dx="0" dy="6" stdDeviation="7" flood-color="#3A2C2A" flood-opacity=".18"/></filter>
@@ -144,6 +145,7 @@ export function candleSVG(opts = {}) {
   <path d="M171 350 L164 614 Q164 648 198 648 L402 648 Q436 648 436 614 L429 350 Z" fill="url(#glass)"/>
   <rect x="184" y="372" width="16" height="250" rx="8" fill="#fff" opacity=".5"/>
   <rect x="408" y="380" width="8" height="220" rx="4" fill="#fff" opacity=".22"/>
+  <ellipse cx="300" cy="628" rx="118" ry="18" fill="#3A2C2A" opacity=".10"/>
   <ellipse cx="300" cy="350" rx="129" ry="20" fill="#E7E0DB" stroke="#D2C8C1" stroke-width="2"/>
   <ellipse cx="300" cy="350" rx="118" ry="14" fill="${waxHex}" fill-opacity=".5"/>
   ${hasWhip ? cream(whipHex) : ""}
@@ -157,30 +159,69 @@ export function candleSVG(opts = {}) {
 </svg>`;
 }
 
+// Piped soft-serve cream: a scalloped silhouette tapering to a peak, with
+// front swirl ridges (shadow fold + highlight) that read as piped cream.
 function cream(whipHex) {
-  const dollops = [
-    { x: 300, y: 330, r: 116, ry: 60 }, { x: 268, y: 300, r: 78 }, { x: 336, y: 292, r: 70 },
-    { x: 286, y: 256, r: 64 }, { x: 322, y: 224, r: 52 }, { x: 300, y: 196, r: 40 }, { x: 300, y: 168, r: 26 },
+  const cx = 300;
+  const tiers = [
+    { y: 348, hw: 118 }, { y: 322, hw: 116 }, { y: 294, hw: 106 }, { y: 266, hw: 92 },
+    { y: 238, hw: 77 }, { y: 210, hw: 60 }, { y: 184, hw: 44 }, { y: 160, hw: 28 }, { y: 140, hw: 13 },
   ];
-  let out = `<g filter="url(#soft)"><ellipse cx="300" cy="334" rx="118" ry="22" fill="#3A2C2A" opacity=".14"/>`;
-  for (const d of dollops) out += `<ellipse cx="${d.x}" cy="${d.y}" rx="${d.r}" ry="${d.ry ?? d.r * 0.9}" fill="${whipHex}"/>`;
+  // closed silhouette: up the scalloped left edge, over the peak, down the right
+  let d = `M${cx - tiers[0].hw} ${tiers[0].y}`;
+  for (let i = 0; i < tiers.length - 1; i++) {
+    const a = tiers[i], b = tiers[i + 1];
+    const my = (a.y + b.y) / 2;
+    const bulge = Math.max(a.hw, b.hw) + 15;
+    d += ` Q${cx - bulge} ${my} ${cx - b.hw} ${b.y}`;
+  }
+  d += ` Q${cx} ${tiers[tiers.length - 1].y - 16} ${cx + tiers[tiers.length - 1].hw} ${tiers[tiers.length - 1].y}`;
+  for (let i = tiers.length - 1; i > 0; i--) {
+    const a = tiers[i], b = tiers[i - 1];
+    const my = (a.y + b.y) / 2;
+    const bulge = Math.max(a.hw, b.hw) + 15;
+    d += ` Q${cx + bulge} ${my} ${cx + b.hw} ${b.y}`;
+  }
+  d += " Z";
+
+  let out = `<g filter="url(#soft)">`;
+  out += `<ellipse cx="${cx}" cy="348" rx="126" ry="20" fill="#3A2C2A" opacity=".14"/>`;
+  out += `<path d="${d}" fill="${whipHex}"/>`;
+  out += `<path d="${d}" fill="url(#creamShade)"/>`;
   out += `</g>`;
-  for (const d of dollops) {
-    const ry = d.ry ?? d.r * 0.9;
-    out += `<ellipse cx="${d.x + d.r * 0.22}" cy="${d.y + ry * 0.34}" rx="${d.r * 0.62}" ry="${ry * 0.5}" fill="#3A2C2A" opacity=".07"/>`;
-    out += `<ellipse cx="${d.x - d.r * 0.28}" cy="${d.y - ry * 0.42}" rx="${d.r * 0.5}" ry="${ry * 0.4}" fill="url(#creamHi)"/>`;
+  // volume: bright highlight upper-left, soft shadow on the right
+  out += `<ellipse cx="${cx - 30}" cy="250" rx="86" ry="120" fill="url(#creamHi)" opacity=".7"/>`;
+  out += `<ellipse cx="${cx + 58}" cy="262" rx="56" ry="116" fill="#3A2C2A" opacity=".05"/>`;
+  // swirl ridges (fold shadow + bright highlight) at every tier — piped texture
+  for (let i = 0; i < tiers.length - 1; i++) {
+    const t = tiers[i];
+    const w = t.hw * 0.9;
+    out += `<path d="M${cx - w} ${t.y} Q${cx} ${t.y + 13} ${cx + w} ${t.y}" fill="none" stroke="#3A2C2A" stroke-opacity=".12" stroke-width="6" stroke-linecap="round"/>`;
+    out += `<path d="M${cx - w} ${t.y - 7} Q${cx} ${t.y + 4} ${cx + w} ${t.y - 7}" fill="none" stroke="#fff" stroke-opacity=".55" stroke-width="3.2" stroke-linecap="round"/>`;
   }
   return out;
 }
 
-const variants = [
-  { waxHex: "#F0D9AE", whipHex: "#FBF3E4", drizzleId: "caramel", toppingIds: ["strawberry", "blueberry", "cherry"] },
-  { waxHex: "#EBB7BE", whipHex: "#F4CAD2", drizzleId: "berry", toppingIds: ["sprinkles"] },
-  { waxHex: "#D9A86A", whipHex: "#F6E4B8", drizzleId: "chocolate", toppingIds: ["pecan", "crumble", "waffle"] },
-];
-const inner = variants
-  .map((v, i) => `<svg x="${i * 600}" y="0" width="600" height="740">${candleSVG(v).replace(/^<svg[^>]*>/, "").replace(/<\/svg>$/, "")}</svg>`)
-  .join("");
-const board = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1800 740">${inner}</svg>`;
-writeFileSync(new URL("../candle-preview.png", import.meta.url), new Resvg(board, { fitTo: { mode: "width", value: 1500 } }).render().asPng());
+function board(list, label) {
+  const inner = list
+    .map((v, i) => {
+      const cell = candleSVG(v).replace(/^<svg[^>]*>/, "").replace(/<\/svg>$/, "");
+      const safe = v.name ? v.name.replace(/&/g, "&amp;") : "";
+      const name = v.name
+        ? `<text x="${i * 600 + 300}" y="724" text-anchor="middle" font-family="Georgia, serif" font-size="30" fill="#5b3a4a">${safe}</text>`
+        : "";
+      return `<svg x="${i * 600}" y="0" width="600" height="740">${cell}</svg>${name}`;
+    })
+    .join("");
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${list.length * 600} 760">${inner}</svg>`;
+  writeFileSync(new URL(`../${label}.png`, import.meta.url), new Resvg(svg, { fitTo: { mode: "width", value: 460 * list.length } }).render().asPng());
+}
+
+// Her real signature candles — render to check resemblance to the catalog.
+board([
+  { name: "Waffles & Ice Cream", waxHex: "#F4E4C9", whipHex: "#FBF3E4", drizzleId: "berry", toppingIds: ["waffle", "blueberry"] },
+  { name: "Toasted Mellow", waxHex: "#F4E4C9", whipHex: "#FBF3E4", hasDrizzle: false, toppingIds: ["marshmallow"] },
+  { name: "Choc. Strawberries", waxHex: "#F4E4C9", whipHex: "#FBF3E4", drizzleId: "chocolate", toppingIds: ["strawberry"] },
+  { name: "Maple Apple Crisp", waxHex: "#D9A86A", whipHex: "#FBF3E4", drizzleId: "caramel", toppingIds: ["crumble"] },
+], "candle-preview");
 console.log("wrote candle-preview.png");
