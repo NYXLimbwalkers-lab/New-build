@@ -3,6 +3,7 @@ import { motion, useScroll, useMotionValueEvent, AnimatePresence } from "motion/
 import { useState } from "react";
 import { useCart } from "@/features/cart/cart";
 import { useCartUI } from "@/features/cart/CartContext";
+import { SearchOverlay } from "@/features/menu/SearchOverlay";
 import { cn } from "@/lib/cn";
 
 /*
@@ -16,6 +17,7 @@ export function Header() {
   const { pathname } = useLocation();
   const { count } = useCart();
   const { setOpen } = useCartUI();
+  const [searchOpen, setSearchOpen] = useState(false);
 
   useMotionValueEvent(scrollY, "change", (v) => {
     const next = v > 40;
@@ -28,6 +30,7 @@ export function Header() {
   ];
 
   return (
+    <>
     <motion.header
       className={cn(
         "sticky top-0 z-40 w-full transition-[padding,background] duration-300",
@@ -84,6 +87,17 @@ export function Header() {
           ))}
 
           <button
+            onClick={() => setSearchOpen(true)}
+            className="rounded-full p-2 text-cocoa hover:bg-canvas-deep"
+            aria-label="Search"
+          >
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.4" aria-hidden>
+              <circle cx="11" cy="11" r="7" />
+              <path d="m20 20-3-3" strokeLinecap="round" />
+            </svg>
+          </button>
+
+          <button
             onClick={() => setOpen(true)}
             className="relative ml-1 rounded-full p-2 text-cocoa hover:bg-canvas-deep"
             aria-label={`Open bag${count ? `, ${count} items` : ""}`}
@@ -110,5 +124,7 @@ export function Header() {
         </nav>
       </div>
     </motion.header>
+    <SearchOverlay open={searchOpen} onClose={() => setSearchOpen(false)} />
+    </>
   );
 }

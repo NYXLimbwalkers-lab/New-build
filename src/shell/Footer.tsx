@@ -1,4 +1,6 @@
+import { Link } from "react-router-dom";
 import { TrustBadges } from "@/components/TrustBadges";
+import { EmailCapture } from "@/features/marketing/EmailCapture";
 
 /*
   Brand-soul footer — said with warmth and grace (deep plan, Part 5):
@@ -8,7 +10,8 @@ export function Footer() {
   return (
     <footer className="mt-24 border-t hairline bg-porcelain/40">
       <div className="mx-auto max-w-6xl px-6 py-14 text-center">
-        <TrustBadges compact className="mb-10" />
+        <EmailCapture />
+        <TrustBadges compact className="mb-10 mt-12" />
         <div className="mb-4 flex items-center justify-center gap-3">
           <span className="h-px w-10 bg-gold/50" />
           <span className="font-display text-xl text-espresso">DéLa Já</span>
@@ -25,7 +28,12 @@ export function Footer() {
           <span aria-hidden>·</span>
           <span>M–F 10–5 · Sat–Sun 11–4</span>
         </div>
-        <p className="mt-8 text-xs text-muted">
+        <nav className="mt-8 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-xs uppercase tracking-[0.16em] text-muted">
+          <Link to="/" viewTransition className="hover:text-cocoa">Shop</Link>
+          <Link to="/build" viewTransition className="hover:text-cocoa">Candle Bar</Link>
+          <Link to="/about" viewTransition className="hover:text-cocoa">Our Story</Link>
+        </nav>
+        <p className="mt-6 text-xs text-muted">
           © {new Date().getFullYear()} DéLa Já Candles &amp; Wax Melts
         </p>
       </div>

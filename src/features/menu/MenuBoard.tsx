@@ -1,6 +1,7 @@
 import { motion, LayoutGroup } from "motion/react";
-import { useMemo, useState } from "react";
-import { PRODUCTS } from "@/data/products";
+import { useMemo, useState, useEffect } from "react";
+import { useSearchParams } from "react-router-dom";
+import { PRODUCTS, PRODUCT_BY_ID } from "@/data/products";
 import { CATEGORIES } from "@/data/categories";
 import type { CategoryId, Product, ScentFamily } from "@/data/types";
 import { Chip } from "@/components/ui/Chip";
@@ -41,6 +42,21 @@ export function MenuBoard() {
   const [sort, setSort] = useState<SortKey>("featured");
   const [selected, setSelected] = useState<Product | null>(null);
   const [quizOpen, setQuizOpen] = useState(false);
+  const [params, setParams] = useSearchParams();
+
+  // Deep link: /?product=<id> (e.g. from search) opens the detail sheet.
+  useEffect(() => {
+    const id = params.get("product");
+    if (id && PRODUCT_BY_ID[id]) setSelected(PRODUCT_BY_ID[id]);
+  }, [params]);
+
+  function closeDetail() {
+    setSelected(null);
+    if (params.get("product")) {
+      params.delete("product");
+      setParams(params, { replace: true });
+    }
+  }
 
   const visible = useMemo(() => {
     const list = PRODUCTS.filter(
@@ -144,7 +160,7 @@ export function MenuBoard() {
         </p>
       )}
 
-      <ProductDetail product={selected} onClose={() => setSelected(null)} />
+      <ProductDetail product={selected} onClose={closeDetail} />
       <ScentQuiz open={quizOpen} onClose={() => setQuizOpen(false)} />
     </section>
   );
