@@ -150,107 +150,181 @@ export function CreamSwirl({ hex }: { hex: string }) {
   );
 }
 
-/* ── Drizzle (glossy, parametric) ─────────────────────────────────────── */
+/* ── Drizzle: a fine zigzag lattice of glossy sauce (parametric color) ─── */
+function zigPath(cx: number, y: number, halfW: number, n: number, amp: number, curve: number) {
+  let p = `M${cx - halfW} ${y}`;
+  const step = (halfW * 2) / n;
+  for (let i = 0; i < n; i++) {
+    const x0 = cx - halfW + step * i;
+    const x1 = x0 + step;
+    const cym = y - (i % 2 === 0 ? amp : -amp) - curve;
+    p += ` Q${(x0 + x1) / 2} ${cym} ${x1} ${y}`;
+  }
+  return p;
+}
+
 export function Drizzle({ hex }: { hex: string }) {
-  const d = "M214 250 q34 26 70 6 q34 -20 70 4 q26 16 44 2";
+  const a = zigPath(300, 232, 96, 7, 26, 0);
+  const b = zigPath(300, 248, 80, 6, 20, -10);
+  const drips = ["M214 250 q-7 22 -2 42", "M388 248 q8 20 2 42"];
+  const paths = [a, b];
+  return (
+    <g fill="none" strokeLinecap="round" strokeLinejoin="round">
+      {paths.map((d, i) => (
+        <g key={i}>
+          <motion.path
+            d={d}
+            stroke={hex}
+            strokeWidth="4"
+            initial={{ pathLength: 0, opacity: 0 }}
+            animate={{ pathLength: 1, opacity: 1 }}
+            transition={{ ...SPRING.drizzle, delay: i * 0.12 }}
+          />
+          <motion.path
+            d={d}
+            stroke="#fff"
+            strokeOpacity=".35"
+            strokeWidth="1.3"
+            transform="translate(0 -1.2)"
+            initial={{ pathLength: 0, opacity: 0 }}
+            animate={{ pathLength: 1, opacity: 1 }}
+            transition={{ ...SPRING.drizzle, delay: i * 0.12 }}
+          />
+        </g>
+      ))}
+      {drips.map((d, i) => (
+        <motion.path
+          key={`d${i}`}
+          d={d}
+          stroke={hex}
+          strokeWidth="4"
+          initial={{ pathLength: 0, opacity: 0 }}
+          animate={{ pathLength: 1, opacity: 1 }}
+          transition={{ ...SPRING.drizzle, delay: 0.3 }}
+        />
+      ))}
+    </g>
+  );
+}
+
+/* ── Toppings: scatter (sprinkles/crumble/candy) vs placed ────────────── */
+const SCATTER = new Set(["sprinkles", "crumble", "candy"]);
+const CANDY = ["#E8A0C0", "#9ACBE0", "#F6E4B8", "#C4E0B0", "#E0A0A0", "#D9A0E0"];
+const SPOTS = [
+  { x: 236, y: 206 }, { x: 366, y: 214 }, { x: 300, y: 168 },
+  { x: 392, y: 256 }, { x: 222, y: 258 }, { x: 330, y: 182 },
+];
+
+function rng(seed: number) {
+  let s = seed;
+  return () => ((s = (s * 1103515245 + 12345) & 0x7fffffff) / 0x7fffffff);
+}
+
+function placedShape(id: string, hex: string): React.ReactNode {
+  switch (id) {
+    case "strawberry":
+      return (
+        <g transform="rotate(-12)">
+          <path d="M0 -20 C18 -16 22 6 0 26 C-22 6 -18 -16 0 -20 Z" fill={hex} />
+          <path d="M-10 -22 L-2 -30 L0 -22 L3 -30 L11 -22 Z" fill="#3F7A3A" />
+          <circle cx="-5" cy="0" r="1.6" fill="#ffe" /><circle cx="5" cy="6" r="1.6" fill="#ffe" />
+          <circle cx="0" cy="13" r="1.6" fill="#ffe" />
+        </g>
+      );
+    case "blueberry":
+      return (
+        <g>
+          <circle cx="0" cy="0" r="15" fill="#46588F" /><circle cx="-5" cy="-5" r="4" fill="#7C8BB8" />
+          <path d="M0 -4 l3 3 l-3 3 l-3 -3 z" fill="#26304f" />
+          <circle cx="22" cy="10" r="12" fill="#3C4E82" /><circle cx="18" cy="6" r="3" fill="#7C8BB8" />
+        </g>
+      );
+    case "orange-slice":
+      return (
+        <g>
+          <circle cx="0" cy="0" r="18" fill={hex} /><circle cx="0" cy="0" r="13" fill="#FBE0B0" />
+          <path d="M0 0 V-13 M0 0 L11 7 M0 0 L-11 7 M0 0 L13 -3 M0 0 L-13 -3" stroke={hex} strokeWidth="2" />
+        </g>
+      );
+    case "waffle":
+      return (
+        <g transform="rotate(-12)">
+          <rect x="-18" y="-15" width="36" height="30" rx="7" fill={hex} />
+          <path d="M-13 -10 H13 M-13 0 H13 M-13 10 H13 M-6 -15 V15 M6 -15 V15" stroke="#b3823f" strokeWidth="2" />
+        </g>
+      );
+    case "marshmallow":
+      return (
+        <g>
+          <rect x="-15" y="-13" width="30" height="26" rx="9" fill={hex} stroke="#e7d9c4" strokeWidth="1.5" />
+          <ellipse cx="0" cy="-13" rx="15" ry="4" fill="#fff" />
+        </g>
+      );
+    case "pecan":
+      return (
+        <g>
+          <ellipse cx="0" cy="0" rx="16" ry="12" fill={hex} />
+          <path d="M0 -10 V10 M-10 -4 q10 4 20 0 M-10 4 q10 -4 20 0" stroke="#5e3c1f" strokeWidth="1.6" fill="none" />
+        </g>
+      );
+    case "cherry":
+    default:
+      return (
+        <g>
+          <path d="M0 -12 q26 -34 52 -42" stroke="#5E7D3A" strokeWidth="4" fill="none" />
+          <circle cx="0" cy="0" r="17" fill={hex} />
+          <ellipse cx="-7" cy="-7" rx="5" ry="3.5" fill="#fff" fillOpacity=".55" />
+        </g>
+      );
+  }
+}
+
+function ScatterTopping({ kind, seedIdx }: { kind: string; seedIdx: number }) {
+  const r = rng(7 + seedIdx * 31);
+  const n = kind === "sprinkles" ? 18 : kind === "crumble" ? 16 : 9;
+  const items: React.ReactNode[] = [];
+  for (let i = 0; i < n; i++) {
+    const a = r() * Math.PI * 2;
+    const rad = Math.sqrt(r());
+    const x = 300 + Math.cos(a) * rad * 118;
+    const y = 214 + Math.sin(a) * rad * 60;
+    const rot = Math.floor(r() * 180);
+    if (kind === "sprinkles") {
+      const c = CANDY[Math.floor(r() * CANDY.length)];
+      items.push(<rect key={i} x={x - 7} y={y - 2.4} width="14" height="4.8" rx="2.4" fill={c} transform={`rotate(${rot} ${x} ${y})`} />);
+    } else if (kind === "crumble") {
+      items.push(<rect key={i} x={x - 5} y={y - 5} width="10" height="10" rx="3" fill="#C89B62" transform={`rotate(${rot} ${x} ${y})`} />);
+    } else {
+      const c = CANDY[Math.floor(r() * CANDY.length)];
+      items.push(
+        <g key={i}>
+          <circle cx={x} cy={y} r="8" fill={c} />
+          <path d={`M${x - 8} ${y} q8 -6 16 0 q-8 6 -16 0z`} fill="#fff" fillOpacity=".4" />
+        </g>,
+      );
+    }
+  }
   return (
     <motion.g
-      fill="none"
-      strokeLinecap="round"
-      initial={{ pathLength: 0, opacity: 0 }}
-      animate={{ pathLength: 1, opacity: 1 }}
-      transition={SPRING.drizzle}
+      initial={{ y: -60, opacity: 0 }}
+      animate={{ y: 0, opacity: 1 }}
+      transition={SPRING.drop}
+      filter="url(#ctiny)"
     >
-      <motion.path d={d} stroke={hex} strokeWidth="9" />
-      <motion.path d={d} stroke="#fff" strokeOpacity=".4" strokeWidth="3" transform="translate(0 -2)" />
+      {items}
     </motion.g>
   );
 }
 
-/* ── Toppings (drop in, soft shadow) ──────────────────────────────────── */
-const TOPPING_SHAPE: Record<string, (hex: string) => React.ReactNode> = {
-  strawberry: (hex) => (
-    <g>
-      <path d="M0 -20 C18 -16 22 6 0 26 C-22 6 -18 -16 0 -20 Z" fill={hex} />
-      <path d="M-10 -22 L-2 -30 L0 -22 L3 -30 L11 -22 Z" fill="#3F7A3A" />
-      <circle cx="-5" cy="0" r="1.6" fill="#ffe" /><circle cx="5" cy="5" r="1.6" fill="#ffe" />
-      <circle cx="0" cy="13" r="1.6" fill="#ffe" />
-    </g>
-  ),
-  blueberry: (hex) => (
-    <g>
-      <circle cx="0" cy="0" r="15" fill={hex} /><circle cx="-5" cy="-5" r="4" fill="#7C8BB8" />
-      <path d="M0 -4 l3 3 l-3 3 l-3 -3 z" fill="#26304f" />
-    </g>
-  ),
-  "orange-slice": (hex) => (
-    <g>
-      <circle cx="0" cy="0" r="17" fill={hex} /><circle cx="0" cy="0" r="12" fill="#FBE0B0" />
-      <path d="M0 0 V-12 M0 0 L10 6 M0 0 L-10 6" stroke={hex} strokeWidth="2" />
-    </g>
-  ),
-  waffle: (hex) => (
-    <g transform="rotate(-12)">
-      <rect x="-17" y="-14" width="34" height="28" rx="6" fill={hex} />
-      <path d="M-12 -9 H12 M-12 0 H12 M-12 9 H12 M-6 -14 V14 M6 -14 V14" stroke="#b3823f" strokeWidth="2" />
-    </g>
-  ),
-  sprinkles: () => (
-    <g>
-      {["#E8A0C0", "#9ACBE0", "#F6E4B8", "#C4E0B0", "#E0A0A0"].map((c, i) => (
-        <rect key={i} x={-16 + i * 7} y={-8 + (i % 2) * 12} width="13" height="5" rx="2.5" fill={c} transform={`rotate(${i * 40})`} />
-      ))}
-    </g>
-  ),
-  pecan: (hex) => (
-    <g>
-      <ellipse cx="0" cy="0" rx="15" ry="11" fill={hex} />
-      <path d="M0 -9 V9 M-9 -4 q9 4 18 0 M-9 4 q9 -4 18 0" stroke="#5e3c1f" strokeWidth="1.5" fill="none" />
-    </g>
-  ),
-  crumble: (hex) => (
-    <g>
-      {[0, 1, 2, 3, 4].map((i) => (
-        <rect key={i} x={-13 + (i % 3) * 10} y={-9 + Math.floor(i / 3) * 10} width="9" height="9" rx="3" fill={hex} fillOpacity={0.9 - i * 0.08} transform={`rotate(${i * 22})`} />
-      ))}
-    </g>
-  ),
-  candy: (hex) => (
-    <g>
-      <circle cx="0" cy="0" r="12" fill={hex} />
-      <path d="M-12 0 q12 -8 24 0 q-12 8 -24 0z" fill="#fff" fillOpacity=".5" />
-    </g>
-  ),
-  marshmallow: (hex) => (
-    <g>
-      <rect x="-14" y="-12" width="28" height="24" rx="9" fill={hex} stroke="#e7d9c4" strokeWidth="1.5" />
-      <ellipse cx="0" cy="-12" rx="14" ry="4" fill="#fff" />
-    </g>
-  ),
-  cherry: (hex) => (
-    <g>
-      <path d="M0 -10 q26 -36 52 -44" stroke="#5E7D3A" strokeWidth="4" fill="none" />
-      <circle cx="0" cy="0" r="17" fill={hex} />
-      <ellipse cx="-7" cy="-7" rx="5" ry="3.5" fill="#fff" fillOpacity=".55" />
-    </g>
-  ),
-};
-
-const TOP_SPOTS = [
-  { x: 232, y: 200 },
-  { x: 372, y: 210 },
-  { x: 300, y: 162 },
-  { x: 392, y: 250 },
-  { x: 224, y: 256 },
-  { x: 336, y: 178 },
-];
-
 export function ToppingCluster({ ids }: { ids: { id: string; hex: string }[] }) {
+  let placedI = 0;
   return (
     <g>
       {ids.map((t, i) => {
-        const shape = TOPPING_SHAPE[t.id] ?? TOPPING_SHAPE.candy;
-        const p = TOP_SPOTS[i % TOP_SPOTS.length];
+        if (SCATTER.has(t.id)) {
+          return <ScatterTopping key={`${t.id}-${i}`} kind={t.id} seedIdx={i} />;
+        }
+        const p = SPOTS[placedI++ % SPOTS.length];
         return (
           <motion.g
             key={`${t.id}-${i}`}
@@ -259,7 +333,7 @@ export function ToppingCluster({ ids }: { ids: { id: string; hex: string }[] }) 
             transition={{ ...SPRING.drop, delay: i * 0.06 }}
             filter="url(#ctiny)"
           >
-            <g transform={`translate(${p.x} ${p.y})`}>{shape(t.hex)}</g>
+            <g transform={`translate(${p.x} ${p.y})`}>{placedShape(t.id, t.hex)}</g>
           </motion.g>
         );
       })}
