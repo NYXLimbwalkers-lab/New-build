@@ -6,6 +6,7 @@ import { formatUSD } from "@/data/build";
 import { addBuildToCart } from "@/features/cart/cart";
 import { useCartUI } from "@/features/cart/CartContext";
 import { CandleRenderer } from "@/features/builder/renderer";
+import { BuildRecipe } from "@/features/builder/BuildRecipe";
 import { Button } from "@/components/ui/Button";
 import { STAGGER } from "@/lib/motionPresets";
 import { usePoints } from "@/features/loyalty/loyalty";
@@ -65,6 +66,13 @@ export function CreationsPage() {
               <div className="flex flex-1 flex-col gap-1 px-4 pb-4 pt-3">
                 <h3 className="font-display text-lg leading-snug text-espresso">{b.name}</h3>
                 <span className="price text-cocoa">{formatUSD(b.price)}</span>
+                <details className="group mt-1">
+                  <summary className="cursor-pointer list-none text-[0.65rem] uppercase tracking-[0.14em] text-cocoa hover:text-espresso">
+                    <span className="group-open:hidden">View recipe ▾</span>
+                    <span className="hidden group-open:inline">Hide recipe ▴</span>
+                  </summary>
+                  <BuildRecipe config={b.config} className="mt-1.5 rounded-xl bg-porcelain/60 px-3 py-2" />
+                </details>
                 <div className="mt-3 flex flex-wrap gap-2">
                   <Button
                     size="sm"
