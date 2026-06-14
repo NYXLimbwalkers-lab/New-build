@@ -3,6 +3,8 @@ import { useLocation } from "react-router-dom";
 import { useLenis } from "lenis/react";
 import { SmoothScroll } from "@/lib/SmoothScroll";
 import { ModeContext } from "@/lib/mode";
+import { CartUIProvider } from "@/features/cart/CartContext";
+import { CartDrawer } from "@/features/cart/CartDrawer";
 import { Header } from "./Header";
 import { TransitionOutlet } from "./TransitionOutlet";
 import { Footer } from "./Footer";
@@ -15,16 +17,19 @@ import { Footer } from "./Footer";
 export function RootLayout() {
   return (
     <ModeContext.Provider value="storefront">
-      <SmoothScroll>
-        <ScrollManager />
-        <div className="flex min-h-screen flex-col">
-          <Header />
-          <main className="flex-1">
-            <TransitionOutlet />
-          </main>
-          <Footer />
-        </div>
-      </SmoothScroll>
+      <CartUIProvider>
+        <SmoothScroll>
+          <ScrollManager />
+          <div className="flex min-h-screen flex-col">
+            <Header />
+            <main className="flex-1">
+              <TransitionOutlet />
+            </main>
+            <Footer />
+          </div>
+          <CartDrawer />
+        </SmoothScroll>
+      </CartUIProvider>
     </ModeContext.Provider>
   );
 }

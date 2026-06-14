@@ -8,6 +8,8 @@ import {
 } from "motion/react";
 import type { BuildConfig } from "@/data/types";
 import { saveBuild, logEvent } from "@/db/db";
+import { addBuildToCart } from "@/features/cart/cart";
+import { useCartUI } from "@/features/cart/CartContext";
 import { useMode } from "@/lib/mode";
 import { Button } from "@/components/ui/Button";
 import { PricePill } from "@/components/ui/PricePill";
@@ -27,6 +29,7 @@ const variants = {
 
 export function CandleBar({ initial }: { initial?: BuildConfig }) {
   const mode = useMode();
+  const { setOpen } = useCartUI();
   const { config, update, undo, surprise, loadFrom, steps, price, canUndo } =
     useCandleBuild(initial);
   const [[page, dir], setPage] = useState<[number, number]>([0, 0]);
@@ -68,9 +71,9 @@ export function CandleBar({ initial }: { initial?: BuildConfig }) {
 
   async function addToCart() {
     await saveBuild(config, price.total, mode);
-    logEvent("add_to_cart", { price: price.total }, mode);
+    await addBuildToCart(config, price.total, mode);
     setReveal(false);
-    // TODO(Phase 2): push to the commerce adapter cart.
+    setOpen(true); // open the bag (no-op outside the storefront shell)
   }
 
   return (

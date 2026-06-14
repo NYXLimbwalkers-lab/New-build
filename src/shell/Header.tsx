@@ -1,6 +1,8 @@
 import { Link, NavLink, useLocation } from "react-router-dom";
-import { motion, useScroll, useMotionValueEvent } from "motion/react";
+import { motion, useScroll, useMotionValueEvent, AnimatePresence } from "motion/react";
 import { useState } from "react";
+import { useCart } from "@/features/cart/cart";
+import { useCartUI } from "@/features/cart/CartContext";
 import { cn } from "@/lib/cn";
 
 /*
@@ -12,6 +14,8 @@ export function Header() {
   const { scrollY } = useScroll();
   const [condensed, setCondensed] = useState(false);
   const { pathname } = useLocation();
+  const { count } = useCart();
+  const { setOpen } = useCartUI();
 
   useMotionValueEvent(scrollY, "change", (v) => {
     const next = v > 40;
@@ -78,6 +82,31 @@ export function Header() {
               )}
             </NavLink>
           ))}
+
+          <button
+            onClick={() => setOpen(true)}
+            className="relative ml-1 rounded-full p-2 text-cocoa hover:bg-canvas-deep"
+            aria-label={`Open bag${count ? `, ${count} items` : ""}`}
+          >
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.4" aria-hidden>
+              <path d="M6 8h12l-1 12H7L6 8z" strokeLinejoin="round" />
+              <path d="M9 8a3 3 0 0 1 6 0" strokeLinecap="round" />
+            </svg>
+            <AnimatePresence>
+              {count > 0 && (
+                <motion.span
+                  key={count}
+                  initial={{ scale: 0.4, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  exit={{ scale: 0.4, opacity: 0 }}
+                  transition={{ type: "spring", stiffness: 500, damping: 28 }}
+                  className="absolute -right-0.5 -top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-rose px-1 text-[0.6rem] font-medium text-canvas"
+                >
+                  {count}
+                </motion.span>
+              )}
+            </AnimatePresence>
+          </button>
         </nav>
       </div>
     </motion.header>

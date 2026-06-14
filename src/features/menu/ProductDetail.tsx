@@ -6,6 +6,8 @@ import { formatUSD } from "@/data/build";
 import { Sheet } from "@/components/ui/Sheet";
 import { Button } from "@/components/ui/Button";
 import { ProductMedia } from "./ProductMedia";
+import { addProductToCart } from "@/features/cart/cart";
+import { useCartUI } from "@/features/cart/CartContext";
 import { SPRING } from "@/lib/motionPresets";
 
 export function ProductDetail({
@@ -16,6 +18,14 @@ export function ProductDetail({
   onClose: () => void;
 }) {
   const navigate = useNavigate();
+  const { setOpen } = useCartUI();
+
+  async function addToCart() {
+    if (!product) return;
+    await addProductToCart(product);
+    onClose();
+    setOpen(true);
+  }
 
   return (
     <Sheet open={!!product} onClose={onClose} label={product?.name ?? "Product"}>
@@ -49,9 +59,8 @@ export function ProductDetail({
             </div>
 
             <div className="mt-7 flex flex-col gap-3">
-              {/* TODO(Phase 2): real add-to-cart via commerce adapter. */}
-              <Button variant="primary" size="lg" className="w-full">
-                Add to Cart
+              <Button variant="primary" size="lg" className="w-full" onClick={addToCart}>
+                Add to Cart · {formatUSD(product.price)}
               </Button>
               {product.recipe && (
                 <Button
