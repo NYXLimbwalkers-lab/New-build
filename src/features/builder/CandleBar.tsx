@@ -11,6 +11,8 @@ import { saveBuild, logEvent } from "@/db/db";
 import { addBuildToCart } from "@/features/cart/cart";
 import { useCartUI } from "@/features/cart/CartContext";
 import { useMode } from "@/lib/mode";
+import { useA11y } from "@/lib/a11y";
+import { speak } from "@/lib/speak";
 import { formatUSD, isDrinkBuild } from "@/data/build";
 import {
   SCENT_BY_ID,
@@ -54,6 +56,7 @@ export function CandleBar({
 }) {
   const mode = useMode();
   const { setOpen } = useCartUI();
+  const { readAloud } = useA11y();
   const { config, update, undo, surprise, loadFrom, steps, price, canUndo } =
     useCandleBuild(initial);
   const [[page, dir], setPage] = useState<[number, number]>([0, 0]);
@@ -90,7 +93,8 @@ export function CandleBar({
 
   useEffect(() => {
     logEvent("builder_step", { step: stepId }, mode);
-  }, [stepId, mode]);
+    if (readAloud) speak(`Step ${current + 1}. ${STEP_LABEL[stepId]}.`);
+  }, [stepId, mode, readAloud, current]);
 
   async function addToCart() {
     await saveBuild(config, price.total, mode);

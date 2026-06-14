@@ -1,8 +1,10 @@
 import { motion } from "motion/react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useLiveQuery } from "dexie-react-hooks";
 import { db } from "@/db/db";
+import { useA11y } from "@/lib/a11y";
+import { speak } from "@/lib/speak";
 import type { Product } from "@/data/types";
 import { CATEGORY_NAME } from "@/data/categories";
 import { formatUSD } from "@/data/build";
@@ -25,6 +27,13 @@ export function ProductDetail({
 }) {
   const navigate = useNavigate();
   const { setOpen } = useCartUI();
+  const { readAloud } = useA11y();
+
+  useEffect(() => {
+    if (product && readAloud) {
+      speak(`${product.name}. Smells like ${product.smellsLike}.`);
+    }
+  }, [product, readAloud]);
 
   async function addToCart() {
     if (!product) return;

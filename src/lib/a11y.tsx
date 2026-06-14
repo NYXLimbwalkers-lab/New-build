@@ -16,15 +16,19 @@ import { subscribeToast } from "./toast";
 interface A11y {
   bigText: boolean;
   highContrast: boolean;
+  readAloud: boolean;
   toggleBig: () => void;
   toggleContrast: () => void;
+  toggleRead: () => void;
 }
 
 const Ctx = createContext<A11y>({
   bigText: false,
   highContrast: false,
+  readAloud: false,
   toggleBig: () => {},
   toggleContrast: () => {},
+  toggleRead: () => {},
 });
 
 export const useA11y = () => useContext(Ctx);
@@ -32,6 +36,7 @@ export const useA11y = () => useContext(Ctx);
 export function A11yProvider({ children }: { children: ReactNode }) {
   const [bigText, setBig] = useState(() => localStorage.getItem("a11y-big") === "1");
   const [highContrast, setHC] = useState(() => localStorage.getItem("a11y-contrast") === "1");
+  const [readAloud, setRead] = useState(() => localStorage.getItem("a11y-read") === "1");
 
   useEffect(() => {
     document.documentElement.classList.toggle("a11y-big", bigText);
@@ -41,14 +46,19 @@ export function A11yProvider({ children }: { children: ReactNode }) {
     document.documentElement.classList.toggle("a11y-contrast", highContrast);
     localStorage.setItem("a11y-contrast", highContrast ? "1" : "0");
   }, [highContrast]);
+  useEffect(() => {
+    localStorage.setItem("a11y-read", readAloud ? "1" : "0");
+  }, [readAloud]);
 
   return (
     <Ctx.Provider
       value={{
         bigText,
         highContrast,
+        readAloud,
         toggleBig: () => setBig((v) => !v),
         toggleContrast: () => setHC((v) => !v),
+        toggleRead: () => setRead((v) => !v),
       }}
     >
       {children}
@@ -90,7 +100,7 @@ function Toaster() {
 
 /** Always-visible accessibility button + panel (bottom-left, large target). */
 function A11yFab() {
-  const { bigText, highContrast, toggleBig, toggleContrast } = useA11y();
+  const { bigText, highContrast, readAloud, toggleBig, toggleContrast, toggleRead } = useA11y();
   const [open, setOpen] = useState(false);
   return (
     <div className="fixed bottom-4 left-4 z-[80] print:hidden">
@@ -112,12 +122,23 @@ function A11yFab() {
             onClick={toggleContrast}
             aria-pressed={highContrast}
             className={
-              "flex w-full items-center justify-between rounded-2xl border px-4 py-3 text-base " +
+              "mb-2 flex w-full items-center justify-between rounded-2xl border px-4 py-3 text-base " +
               (highContrast ? "border-gold bg-blush-soft/50 text-espresso" : "hairline text-cocoa")
             }
           >
             <span>Higher contrast</span>
             <span aria-hidden>{highContrast ? "On" : "Off"}</span>
+          </button>
+          <button
+            onClick={toggleRead}
+            aria-pressed={readAloud}
+            className={
+              "flex w-full items-center justify-between rounded-2xl border px-4 py-3 text-base " +
+              (readAloud ? "border-gold bg-blush-soft/50 text-espresso" : "hairline text-cocoa")
+            }
+          >
+            <span>🔊 Read aloud</span>
+            <span aria-hidden>{readAloud ? "On" : "Off"}</span>
           </button>
         </div>
       )}

@@ -157,7 +157,7 @@ export function MenuBoard() {
           variants={STAGGER.container}
           initial="initial"
           animate="animate"
-          className="grid grid-cols-2 gap-4 sm:gap-6 lg:grid-cols-3"
+          className="product-grid grid grid-cols-2 gap-4 sm:gap-6 lg:grid-cols-3"
         >
           {visible.map((p) => (
             <motion.div key={p.id} layout variants={STAGGER.item}>
