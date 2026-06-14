@@ -17,7 +17,7 @@ const FAQ: [string, string][] = [
   ],
   [
     "Do the dessert candles smell like the desserts?",
-    "They do — each candle is scented to match. Scent descriptions are on every product, and the Candle Bar lets you blend up to three.",
+    "They do — each candle is scented to match. Scent descriptions are on every product, and at the Candle Bar you can scent each part on its own — every wax layer, the whipped cream, the drizzle, and the toppings.",
   ],
   [
     "Can I really build my own?",

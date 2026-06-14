@@ -20,7 +20,8 @@ One codebase, three modes; installable PWA; local-first (works offline).
 ## Feature highlights
 
 - **The Candle Bar:** persistent live preview (semi-realistic, render-verified
-  SVG engine), multi-layer wax (+$ per layer), scent blending with ratios,
+  SVG engine), multi-layer wax (+$ per layer) with a scent per part (each wax
+  layer, the whip, the drizzle, and every topping),
   whipped top, zigzag drizzle, scatter/placed toppings, distinct vessels (jar,
   tin, dessert glass, wine), tap-a-part editing, name-on-vessel, **one-tap
   "Make one for me"**, reveal + auto-rendered shareable PNG card.

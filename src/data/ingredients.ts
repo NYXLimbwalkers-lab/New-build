@@ -87,7 +87,7 @@ export const TOPPINGS: Topping[] = [
 export const FINISHING_PRICES = {
   woodWick: 1.5,
   giftBox: 5,
-  scentBlend: 2, // adding a 2nd/3rd scent
+  scentBlend: 2, // each extra distinct fragrance used across the candle
   strongScent: 1.5,
   layer: 3, // each extra wax layer
 } as const;

@@ -7,7 +7,7 @@ import { CandleBar } from "@/features/builder/CandleBar";
 import { useDocumentTitle } from "@/lib/useTitle";
 
 export function BuilderPage() {
-  useDocumentTitle("The Candle Bar — build your own", "Design a custom dessert candle: vessel, layers, scent blend, whipped top, drizzle and toppings.");
+  useDocumentTitle("The Candle Bar — build your own", "Design a custom dessert candle: vessel, layered wax each with its own scent, whipped top, drizzle and toppings.");
   const [params] = useSearchParams();
   const from = params.get("from");
   const creationId = params.get("creation");
