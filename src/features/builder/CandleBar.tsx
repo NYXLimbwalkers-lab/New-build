@@ -50,7 +50,7 @@ export function CandleBar({
 }: {
   initial?: BuildConfig;
   /** Kiosk/party override for the add-to-cart completion (e.g. show a ticket). */
-  onComplete?: () => void;
+  onComplete?: (config: BuildConfig, price: number) => void;
 }) {
   const mode = useMode();
   const { setOpen } = useCartUI();
@@ -86,7 +86,7 @@ export function CandleBar({
     await saveBuild(config, price.total, mode);
     await addBuildToCart(config, price.total, mode);
     setReveal(false);
-    if (onComplete) onComplete();
+    if (onComplete) onComplete(config, price.total);
     else setOpen(true);
   }
 

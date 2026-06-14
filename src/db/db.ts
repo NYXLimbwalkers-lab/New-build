@@ -69,7 +69,21 @@ const db = new Dexie("delaja") as Dexie & {
   events: EntityTable<AnalyticsEvent, "id">;
   favorites: EntityTable<Favorite, "id">;
   userReviews: EntityTable<UserReview, "id">;
+  parties: EntityTable<PartySession, "id">;
 };
+
+export interface PartySession {
+  id: string;
+  hostName: string;
+  date: string;
+  location: string;
+  guests: number;
+  packageId: string;
+  perPerson: number;
+  deposit: number;
+  total: number;
+  createdAt: number;
+}
 
 db.version(1).stores({
   builds: "id, createdAt, mode",
@@ -93,6 +107,16 @@ db.version(3).stores({
   events: "id, at, type",
   favorites: "id, addedAt",
   userReviews: "id, productId, at",
+});
+
+db.version(4).stores({
+  builds: "id, createdAt, mode",
+  cart: "id, addedAt",
+  orders: "id, createdAt, synced",
+  events: "id, at, type",
+  favorites: "id, addedAt",
+  userReviews: "id, productId, at",
+  parties: "id, createdAt",
 });
 
 export { db };
