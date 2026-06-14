@@ -30,6 +30,8 @@ export interface ContactInfo {
   name: string;
   email?: string;
   phone?: string;
+  /** Shipping address (only when fulfillment === "ship"). */
+  address?: string;
 }
 
 // TODO(Phase 3): queued offline kiosk orders that sync when back online.

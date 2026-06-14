@@ -89,6 +89,11 @@ function Orders() {
               )}
             </p>
           )}
+          {o.contact?.address && (
+            <p className="mt-0.5 whitespace-pre-line text-xs text-muted">
+              {o.contact.address}
+            </p>
+          )}
           <div className="mt-1 flex flex-wrap gap-x-4 text-xs text-muted">
             {o.fulfillment && <span>{o.fulfillment === "ship" ? "Ship" : "Pickup"}</span>}
             {o.gift && <span>🎁 Gift{o.gift.recipient ? ` for ${o.gift.recipient}` : ""}</span>}

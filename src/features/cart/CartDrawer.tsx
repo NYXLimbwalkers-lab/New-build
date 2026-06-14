@@ -40,6 +40,7 @@ export function CartDrawer() {
   const [fulfillment, setFulfillment] = useState<"ship" | "pickup">("ship");
   const [name, setName] = useState("");
   const [contact, setContact] = useState("");
+  const [address, setAddress] = useState("");
   const [placed, setPlaced] = useState(false);
   const [orderNo, setOrderNo] = useState("");
   const [earnedPts, setEarnedPts] = useState(0);
@@ -60,7 +61,11 @@ export function CartDrawer() {
 
   const isEmail = /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(contact.trim());
   const isPhone = contact.replace(/\D/g, "").length >= 10;
-  const canCheckout = name.trim().length > 1 && (isEmail || isPhone);
+  const needsAddress = fulfillment === "ship";
+  const canCheckout =
+    name.trim().length > 1 &&
+    (isEmail || isPhone) &&
+    (!needsAddress || address.trim().length > 8);
 
   async function checkout() {
     if (!canCheckout) return;
@@ -78,6 +83,7 @@ export function CartDrawer() {
         name: name.trim(),
         email: isEmail ? contact.trim() : undefined,
         phone: isPhone ? contact.trim() : undefined,
+        address: needsAddress ? address.trim() : undefined,
       },
     });
     logEvent("checkout", { total, items: cart.count, gift: isGift, fulfillment }, "storefront");
@@ -319,6 +325,17 @@ export function CartDrawer() {
                       </button>
                     ))}
                   </div>
+
+                  {needsAddress && (
+                    <textarea
+                      value={address}
+                      onChange={(e) => setAddress(e.target.value)}
+                      placeholder="Shipping address — street, city, state, ZIP"
+                      autoComplete="shipping street-address"
+                      rows={3}
+                      className="mt-2 w-full resize-none rounded-2xl border hairline bg-porcelain px-3 py-2 text-sm text-cocoa outline-none focus:border-gold"
+                    />
+                  )}
 
                   <CrossSell inCart={cart.items.map((i) => i.refId)} />
                 </div>
