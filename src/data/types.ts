@@ -1,0 +1,155 @@
+/*
+  Domain types for DéLa Já — The Candle Patisserie.
+  Every dessert candle = a stack of swappable parts (the "recipe spine"):
+    vessel → base wax + color → scent → whipped topping → drizzle → toppings → finishing
+  These types are shared by the menu, the Candle Bar builder, the preview engine,
+  and the (stubbed) commerce adapters.
+*/
+
+export type ScentFamily =
+  | "Dessert"
+  | "Bakery"
+  | "Fruity"
+  | "Fresh"
+  | "Woody"
+  | "Boozy";
+
+export type CategoryId =
+  | "dessert"
+  | "bakery"
+  | "fruity"
+  | "boozy"
+  | "floral"
+  | "seasonal"
+  | "wax-melts"
+  | "body-care"
+  | "accessories";
+
+export interface Category {
+  id: CategoryId;
+  name: string;
+  blurb: string;
+}
+
+export interface Product {
+  id: string;
+  name: string;
+  size: string; // e.g. "14 oz" or "—"
+  price: number; // USD
+  category: CategoryId;
+  scentFamily: ScentFamily;
+  looksLike: string;
+  smellsLike: string;
+  notes: string;
+  /** Hero image — remote source URL from her site (Appendix A). */
+  image?: string;
+  badges?: ("bestseller" | "new" | "staff-pick" | "seasonal")[];
+  /** Month numbers (1-12) this item should be surfaced on the seasonal rail. */
+  seasonalMonths?: number[];
+  /** Optional starting build so "Start from a Favorite" can load it into the Bar. */
+  recipe?: Partial<BuildConfig>;
+}
+
+/* ── Ingredient library ───────────────────────────────────────────────── */
+
+export type IngredientKind =
+  | "vessel"
+  | "wax"
+  | "whip"
+  | "drizzle"
+  | "topping";
+
+export interface Vessel {
+  id: string;
+  name: string;
+  /** "wine" + gel-only path; "jar"/"tin"/"dessert" take soy wax. */
+  shape: "jar" | "wine" | "tin" | "dessert";
+  /** Whether this vessel uses gel wax (the "drink" path). */
+  gel: boolean;
+  price: number; // base price for a build in this vessel
+  /** Soft cap on number of toppings this vessel can hold elegantly. */
+  toppingCap: number;
+}
+
+export interface WaxColor {
+  id: string;
+  name: string;
+  /** Display tint for the poured wax fill. */
+  hex: string;
+  /** Restrict to gel vessels if true (drink colors). */
+  gelOnly?: boolean;
+}
+
+export interface Scent {
+  id: string;
+  name: string;
+  family: ScentFamily;
+}
+
+export interface WhipColor {
+  id: string;
+  name: string;
+  hex: string;
+}
+
+export interface Drizzle {
+  id: string;
+  name: string;
+  hex: string;
+}
+
+export interface Topping {
+  id: string;
+  name: string;
+  /** Primary color used by the SVG/PNG layer. */
+  hex: string;
+  price: number;
+  /** Relative "weight" toward the vessel's soft topping cap. */
+  weight: number;
+}
+
+export type WickType = "cotton" | "wood";
+export type ScentStrength = "light" | "medium" | "strong";
+
+/* ── A complete build ─────────────────────────────────────────────────── */
+
+export interface ScentSelection {
+  scentId: string;
+  /** 0-100 ratio share when blending. Single scent = 100. */
+  ratio: number;
+}
+
+export interface BuildConfig {
+  vesselId: string;
+  waxColorId: string;
+  scents: ScentSelection[]; // 1-3 blended scents
+  strength: ScentStrength;
+  whipId: string | null;
+  drizzleId: string | null;
+  toppingIds: string[];
+  name: string;
+  wick: WickType;
+  giftBox: boolean;
+}
+
+export interface PricedAddon {
+  label: string;
+  amount: number;
+}
+
+export interface PriceBreakdown {
+  base: number;
+  addons: PricedAddon[];
+  total: number;
+}
+
+/** A build the customer named & saved (persisted to IndexedDB). */
+export interface SavedBuild {
+  id: string;
+  name: string;
+  config: BuildConfig;
+  price: number;
+  createdAt: number;
+  /** Where it was made — for analytics (AOV by mode). */
+  mode: "storefront" | "kiosk" | "party";
+}
