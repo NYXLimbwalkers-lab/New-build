@@ -88,24 +88,26 @@ export function Header() {
 
           <button
             onClick={() => setSearchOpen(true)}
-            className="rounded-full p-2 text-cocoa hover:bg-canvas-deep"
+            className="flex min-h-[44px] items-center gap-1.5 rounded-full px-3 py-2 text-cocoa hover:bg-canvas-deep"
             aria-label="Search"
           >
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.4" aria-hidden>
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" aria-hidden>
               <circle cx="11" cy="11" r="7" />
               <path d="m20 20-3-3" strokeLinecap="round" />
             </svg>
+            <span className="hidden text-sm sm:inline">Search</span>
           </button>
 
           <button
             onClick={() => setOpen(true)}
-            className="relative ml-1 rounded-full p-2 text-cocoa hover:bg-canvas-deep"
+            className="relative ml-1 flex min-h-[44px] items-center gap-1.5 rounded-full px-3 py-2 text-cocoa hover:bg-canvas-deep"
             aria-label={`Open bag${count ? `, ${count} items` : ""}`}
           >
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.4" aria-hidden>
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" aria-hidden>
               <path d="M6 8h12l-1 12H7L6 8z" strokeLinejoin="round" />
               <path d="M9 8a3 3 0 0 1 6 0" strokeLinecap="round" />
             </svg>
+            <span className="hidden text-sm sm:inline">Bag</span>
             <AnimatePresence>
               {count > 0 && (
                 <motion.span

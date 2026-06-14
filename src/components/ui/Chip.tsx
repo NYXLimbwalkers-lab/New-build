@@ -18,7 +18,7 @@ export function Chip({ active, disabled, onClick, children, className }: ChipPro
       whileTap={disabled ? undefined : { scale: 0.95 }}
       transition={{ type: "spring", stiffness: 400, damping: 25 }}
       className={cn(
-        "rounded-full px-4 py-2 text-xs tracking-[0.12em] uppercase border transition-colors",
+        "min-h-[40px] rounded-full px-4 py-2 text-sm tracking-[0.1em] uppercase border transition-colors",
         "disabled:opacity-35 disabled:cursor-not-allowed",
         active
           ? "bg-cocoa text-canvas border-transparent"

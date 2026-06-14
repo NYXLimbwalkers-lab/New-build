@@ -82,7 +82,7 @@
     color: var(--color-cocoa);
     font-family: var(--font-sans);
     font-weight: 300;
-    font-size: 1.0625rem; /* 17px — premium, readable body (research: 16 floor / 18 ideal) */
+    font-size: 1.125rem; /* 18px — readable for all ages (research: 18 ideal) */
     line-height: 1.6;
     -webkit-font-smoothing: antialiased;
     text-rendering: optimizeLegibility;
@@ -172,6 +172,33 @@
   .shimmer:hover::after {
     transform: translateX(120%);
   }
+}
+
+/*
+  ─── ACCESSIBILITY MODES (toggled via the Aa button) ─────────────────────
+  Bigger Text scales every rem-based size; High Contrast darkens text/borders
+  and removes muted grays — critical for children & elderly / low-vision users.
+*/
+html.a11y-big {
+  font-size: 120%;
+}
+html.a11y-contrast {
+  --color-cocoa: #2a1f1d;
+  --color-muted: #5a4843;
+  --color-plum: #43232f;
+  --color-rose: #b9555f;
+}
+html.a11y-contrast .hairline {
+  border-color: color-mix(in srgb, var(--color-gold) 85%, transparent);
+}
+html.a11y-contrast .label-caps {
+  color: #5a4843;
+}
+/* Comfortable minimum tap targets for primary controls. */
+button,
+[role="button"],
+a {
+  touch-action: manipulation;
 }
 
 /* Honor reduced-motion everywhere — non-negotiable. */
