@@ -2,7 +2,9 @@ import { motion } from "motion/react";
 import { useState } from "react";
 import type { Product } from "@/data/types";
 import { formatUSD } from "@/data/build";
+import { getRating } from "@/data/reviews";
 import { ProductMedia } from "./ProductMedia";
+import { RatingStars } from "@/components/ui/RatingStars";
 import { SPRING } from "@/lib/motionPresets";
 import { useMagnetic } from "@/lib/useMagnetic";
 import { cn } from "@/lib/cn";
@@ -77,6 +79,15 @@ export function ProductCard({
         <h3 className="font-display text-lg leading-snug text-espresso">
           {product.name}
         </h3>
+        {(() => {
+          const rating = getRating(product.id);
+          return rating ? (
+            <span className="mt-0.5 flex items-center gap-1.5">
+              <RatingStars value={rating.avg} size={12} />
+              <span className="text-[0.65rem] text-muted">({rating.count})</span>
+            </span>
+          ) : null;
+        })()}
         <p className="text-xs text-muted">{product.smellsLike}</p>
         <div className="mt-2 flex items-center justify-between">
           <span className="label-caps !tracking-[0.2em]">{product.size}</span>

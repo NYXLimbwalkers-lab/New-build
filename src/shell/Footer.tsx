@@ -1,3 +1,5 @@
+import { TrustBadges } from "@/components/TrustBadges";
+
 /*
   Brand-soul footer — said with warmth and grace (deep plan, Part 5):
   veteran-founded, mom-owned, hand-poured, small-batch, made-to-order.
@@ -6,6 +8,7 @@ export function Footer() {
   return (
     <footer className="mt-24 border-t hairline bg-porcelain/40">
       <div className="mx-auto max-w-6xl px-6 py-14 text-center">
+        <TrustBadges compact className="mb-10" />
         <div className="mb-4 flex items-center justify-center gap-3">
           <span className="h-px w-10 bg-gold/50" />
           <span className="font-display text-xl text-espresso">DéLa Já</span>
