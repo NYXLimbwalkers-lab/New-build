@@ -7,6 +7,7 @@ import {
 } from "react";
 import { AnimatePresence, motion } from "motion/react";
 import { subscribeToast } from "./toast";
+import { InstallPrompt } from "./InstallPrompt";
 
 /*
   Accessibility preferences — Bigger Text + High Contrast — persisted and applied
@@ -64,6 +65,7 @@ export function A11yProvider({ children }: { children: ReactNode }) {
       {children}
       <A11yFab />
       <Toaster />
+      <InstallPrompt />
     </Ctx.Provider>
   );
 }
