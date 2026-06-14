@@ -268,7 +268,9 @@ function RecipeSummary({ config }: { config: BuildConfig }) {
   const drink = isDrinkBuild(config);
   const parts = [
     VESSEL_BY_ID[config.vesselId]?.name.split(" · ")[0],
-    WAX_BY_ID[config.waxColorId]?.name,
+    config.extraLayers.length
+      ? `${config.extraLayers.length + 1} wax layers`
+      : WAX_BY_ID[config.waxColorId]?.name,
     config.scents.map((s) => SCENT_BY_ID[s.scentId]?.name).filter(Boolean).join(" + "),
     !drink && config.whipId ? WHIP_BY_ID[config.whipId]?.name : null,
     !drink && config.drizzleId ? `${DRIZZLE_BY_ID[config.drizzleId]?.name} drizzle` : null,

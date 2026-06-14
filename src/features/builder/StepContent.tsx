@@ -1,11 +1,14 @@
 import { motion } from "motion/react";
+import { useState } from "react";
 import type { BuildConfig, ScentStrength } from "@/data/types";
 import {
   DRIZZLES,
+  MAX_LAYERS,
   SCENTS,
   SCENT_FAMILIES,
   TOPPINGS,
   VESSELS,
+  WAX_BY_ID,
   WHIP_COLORS,
 } from "@/data/ingredients";
 import { toppingLoad, validWaxColors } from "@/data/build";
@@ -83,16 +86,96 @@ function VesselStep({ config, update }: StepProps) {
 
 function WaxStep({ config, update }: StepProps) {
   const colors = validWaxColors(config.vesselId);
+  const layers = [config.waxColorId, ...config.extraLayers]; // [bottom...top]
+  const [sel, setSel] = useState(0);
+  const cur = Math.min(sel, layers.length - 1);
+  const canAdd = layers.length < MAX_LAYERS;
+
+  function setLayerColor(id: string) {
+    if (cur === 0) update({ waxColorId: id });
+    else {
+      const e = [...config.extraLayers];
+      e[cur - 1] = id;
+      update({ extraLayers: e });
+    }
+  }
+  function addLayer() {
+    update({ extraLayers: [...config.extraLayers, config.waxColorId] });
+    setSel(layers.length); // select the new top layer
+  }
+  function removeLayer(i: number) {
+    const e = [...config.extraLayers];
+    e.splice(i - 1, 1);
+    update({ extraLayers: e });
+    setSel(0);
+  }
+
+  const layerName = (i: number) =>
+    i === 0 ? "Base" : i === layers.length - 1 ? "Top" : `Layer ${i + 1}`;
+
   return (
     <div>
-      <StepHeading title="Pour the wax" hint="Tint the base — the photos bring the warmth." />
+      <StepHeading
+        title="Pour the wax"
+        hint={
+          layers.length > 1
+            ? "Tap a layer, then pick its color — stacked like a parfait."
+            : "Tint the base, or add layers for a parfait look."
+        }
+      />
+
+      {/* layer selector (top shown first) */}
+      <div className="mb-4 flex flex-wrap items-center gap-2">
+        {layers
+          .map((id, i) => ({ id, i }))
+          .reverse()
+          .map(({ id, i }) => (
+            <button
+              key={i}
+              type="button"
+              onClick={() => setSel(i)}
+              className={cn(
+                "flex items-center gap-2 rounded-full border py-1.5 pl-2 pr-3 text-xs transition-colors",
+                cur === i ? "border-gold bg-blush-soft/50" : "hairline bg-porcelain/60",
+              )}
+            >
+              <span className="h-4 w-4 rounded-full border border-white/60" style={{ background: WAX_BY_ID[id]?.hex }} />
+              {layerName(i)}
+              {i > 0 && (
+                <span
+                  role="button"
+                  aria-label={`Remove ${layerName(i)}`}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    removeLayer(i);
+                  }}
+                  className="ml-0.5 text-muted hover:text-rose"
+                >
+                  ✕
+                </span>
+              )}
+            </button>
+          ))}
+        {canAdd && (
+          <button
+            type="button"
+            onClick={addLayer}
+            className="rounded-full border border-dashed hairline px-3 py-1.5 text-xs text-cocoa hover:bg-porcelain"
+          >
+            + Add layer{" "}
+            <span className="text-muted">+$3</span>
+          </button>
+        )}
+      </div>
+
+      {/* color grid for the selected layer */}
       <div className="grid grid-cols-3 gap-3">
         {colors.map((w) => (
           <SelectTile
             key={w.id}
             groupId="wax-sel"
-            selected={config.waxColorId === w.id}
-            onSelect={() => update({ waxColorId: w.id })}
+            selected={layers[cur] === w.id}
+            onSelect={() => setLayerColor(w.id)}
             ariaLabel={w.name}
           >
             <Swatch hex={w.hex} />

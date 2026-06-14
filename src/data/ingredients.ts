@@ -89,7 +89,10 @@ export const FINISHING_PRICES = {
   giftBox: 5,
   scentBlend: 2, // adding a 2nd/3rd scent
   strongScent: 1.5,
+  layer: 3, // each extra wax layer
 } as const;
+
+export const MAX_LAYERS = 4; // base + up to 3 extra
 
 /* Lookup maps */
 export const VESSEL_BY_ID = Object.fromEntries(VESSELS.map((v) => [v.id, v]));

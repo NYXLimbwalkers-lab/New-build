@@ -1,5 +1,6 @@
 import {
   FINISHING_PRICES,
+  MAX_LAYERS,
   TOPPING_BY_ID,
   VESSEL_BY_ID,
   VESSELS,
@@ -18,6 +19,7 @@ export function defaultBuild(): BuildConfig {
   return {
     vesselId: "jar-14",
     waxColorId: "cream",
+    extraLayers: [],
     scents: [{ scentId: "vanilla", ratio: 100 }],
     strength: "medium",
     whipId: "whip-vanilla",
@@ -47,6 +49,13 @@ export function priceBuild(config: BuildConfig): PriceBreakdown {
     addons.push({
       label: `Scent blend ×${extraScents}`,
       amount: extraScents * FINISHING_PRICES.scentBlend,
+    });
+  }
+
+  if (config.extraLayers.length > 0) {
+    addons.push({
+      label: `Wax layers ×${config.extraLayers.length}`,
+      amount: config.extraLayers.length * FINISHING_PRICES.layer,
     });
   }
 
@@ -115,10 +124,15 @@ export function reconcile(config: BuildConfig): BuildConfig {
   if (!valid.some((w) => w.id === next.waxColorId)) {
     next.waxColorId = valid[0]?.id ?? next.waxColorId;
   }
+  // keep only valid extra layers, capped (base + up to MAX_LAYERS-1)
+  next.extraLayers = (next.extraLayers ?? [])
+    .filter((id) => valid.some((w) => w.id === id))
+    .slice(0, MAX_LAYERS - 1);
   if (isDrinkBuild(next)) {
     next.whipId = null;
     next.drizzleId = null;
     next.toppingIds = [];
+    next.extraLayers = []; // a poured drink is a single fill
   }
   return next;
 }
@@ -158,6 +172,11 @@ export function surpriseBuild(): BuildConfig {
     toppingIds: [],
     name: "",
   };
+
+  // Sometimes a layered parfait (0-2 extra layers).
+  const layerColors = validWaxColors(vesselId);
+  const nLayers = Math.floor(Math.random() * 3);
+  config.extraLayers = Array.from({ length: nLayers }, () => pick(layerColors).id);
 
   // Add 1-3 random toppings within the cap.
   const allToppings = Object.keys(TOPPING_BY_ID);

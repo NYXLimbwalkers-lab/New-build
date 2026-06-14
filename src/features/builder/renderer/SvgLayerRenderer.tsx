@@ -29,11 +29,16 @@ import {
 */
 export function SvgLayerRenderer({ config, revealed, showcase, className }: RendererProps) {
   const vessel = VESSEL_BY_ID[config.vesselId];
-  const wax = WAX_BY_ID[config.waxColorId];
   const whip = config.whipId ? WHIP_BY_ID[config.whipId] : null;
   const drizzle = config.drizzleId ? DRIZZLE_BY_ID[config.drizzleId] : null;
   const drink = vessel?.gel ?? false;
-  const waxHex = wax?.hex ?? "#F0D9AE";
+  const layerHexes = useMemo(
+    () =>
+      [config.waxColorId, ...config.extraLayers].map(
+        (id) => WAX_BY_ID[id]?.hex ?? "#F0D9AE",
+      ),
+    [config.waxColorId, config.extraLayers],
+  );
 
   const toppings = useMemo(
     () =>
@@ -67,10 +72,10 @@ export function SvgLayerRenderer({ config, revealed, showcase, className }: Rend
         <SurfaceShadow />
 
         {drink ? (
-          <WineGlass waxHex={waxHex} />
+          <WineGlass waxHex={layerHexes[0]} />
         ) : (
           <>
-            <JarVessel waxHex={waxHex} tin={vessel?.shape === "tin"} />
+            <JarVessel layers={layerHexes} tin={vessel?.shape === "tin"} />
             <AnimatePresence mode="popLayout">
               {whip && <CreamSwirl key={`whip-${whip.id}`} hex={whip.hex} />}
             </AnimatePresence>

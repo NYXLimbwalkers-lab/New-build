@@ -121,7 +121,9 @@ export interface ScentSelection {
 
 export interface BuildConfig {
   vesselId: string;
-  waxColorId: string;
+  waxColorId: string; // base (bottom) wax layer
+  /** Extra wax layers poured ABOVE the base, bottom→top. Each +price. */
+  extraLayers: string[];
   scents: ScentSelection[]; // 1-3 blended scents
   strength: ScentStrength;
   whipId: string | null;

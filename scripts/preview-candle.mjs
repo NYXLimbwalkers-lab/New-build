@@ -115,6 +115,26 @@ function placed(id) {
   }
 }
 
+// Stacked wax layers (parfait look): layers[0] is the bottom pour.
+function waxLayers(layers) {
+  const top = 392, bottom = 632, span = bottom - top;
+  const bandH = span / layers.length;
+  let out = `<g clip-path="url(#waxclip)">`;
+  layers.forEach((hex, i) => {
+    const y = bottom - bandH * (i + 1);
+    out += `<rect x="168" y="${y}" width="264" height="${bandH + 1}" fill="${hex}"/>`;
+  });
+  // separation lines between layers + top sheen
+  for (let i = 1; i < layers.length; i++) {
+    const y = bottom - bandH * i;
+    out += `<rect x="168" y="${y - 2}" width="264" height="3" fill="#3A2C2A" opacity=".10"/>`;
+    out += `<rect x="168" y="${y - 4}" width="264" height="2" fill="#fff" opacity=".25"/>`;
+  }
+  out += `<rect x="168" y="392" width="264" height="26" fill="#fff" opacity=".22"/>`;
+  out += `</g>`;
+  return out;
+}
+
 export function candleSVG(opts = {}) {
   const {
     waxHex = "#F0D9AE",
@@ -139,9 +159,9 @@ export function candleSVG(opts = {}) {
   <rect width="600" height="740" fill="url(#bg)"/>
   <ellipse cx="300" cy="664" rx="170" ry="30" fill="#3A2C2A" opacity=".16"/>
   <g filter="url(#soft)"><path d="M171 350 L164 614 Q164 648 198 648 L402 648 Q436 648 436 614 L429 350 Z" fill="#ECE7E3" fill-opacity=".5"/></g>
-  <path d="M186 392 L180 612 Q180 632 200 632 L400 632 Q420 632 420 612 L414 392 Z" fill="${waxHex}"/>
+  <clipPath id="waxclip"><path d="M186 392 L180 612 Q180 632 200 632 L400 632 Q420 632 420 612 L414 392 Z"/></clipPath>
+  ${waxLayers(opts.layers || [waxHex])}
   <path d="M186 392 L180 612 Q180 632 200 632 L400 632 Q420 632 420 612 L414 392 Z" fill="url(#depth)"/>
-  <path d="M186 392 L414 392 L412 422 L188 422 Z" fill="#fff" opacity=".28"/>
   <path d="M171 350 L164 614 Q164 648 198 648 L402 648 Q436 648 436 614 L429 350 Z" fill="url(#glass)"/>
   <rect x="184" y="372" width="16" height="250" rx="8" fill="#fff" opacity=".5"/>
   <rect x="408" y="380" width="8" height="220" rx="4" fill="#fff" opacity=".22"/>
@@ -217,11 +237,11 @@ function board(list, label) {
   writeFileSync(new URL(`../${label}.png`, import.meta.url), new Resvg(svg, { fitTo: { mode: "width", value: 460 * list.length } }).render().asPng());
 }
 
-// Her real signature candles — render to check resemblance to the catalog.
+// Multi-layer wax test (parfait look).
 board([
-  { name: "Waffles & Ice Cream", waxHex: "#F4E4C9", whipHex: "#FBF3E4", drizzleId: "berry", toppingIds: ["waffle", "blueberry"] },
-  { name: "Toasted Mellow", waxHex: "#F4E4C9", whipHex: "#FBF3E4", hasDrizzle: false, toppingIds: ["marshmallow"] },
-  { name: "Choc. Strawberries", waxHex: "#F4E4C9", whipHex: "#FBF3E4", drizzleId: "chocolate", toppingIds: ["strawberry"] },
-  { name: "Maple Apple Crisp", waxHex: "#D9A86A", whipHex: "#FBF3E4", drizzleId: "caramel", toppingIds: ["crumble"] },
+  { name: "1 layer", layers: ["#F4E4C9"], whipHex: "#FBF3E4", drizzleId: "caramel", toppingIds: ["cherry"] },
+  { name: "2 layers", layers: ["#EBB7BE", "#F4E4C9"], whipHex: "#F4CAD2", drizzleId: "berry", toppingIds: ["strawberry"] },
+  { name: "3 layers", layers: ["#D9A86A", "#F1C79A", "#F4E4C9"], whipHex: "#FBF3E4", drizzleId: "chocolate", toppingIds: ["sprinkles"] },
+  { name: "4 layers", layers: ["#9C6B4F", "#EBB7BE", "#F1C79A", "#F4E4C9"], whipHex: "#FBF3E4", drizzleId: "caramel", toppingIds: ["cherry", "blueberry"] },
 ], "candle-preview");
 console.log("wrote candle-preview.png");

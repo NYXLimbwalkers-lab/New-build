@@ -46,6 +46,9 @@ export function GlowDefs() {
       <filter id="ctiny" x="-50%" y="-50%" width="200%" height="200%">
         <feDropShadow dx="0" dy="3" stdDeviation="3" floodColor="#3A2C2A" floodOpacity=".3" />
       </filter>
+      <clipPath id="cwaxclip">
+        <path d={JAR_WAX} />
+      </clipPath>
     </defs>
   );
 }
@@ -58,32 +61,54 @@ export function SurfaceShadow() {
 const JAR_GLASS = "M171 350 L164 614 Q164 648 198 648 L402 648 Q436 648 436 614 L429 350 Z";
 const JAR_WAX = "M186 392 L180 612 Q180 632 200 632 L400 632 Q420 632 420 612 L414 392 Z";
 
-export function JarVessel({ waxHex, tin }: { waxHex: string; tin?: boolean }) {
+/** Stacked wax layers (parfait look). layers[0] = bottom pour. */
+function WaxBands({ layers }: { layers: string[] }) {
+  const top = 392, bottom = 632, span = bottom - top;
+  const bandH = span / layers.length;
+  return (
+    <g clipPath="url(#cwaxclip)">
+      {layers.map((hex, i) => (
+        <rect key={i} x="168" y={bottom - bandH * (i + 1)} width="264" height={bandH + 1} fill={hex} />
+      ))}
+      {layers.slice(1).map((_, idx) => {
+        const y = bottom - bandH * (idx + 1);
+        return (
+          <g key={`sep${idx}`}>
+            <rect x="168" y={y - 2} width="264" height="3" fill="#3A2C2A" opacity=".10" />
+            <rect x="168" y={y - 4} width="264" height="2" fill="#fff" opacity=".25" />
+          </g>
+        );
+      })}
+      <rect x="168" y="392" width="264" height="26" fill="#fff" opacity=".22" />
+    </g>
+  );
+}
+
+export function JarVessel({ layers, tin }: { layers: string[]; tin?: boolean }) {
+  const topColor = layers[layers.length - 1];
   return (
     <g>
       <g filter="url(#csoft)">
         <path d={JAR_GLASS} fill={tin ? "#E6DFD6" : "#ECE7E3"} fillOpacity={tin ? 0.95 : 0.5} />
       </g>
-      {/* animated wax pour (clipped to the inset wax shape) */}
+      {/* animated wax pour */}
       <motion.g
         initial={{ scaleY: 0, opacity: 0.5 }}
         animate={{ scaleY: 1, opacity: 1 }}
         transition={SPRING.pour}
         style={{ transformOrigin: "300px 632px" }}
       >
-        <path d={JAR_WAX} fill={waxHex} />
+        <WaxBands layers={layers} />
         <path d={JAR_WAX} fill="url(#cdepth)" />
-        <path d="M186 392 L414 392 L412 422 L188 422 Z" fill="#fff" opacity=".28" />
       </motion.g>
       {/* glass tint + highlights over the wax */}
       {!tin && <path d={JAR_GLASS} fill="url(#cglass)" />}
       <rect x="184" y="372" width="16" height="250" rx="8" fill="#fff" opacity={tin ? 0.3 : 0.5} />
       <rect x="408" y="380" width="8" height="220" rx="4" fill="#fff" opacity=".22" />
-      {/* inner bottom shadow for depth */}
       <ellipse cx="300" cy="628" rx="118" ry="18" fill="#3A2C2A" opacity=".10" />
-      {/* rim */}
+      {/* rim (top layer color shows at the mouth) */}
       <ellipse cx="300" cy="350" rx="129" ry="20" fill={tin ? "#D8CFC4" : "#E7E0DB"} stroke="#D2C8C1" strokeWidth="2" />
-      <ellipse cx="300" cy="350" rx="118" ry="14" fill={waxHex} fillOpacity=".5" />
+      <ellipse cx="300" cy="350" rx="118" ry="14" fill={topColor} fillOpacity=".5" />
     </g>
   );
 }
