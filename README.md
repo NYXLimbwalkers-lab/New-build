@@ -1,34 +1,44 @@
 # DéLa Já — The Candle Patisserie
 
 A premium, buttery-smooth web app for **DéLa Já Candles & Wax Melts** (Great
-Falls, SC — veteran-founded, mom-owned, hand-poured). Customers pick a candle off
-a gorgeous dessert-case menu, or step up to **The Candle Bar** and build their own
-— whipped, drizzled and finished in front of them with a live preview.
+Falls, SC — veteran-founded, mom-owned, hand-poured). Customers shop a dessert-
+case menu or build their own candle at **The Candle Bar**, with a live preview.
+One codebase, three modes; installable PWA; local-first (works offline).
 
-One codebase, three modes:
+## Routes / modes
 
-| Route            | Mode       | Status |
-| ---------------- | ---------- | ------ |
-| `/`              | Storefront | ✅ Phase 0–1 |
-| `/build`         | The Candle Bar | ✅ Phase 1 |
-| `/kiosk`         | In-store touch display | 🟡 Phase 3 scaffold (attract loop + auto-reset live) |
-| `/party/:id`     | RV mobile party | 🟡 Phase 4 scaffold |
+| Route          | Purpose |
+| -------------- | ------- |
+| `/`            | Storefront (menu, bundles, scent quiz, search, reviews) |
+| `/build`       | The Candle Bar (live builder) — `?from=<product>` / `?creation=<id>` |
+| `/creations`   | Saved builds — reorder & edit; Candle Club points |
+| `/about`       | Brand story |
+| `/admin`       | Owner dashboard — orders, analytics, no-code catalog editing |
+| `/kiosk`       | Locked in-store kiosk (fullscreen, wake-lock, attract, order ticket) |
+| `/party/:id`   | Mobile candle party — host books + QR; guests build + Make&Take card |
+
+## Feature highlights
+
+- **The Candle Bar:** persistent live preview (semi-realistic, render-verified
+  SVG engine), multi-layer wax (+$ per layer), scent blending with ratios,
+  whipped top, zigzag drizzle, scatter/placed toppings, distinct vessels (jar,
+  tin, dessert glass, wine), tap-a-part editing, name-on-vessel, **one-tap
+  "Make one for me"**, reveal + auto-rendered shareable PNG card.
+- **Shop:** category + scent filters, sort, seasonal rail, wishlist (♥),
+  customer reviews + ratings, Sets & Bundles, search with deep links.
+- **Cart & checkout:** slide-out cart, free-shipping bar, gifting (recipient,
+  message, wrap, gift receipt), ship/pickup, order number, **Candle Club** points.
+- **Accessibility:** "Aa" panel — Bigger Text, High Contrast, Read Aloud;
+  18px base, large tap targets, labeled controls, skip-link, reduced-motion.
+- **PWA:** installable, offline, "Install app" prompt.
+- **SEO:** per-route titles + meta, Open Graph, Product JSON-LD.
 
 ## Stack
 
-Vite · React 19 · TypeScript · Tailwind v4 · **Motion** (motion.dev) · **Lenis**
-smooth scroll · Dexie/IndexedDB (local-first) · installable PWA.
-
-## The "continuous canvas" UX
-
-Built so you never notice a page switch (see `docs/UX-ARCHITECTURE.md`):
-
-- **Persistent shell** (`src/shell/RootLayout.tsx`) mounts once; only content transitions.
-- **Lenis smooth scroll** driven by Motion's single `frame` loop (one RAF, no jitter).
-- **View Transitions API** for route crossfade/slide + shared product-image morph,
-  with a Motion `AnimatePresence` fallback for older browsers.
-- **Persistent builder Stage** outside `AnimatePresence`; steps swipe beneath it.
-- Physics springs throughout, GPU transform/opacity only, full `prefers-reduced-motion`.
+Vite · React 19 · TypeScript · Tailwind v4 · **Motion** · **Lenis** · Dexie/
+IndexedDB · `qrcode` · `@resvg/resvg-js` (dev render rig). Code-split routes,
+vendor chunking. See `docs/UX-ARCHITECTURE.md`, `docs/ASSETS.md`,
+`docs/ROADMAP.md`, `docs/AUDIT-AND-NEXT.md`.
 
 ## Run
 
@@ -39,42 +49,26 @@ npm run build      # typecheck + production build (PWA)
 npm run preview
 ```
 
-## Her real photos (asset pipeline)
+Live preview auto-deploys to GitHub Pages on push (`.github/workflows`).
 
-The app uses **her real catalog and photography** — see `docs/ASSETS.md`.
+## Going live — the two things that need you
 
-1. Add her domains to this environment's network egress allowlist
-   (`delajacandles.com`, `i0.wp.com`, `b4130177.smushcdn.com`).
-2. `node scripts/fetch-assets.mjs` — crawls her shop + downloads every photo.
-3. Build the transparent-PNG **layer library** (`public/layers/`) + `manifest.json`.
-   The live preview then composites her real photos; until then a vector candle
-   stands in. The renderer is swappable (`src/features/builder/renderer/`).
+Everything is built behind clean seams; these two need real credentials/access:
 
-## How to add things
+1. **Her real photos** → add her domains to the environment's network egress
+   allowlist (`delajacandles.com`, `i0.wp.com`, `b4130177.smushcdn.com`), run
+   `node scripts/fetch-assets.mjs`, then build the transparent-PNG layer library
+   (`docs/ASSETS.md`). The preview renderer swaps from vector to real photos
+   automatically. AI cut/relight pipeline target: `generativelanguage.googleapis.com`
+   (Gemini "Nano Banana") + `sdk.photoroom.com` (cutouts).
+2. **Payments / real checkout** → Square or WooCommerce credentials. Checkout
+   already records real orders; wire the payment call in the commerce adapter.
 
-**A new ingredient layer** — add it to `src/data/ingredients.ts` (id, name, price,
-color), drop its transparent PNG in `public/layers/<kind>/<id>.webp`, and add the
-`manifest.json` entry. It appears in the builder and composites live.
+## Add a product / ingredient
 
-**A new menu item** — add it to `src/data/products.ts` with her real name/size/
-price, set `image` to a real photo, and optionally a `recipe` so "Start from a
-Favorite" loads it into the bar.
-
-## Project layout
-
-```
-src/
-  data/         real catalog, ingredient library, pricing + build rules
-  db/           Dexie (saved builds, cart, offline queue, analytics)
-  lib/          smooth scroll, motion presets, magnetic hook, haptics, helpers
-  components/ui base components (Button, Card, Chip, Sheet, PricePill, SelectTile)
-  shell/        persistent app shell (header, footer, transition outlet)
-  features/
-    menu/       dessert-case menu board, cards, detail, seasonal rail, hero
-    builder/    The Candle Bar + swappable preview renderer
-  routes/       Storefront, Builder, Kiosk, Party
-scripts/        asset crawler
-docs/           ASSETS.md, UX-ARCHITECTURE.md
-```
+- **Product:** add to `src/data/products.ts` (name, size, price, scent family,
+  `image`, optional `recipe` for "Start from a Favorite").
+- **Ingredient layer:** add to `src/data/ingredients.ts`, drop a transparent PNG
+  in `public/layers/<kind>/<id>.webp`, add the `manifest.json` entry.
 
 Made with warmth for a small-batch, made-to-order candle maker.
