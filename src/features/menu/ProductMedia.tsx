@@ -19,19 +19,25 @@ export function ProductMedia({
   active?: boolean;
 }) {
   const [broken, setBroken] = useState(false);
+  const [loaded, setLoaded] = useState(false);
 
   if (product.image && !broken) {
     return (
       <div className="relative h-full w-full overflow-hidden">
+        {/* calm shimmer skeleton until the photo decodes (perceived speed) */}
+        {!loaded && (
+          <div className="absolute inset-0 animate-pulse bg-gradient-to-br from-canvas-deep to-blush-soft/40" />
+        )}
         <motion.img
           src={product.image}
           alt={product.name}
           loading="lazy"
           decoding="async"
           onError={() => setBroken(true)}
+          onLoad={() => setLoaded(true)}
           className="h-full w-full object-cover"
           initial={false}
-          animate={{ scale: active ? 1.06 : 1 }}
+          animate={{ scale: active ? 1.06 : 1, opacity: loaded ? 1 : 0 }}
           transition={{ type: "spring", stiffness: 120, damping: 26 }}
           draggable={false}
         />

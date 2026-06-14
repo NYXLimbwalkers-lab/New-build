@@ -106,6 +106,16 @@ function WaxStep({ config, update }: StepProps) {
 
 const STRENGTHS: ScentStrength[] = ["light", "medium", "strong"];
 
+/* Color-coded scent families — makes the invisible legible & premium. */
+const FAMILY_META: Record<string, { hex: string; note: string }> = {
+  Dessert: { hex: "#D99FA6", note: "sweet, whipped, indulgent" },
+  Bakery: { hex: "#C89B62", note: "warm, fresh-baked" },
+  Fruity: { hex: "#E0904B", note: "bright & juicy" },
+  Fresh: { hex: "#9CC3B0", note: "clean & airy" },
+  Woody: { hex: "#8A5A33", note: "smooth & grounding" },
+  Boozy: { hex: "#7A1F3D", note: "bold & spirited" },
+};
+
 function ScentStep({ config, update }: StepProps) {
   const selected = config.scents.map((s) => s.scentId);
 
@@ -139,9 +149,22 @@ function ScentStep({ config, update }: StepProps) {
       {SCENT_FAMILIES.map((fam) => {
         const inFam = SCENTS.filter((s) => s.family === fam);
         if (inFam.length === 0) return null;
+        const meta = FAMILY_META[fam];
         return (
           <div key={fam} className="mb-4">
-            <span className="label-caps">{fam}</span>
+            <div className="flex items-baseline gap-2">
+              <span
+                className="inline-block h-2.5 w-2.5 shrink-0 translate-y-0.5 rounded-full"
+                style={{ background: meta?.hex }}
+                aria-hidden
+              />
+              <span className="label-caps">{fam}</span>
+              {meta && (
+                <span className="text-[0.65rem] lowercase tracking-normal text-muted">
+                  · {meta.note}
+                </span>
+              )}
+            </div>
             <div className="mt-2 flex flex-wrap gap-2">
               {inFam.map((s) => (
                 <Chip

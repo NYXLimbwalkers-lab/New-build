@@ -6,6 +6,8 @@ import { Sheet } from "@/components/ui/Sheet";
 import { Button } from "@/components/ui/Button";
 import { CandleRenderer } from "./renderer";
 import { buildShareCard, shareOrDownload } from "@/lib/shareCard";
+import { addProductToCart } from "@/features/cart/cart";
+import { PRODUCT_BY_ID } from "@/data/products";
 
 /*
   The reveal moment — wick lights, glow blooms, shimmer sweeps — then a
@@ -27,6 +29,8 @@ export function RevealCard({
   const name = config.name.trim() || "Your Creation";
   const stageRef = useRef<HTMLDivElement>(null);
   const [sharing, setSharing] = useState(false);
+  const [addedPair, setAddedPair] = useState(false);
+  const pair = PRODUCT_BY_ID["banana-pudding"]; // matching scoopable wax melt
 
   async function share() {
     setSharing(true);
@@ -78,7 +82,27 @@ export function RevealCard({
           </p>
         </motion.div>
 
-        <div className="mx-auto mt-6 flex max-w-xs flex-col gap-3">
+        {/* gentle "complete the set" at the conversion moment */}
+        {pair && (
+          <div className="mx-auto mt-5 flex max-w-xs items-center gap-3 rounded-2xl border hairline bg-porcelain/60 p-3 text-left">
+            <span className="flex-1 text-sm text-cocoa">
+              Pairs beautifully with a{" "}
+              <span className="text-espresso">{pair.name}</span> wax melt
+            </span>
+            <button
+              onClick={() => {
+                addProductToCart(pair);
+                setAddedPair(true);
+              }}
+              disabled={addedPair}
+              className="shrink-0 rounded-full bg-cocoa px-3 py-1.5 text-[0.65rem] uppercase tracking-[0.14em] text-canvas hover:bg-espresso disabled:opacity-50"
+            >
+              {addedPair ? "Added ✓" : `Add ${formatUSD(pair.price)}`}
+            </button>
+          </div>
+        )}
+
+        <div className="mx-auto mt-5 flex max-w-xs flex-col gap-3">
           <Button variant="primary" size="lg" onClick={onAddToCart}>
             Add to Cart · {formatUSD(price)}
           </Button>
