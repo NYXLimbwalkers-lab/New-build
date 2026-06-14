@@ -32,7 +32,7 @@
   --color-cocoa: #3a2c2a;
   --color-espresso: #2a1f1d;
   --color-plum: #5b3a4a;
-  --color-muted: #8a7470;
+  --color-muted: #79635b; /* warm taupe, ~4.5:1 on the canvas for everyone */
 
   /* Rare jewel pops — boozy / seasonal only, like an accent earring. */
   --color-garnet: #7a1f3d;

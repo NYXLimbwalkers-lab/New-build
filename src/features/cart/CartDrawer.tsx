@@ -184,18 +184,18 @@ export function CartDrawer() {
                               : "From the case"}
                         </span>
                         <div className="mt-auto flex items-center gap-3">
-                          <div className="flex items-center gap-2 rounded-full border hairline px-2 py-0.5">
+                          <div className="flex items-center gap-1 rounded-full border hairline">
                             <button
                               onClick={() => setQty(item.id, item.qty - 1)}
-                              className="px-1 text-cocoa"
+                              className="flex h-9 w-9 items-center justify-center text-xl leading-none text-cocoa"
                               aria-label="Decrease quantity"
                             >
                               −
                             </button>
-                            <span className="min-w-4 text-center text-sm">{item.qty}</span>
+                            <span className="min-w-6 text-center text-base">{item.qty}</span>
                             <button
                               onClick={() => setQty(item.id, item.qty + 1)}
-                              className="px-1 text-cocoa"
+                              className="flex h-9 w-9 items-center justify-center text-xl leading-none text-cocoa"
                               aria-label="Increase quantity"
                             >
                               +

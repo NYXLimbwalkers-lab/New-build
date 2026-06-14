@@ -66,7 +66,7 @@ export function Header() {
               viewTransition
               className={({ isActive }) =>
                 cn(
-                  "relative rounded-full px-3 py-2 text-xs uppercase tracking-[0.18em] transition-colors sm:px-4",
+                  "relative min-h-[44px] rounded-full px-3 py-2.5 text-sm uppercase tracking-[0.14em] transition-colors sm:px-4",
                   isActive ? "text-espresso" : "text-muted hover:text-cocoa",
                 )
               }
