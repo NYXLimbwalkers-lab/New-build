@@ -8,6 +8,7 @@ import { useCartUI } from "@/features/cart/CartContext";
 import { CandleRenderer } from "@/features/builder/renderer";
 import { Button } from "@/components/ui/Button";
 import { STAGGER } from "@/lib/motionPresets";
+import { usePoints } from "@/features/loyalty/loyalty";
 import { useDocumentTitle } from "@/lib/useTitle";
 
 /*
@@ -17,6 +18,7 @@ import { useDocumentTitle } from "@/lib/useTitle";
 export function CreationsPage() {
   useDocumentTitle("My Creations");
   const navigate = useNavigate();
+  const points = usePoints();
   const { setOpen } = useCartUI();
   const builds = useLiveQuery(
     () => db.builds.orderBy("createdAt").reverse().toArray(),
@@ -29,6 +31,9 @@ export function CreationsPage() {
       <div className="mb-2 text-center">
         <p className="label-caps">Saved on this device</p>
         <h1 className="font-display text-4xl text-espresso sm:text-5xl">My Creations</h1>
+        <p className="mt-3 inline-block rounded-full border border-gold/40 bg-blush-soft/40 px-4 py-1.5 text-sm text-cocoa">
+          ✦ Candle Club: <span className="text-gold">{points} points</span>
+        </p>
       </div>
 
       {builds.length === 0 ? (

@@ -11,6 +11,7 @@ import {
 } from "./cart";
 import { formatUSD } from "@/data/build";
 import { db, logEvent } from "@/db/db";
+import { addPoints } from "@/features/loyalty/loyalty";
 import { Button } from "@/components/ui/Button";
 import { CandleRenderer } from "@/features/builder/renderer";
 import { PRODUCT_BY_ID } from "@/data/products";
@@ -38,6 +39,7 @@ export function CartDrawer() {
   const [fulfillment, setFulfillment] = useState<"ship" | "pickup">("ship");
   const [placed, setPlaced] = useState(false);
   const [orderNo, setOrderNo] = useState("");
+  const [earnedPts, setEarnedPts] = useState(0);
 
   useEffect(() => {
     if (open) setPlaced(false);
@@ -70,7 +72,9 @@ export function CartDrawer() {
     });
     logEvent("checkout", { total, items: cart.count, gift: isGift, fulfillment }, "storefront");
     await clearCart();
+    const earned = addPoints(total);
     setOrderNo(`DJ-${1000 + Math.floor(Math.random() * 9000)}`);
+    setEarnedPts(earned);
     setPlaced(true);
   }
 
@@ -120,6 +124,11 @@ export function CartDrawer() {
                   Your made-to-order request is in. She'll hand-pour it and reach out
                   to confirm pickup or shipping.
                 </p>
+                {earnedPts > 0 && (
+                  <p className="mt-3 text-sm text-cocoa">
+                    You earned <span className="text-gold">{earnedPts} Candle Club points</span> ✦
+                  </p>
+                )}
                 <Button className="mt-6" variant="outline" onClick={() => setOpen(false)}>
                   Keep browsing
                 </Button>

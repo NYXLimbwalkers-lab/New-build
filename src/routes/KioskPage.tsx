@@ -6,6 +6,7 @@ import { CandleBar } from "@/features/builder/CandleBar";
 import { CandleRenderer } from "@/features/builder/renderer";
 import { surpriseBuild, formatUSD } from "@/data/build";
 import { db, logEvent } from "@/db/db";
+import { addPoints } from "@/features/loyalty/loyalty";
 import { Button } from "@/components/ui/Button";
 import { useDocumentTitle } from "@/lib/useTitle";
 
@@ -91,6 +92,7 @@ export function KioskPage() {
       synced: false,
     });
     logEvent("kiosk_order", { total, pickup }, "kiosk");
+    addPoints(total);
     await db.cart.clear();
     setTicket({ pickup, total, items: items.reduce((s, i) => s + i.qty, 0) });
   }
