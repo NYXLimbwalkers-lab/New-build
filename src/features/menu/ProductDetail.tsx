@@ -32,9 +32,16 @@ export function ProductDetail({
           <div className="mx-auto mt-6 max-w-md text-center">
             <p className="label-caps">{CATEGORY_NAME[product.category]}</p>
             <h2 className="mt-1 font-display text-3xl text-espresso">{product.name}</h2>
-            <p className="mt-3 font-serif text-lg leading-relaxed text-plum">
-              {product.looksLike}. Smells like {product.smellsLike.toLowerCase()}.
-            </p>
+
+            {/* Looks-like / smells-like pairing chips */}
+            <div className="mt-4 flex flex-wrap items-center justify-center gap-2">
+              <span className="rounded-full border hairline bg-porcelain/70 px-3 py-1.5 text-xs text-cocoa">
+                <span className="text-muted">looks like</span> · {product.looksLike}
+              </span>
+              <span className="rounded-full border hairline bg-blush-soft/40 px-3 py-1.5 text-xs text-cocoa">
+                <span className="text-muted">smells like</span> · {product.smellsLike}
+              </span>
+            </div>
 
             <div className="mt-5 flex items-center justify-center gap-6">
               <span className="label-caps">{product.size}</span>

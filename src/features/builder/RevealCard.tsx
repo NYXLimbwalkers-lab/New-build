@@ -37,13 +37,16 @@ export function RevealCard({
   return (
     <Sheet open={open} onClose={onClose} position="center" label="Your candle is ready">
       <div className="p-6 text-center">
+        <p className="mb-4 font-display text-2xl text-espresso">
+          Ribbon it up — it's yours ✦
+        </p>
         <motion.div
           initial={{ scale: 0.9, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
           transition={{ type: "spring", stiffness: 200, damping: 22 }}
           className="mx-auto max-w-xs overflow-hidden rounded-3xl border border-gold/40 bg-gradient-to-b from-porcelain to-blush-soft/40 p-5 shadow-[var(--shadow-lift)]"
         >
-          <p className="label-caps !tracking-[0.3em] text-gold">DéLa Já · made to order</p>
+          <p className="label-caps !tracking-[0.3em] text-gold">DéLa Já · made just for you</p>
           <div className="my-3">
             <CandleRenderer config={config} revealed showcase />
           </div>

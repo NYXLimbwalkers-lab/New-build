@@ -44,7 +44,12 @@ export function MenuBoard() {
       <SeasonalRail onOpen={setSelected} />
 
       <div className="mb-6 flex flex-col gap-4">
-        <h2 className="font-display text-3xl text-espresso">The Dessert Case</h2>
+        <div>
+          <h2 className="font-display text-3xl text-espresso">The Dessert Case</h2>
+          <p className="mt-1 font-serif text-lg text-plum">
+            Pick one off the shelf — or tap a favorite and make it your own.
+          </p>
+        </div>
 
         {/* category nav */}
         <div className="no-scrollbar -mx-5 flex gap-2 overflow-x-auto px-5 pb-1">
