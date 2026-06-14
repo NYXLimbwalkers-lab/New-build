@@ -16,7 +16,6 @@ import {
 export type StepId =
   | "vessel"
   | "wax"
-  | "scent"
   | "whip"
   | "drizzle"
   | "toppings"
@@ -24,8 +23,7 @@ export type StepId =
 
 const STEP_LABEL: Record<StepId, string> = {
   vessel: "Vessel",
-  wax: "Wax",
-  scent: "Scent",
+  wax: "Wax & Scent",
   whip: "Whip",
   drizzle: "Drizzle",
   toppings: "Toppings",
@@ -70,8 +68,8 @@ export function useCandleBuild(initial?: BuildConfig) {
   const steps = useMemo<StepId[]>(() => {
     const drink = isDrinkBuild(config);
     return drink
-      ? ["vessel", "wax", "scent", "finish"]
-      : ["vessel", "wax", "scent", "whip", "drizzle", "toppings", "finish"];
+      ? ["vessel", "wax", "finish"]
+      : ["vessel", "wax", "whip", "drizzle", "toppings", "finish"];
   }, [config]);
 
   const price = useMemo(() => priceBuild(config), [config]);

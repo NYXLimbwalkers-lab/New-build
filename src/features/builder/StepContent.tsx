@@ -6,6 +6,7 @@ import {
   DRIZZLE_BY_ID,
   MAX_LAYERS,
   SCENTS,
+  SCENT_BY_ID,
   SCENT_FAMILIES,
   TOPPINGS,
   TOPPING_BY_ID,
@@ -32,8 +33,6 @@ export function StepContent({ step, ...p }: StepProps & { step: StepId }) {
       return <VesselStep {...p} />;
     case "wax":
       return <WaxStep {...p} />;
-    case "scent":
-      return <ScentStep {...p} />;
     case "whip":
       return <WhipStep {...p} />;
     case "drizzle":
@@ -87,6 +86,8 @@ function VesselStep({ config, update }: StepProps) {
   );
 }
 
+const STRENGTHS: ScentStrength[] = ["light", "medium", "strong"];
+
 function WaxStep({ config, update }: StepProps) {
   const colors = validWaxColors(config.vesselId);
   const layers = [config.waxColorId, ...config.extraLayers]; // [bottom...top]
@@ -101,6 +102,11 @@ function WaxStep({ config, update }: StepProps) {
       e[cur - 1] = id;
       update({ extraLayers: e });
     }
+  }
+  function setLayerScent(i: number, id: string) {
+    const s = [...config.layerScents];
+    s[i] = id;
+    update({ layerScents: s });
   }
   function addLayer() {
     update({ extraLayers: [...config.extraLayers, config.waxColorId] });
@@ -117,19 +123,21 @@ function WaxStep({ config, update }: StepProps) {
 
   const layerName = (i: number) =>
     i === 0 ? "Base" : i === layers.length - 1 ? "Top" : `Layer ${i + 1}`;
+  const curColor = WAX_BY_ID[layers[cur]];
+  const curScent = config.layerScents[cur] ?? DEFAULT_SCENT;
 
   return (
     <div>
       <StepHeading
-        title="Pour the wax"
+        title="Pour & scent the wax"
         hint={
           layers.length > 1
-            ? "Tap a layer, then pick its color — stacked like a parfait."
-            : "Tint the base, or add layers for a parfait look."
+            ? "Each layer gets its own color and scent — tap a layer to set it."
+            : "Pick this layer's color and the scent it's poured with. Add layers for a parfait."
         }
       />
 
-      {/* layer selector (top shown first) */}
+      {/* layer selector (top shown first) — shows each layer's color + scent */}
       <div className="mb-4 flex flex-wrap items-center gap-2">
         {layers
           .map((id, i) => ({ id, i }))
@@ -140,12 +148,17 @@ function WaxStep({ config, update }: StepProps) {
               type="button"
               onClick={() => setSel(i)}
               className={cn(
-                "flex items-center gap-2 rounded-full border py-1.5 pl-2 pr-3 text-xs transition-colors",
+                "flex items-center gap-2 rounded-2xl border py-1.5 pl-2 pr-3 text-left text-xs transition-colors",
                 cur === i ? "border-gold bg-blush-soft/50" : "hairline bg-porcelain/60",
               )}
             >
-              <span className="h-4 w-4 rounded-full border border-white/60" style={{ background: WAX_BY_ID[id]?.hex }} />
-              {layerName(i)}
+              <span className="h-7 w-7 shrink-0 rounded-full border border-white/60" style={{ background: WAX_BY_ID[id]?.hex }} />
+              <span className="leading-tight">
+                <span className="block text-espresso">{layerName(i)}</span>
+                <span className="block text-[0.6rem] text-muted">
+                  {SCENT_BY_ID[config.layerScents[i] ?? DEFAULT_SCENT]?.name}
+                </span>
+              </span>
               {i > 0 && (
                 <span
                   role="button"
@@ -165,16 +178,16 @@ function WaxStep({ config, update }: StepProps) {
           <button
             type="button"
             onClick={addLayer}
-            className="rounded-full border border-dashed hairline px-3 py-1.5 text-xs text-cocoa hover:bg-porcelain"
+            className="rounded-2xl border border-dashed hairline px-3 py-2 text-xs text-cocoa hover:bg-porcelain"
           >
-            + Add layer{" "}
-            <span className="text-muted">+$3</span>
+            + Add layer <span className="text-muted">+$3</span>
           </button>
         )}
       </div>
 
       {/* color grid for the selected layer */}
-      <div className="grid grid-cols-3 gap-3">
+      <span className="label-caps">{layerName(cur)} color</span>
+      <div className="mt-2 grid grid-cols-3 gap-3">
         {colors.map((w) => (
           <SelectTile
             key={w.id}
@@ -188,28 +201,71 @@ function WaxStep({ config, update }: StepProps) {
           </SelectTile>
         ))}
       </div>
+
+      {/* scent for THIS wax color — chosen right where you pick the color */}
+      <div className="mt-5 rounded-2xl border hairline bg-porcelain/50 p-4">
+        <label className="label-caps" htmlFor="layer-scent">
+          Scent for the {layerName(cur).toLowerCase()} {curColor?.name ?? "wax"}
+        </label>
+        <p className="mb-2 mt-0.5 text-xs text-muted">
+          What this wax color smells like.
+        </p>
+        <ScentSelect
+          value={curScent}
+          onChange={(id) => setLayerScent(cur, id)}
+          label={`${layerName(cur)} wax`}
+          full
+        />
+        {layers.length > 1 && (
+          <button
+            type="button"
+            onClick={() => update({ layerScents: layers.map(() => curScent) })}
+            className="mt-3 rounded-full border border-dashed hairline px-3 py-1.5 text-xs text-cocoa hover:bg-porcelain"
+          >
+            ✦ Use this scent for every layer
+          </button>
+        )}
+      </div>
+
+      {/* scent strength — one setting for the whole candle */}
+      <div className="mt-5">
+        <span className="label-caps">Scent strength</span>
+        <span className="ml-2 text-[0.65rem] lowercase tracking-normal text-muted">
+          · for the whole candle
+        </span>
+        <div className="mt-2 flex gap-2">
+          {STRENGTHS.map((s) => (
+            <Chip key={s} active={config.strength === s} onClick={() => update({ strength: s })}>
+              {s}
+            </Chip>
+          ))}
+        </div>
+      </div>
     </div>
   );
 }
-
-const STRENGTHS: ScentStrength[] = ["light", "medium", "strong"];
 
 /** Accessible scent picker — native select grouped by family (big tap target). */
 function ScentSelect({
   value,
   onChange,
   label,
+  full,
 }: {
   value: string;
   onChange: (id: string) => void;
   label: string;
+  full?: boolean;
 }) {
   return (
     <select
       value={value}
       aria-label={`Scent for ${label}`}
       onChange={(e) => onChange(e.target.value)}
-      className="w-full max-w-[12rem] shrink-0 rounded-xl border hairline bg-porcelain px-3 py-2 text-sm text-espresso outline-none focus:border-gold"
+      className={cn(
+        "rounded-xl border hairline bg-porcelain px-3 py-2.5 text-sm text-espresso outline-none focus:border-gold",
+        full ? "w-full" : "w-full max-w-[12rem] shrink-0",
+      )}
     >
       {SCENT_FAMILIES.map((fam) => {
         const inFam = SCENTS.filter((s) => s.family === fam);
@@ -260,125 +316,10 @@ function ScentRow({
   );
 }
 
-function ScentStep({ config, update }: StepProps) {
-  const drink = VESSELS.find((v) => v.id === config.vesselId)?.gel ?? false;
-  const layers = [config.waxColorId, ...config.extraLayers];
-
-  const layerLabel = (i: number) =>
-    i === 0 ? "Base wax" : i === layers.length - 1 ? "Top wax" : `Wax layer ${i + 1}`;
-
-  function setLayerScent(i: number, id: string) {
-    const s = [...config.layerScents];
-    s[i] = id;
-    update({ layerScents: s });
-  }
-
-  // "Make everything smell the same" — one tap, great for quick or guided use.
-  function matchAll() {
-    const id = config.layerScents[0] ?? DEFAULT_SCENT;
-    update({
-      layerScents: layers.map(() => id),
-      whipScentId: config.whipId ? id : null,
-      drizzleScentId: config.drizzleId ? id : null,
-      toppingScents: Object.fromEntries(config.toppingIds.map((t) => [t, id])),
-    });
-  }
-
-  const hasMany =
-    layers.length +
-      (config.whipId ? 1 : 0) +
-      (config.drizzleId ? 1 : 0) +
-      config.toppingIds.length >
-    1;
-
-  return (
-    <div>
-      <StepHeading
-        title="Scent each part"
-        hint="Pick a fragrance for every layer, the cream, the drizzle, and each topping — just like she pours them."
-      />
-
-      <div className="mb-5">
-        <span className="label-caps">Strength</span>
-        <div className="mt-2 flex gap-2">
-          {STRENGTHS.map((s) => (
-            <Chip key={s} active={config.strength === s} onClick={() => update({ strength: s })}>
-              {s}
-            </Chip>
-          ))}
-        </div>
-      </div>
-
-      {hasMany && (
-        <button
-          type="button"
-          onClick={matchAll}
-          className="mb-3 rounded-full border border-dashed hairline px-3 py-1.5 text-xs text-cocoa hover:bg-porcelain"
-        >
-          ✦ Scent everything the same
-        </button>
-      )}
-
-      <div className="rounded-2xl border hairline bg-porcelain/50 px-4">
-        {/* wax layers (top shown first to match the stage) */}
-        {layers
-          .map((colorId, i) => ({ colorId, i }))
-          .reverse()
-          .map(({ colorId, i }) => (
-            <ScentRow
-              key={`wax-${i}`}
-              label={layerLabel(i)}
-              sub={WAX_BY_ID[colorId]?.name}
-              hex={WAX_BY_ID[colorId]?.hex}
-              value={config.layerScents[i] ?? DEFAULT_SCENT}
-              onChange={(id) => setLayerScent(i, id)}
-            />
-          ))}
-
-        {!drink && config.whipId && (
-          <ScentRow
-            label="Whipped cream"
-            sub={WHIP_BY_ID[config.whipId]?.name}
-            hex={WHIP_BY_ID[config.whipId]?.hex}
-            value={config.whipScentId ?? DEFAULT_SCENT}
-            onChange={(id) => update({ whipScentId: id })}
-          />
-        )}
-
-        {!drink && config.drizzleId && (
-          <ScentRow
-            label="Drizzle"
-            sub={DRIZZLE_BY_ID[config.drizzleId]?.name}
-            hex={DRIZZLE_BY_ID[config.drizzleId]?.hex}
-            value={config.drizzleScentId ?? DEFAULT_SCENT}
-            onChange={(id) => update({ drizzleScentId: id })}
-          />
-        )}
-
-        {!drink &&
-          config.toppingIds.map((t) => (
-            <ScentRow
-              key={`top-${t}`}
-              label={TOPPING_BY_ID[t]?.name ?? "Topping"}
-              sub="Topping"
-              hex={TOPPING_BY_ID[t]?.hex}
-              value={config.toppingScents[t] ?? DEFAULT_SCENT}
-              onChange={(id) => update({ toppingScents: { ...config.toppingScents, [t]: id } })}
-            />
-          ))}
-      </div>
-
-      <p className="mt-3 text-xs text-muted">
-        Tip: add layers and toppings first, then come back to scent each one.
-      </p>
-    </div>
-  );
-}
-
 function WhipStep({ config, update }: StepProps) {
   return (
     <div>
-      <StepHeading title="Pipe the whip" hint="Whipped 'ice cream' on top — or skip it." />
+      <StepHeading title="Pipe & scent the whip" hint="Whipped 'ice cream' on top — pick its color and scent, or skip it." />
       <div className="grid grid-cols-3 gap-3">
         <SelectTile
           groupId="whip-sel"
@@ -404,6 +345,17 @@ function WhipStep({ config, update }: StepProps) {
           </SelectTile>
         ))}
       </div>
+      {config.whipId && (
+        <div className="mt-4 rounded-2xl border hairline bg-porcelain/50 px-4">
+          <ScentRow
+            label="Whipped cream scent"
+            sub={WHIP_BY_ID[config.whipId]?.name}
+            hex={WHIP_BY_ID[config.whipId]?.hex}
+            value={config.whipScentId ?? DEFAULT_SCENT}
+            onChange={(id) => update({ whipScentId: id })}
+          />
+        </div>
+      )}
     </div>
   );
 }
@@ -411,7 +363,7 @@ function WhipStep({ config, update }: StepProps) {
 function DrizzleStep({ config, update }: StepProps) {
   return (
     <div>
-      <StepHeading title="Add a drizzle" hint="Glossy ribbons over the top." />
+      <StepHeading title="Drizzle & scent it" hint="Glossy ribbons over the top — choose the drizzle and its scent." />
       <div className="grid grid-cols-3 gap-3">
         <SelectTile
           groupId="drizzle-sel"
@@ -437,6 +389,17 @@ function DrizzleStep({ config, update }: StepProps) {
           </SelectTile>
         ))}
       </div>
+      {config.drizzleId && (
+        <div className="mt-4 rounded-2xl border hairline bg-porcelain/50 px-4">
+          <ScentRow
+            label="Drizzle scent"
+            sub={DRIZZLE_BY_ID[config.drizzleId]?.name}
+            hex={DRIZZLE_BY_ID[config.drizzleId]?.hex}
+            value={config.drizzleScentId ?? DEFAULT_SCENT}
+            onChange={(id) => update({ drizzleScentId: id })}
+          />
+        </div>
+      )}
     </div>
   );
 }
@@ -483,6 +446,26 @@ function ToppingsStep({ config, update }: StepProps) {
           );
         })}
       </div>
+
+      {/* scent each topping you added (sprinkles, fruit, embeds…) */}
+      {config.toppingIds.length > 0 && (
+        <div className="mt-5">
+          <span className="label-caps">Scent your toppings</span>
+          <div className="mt-2 rounded-2xl border hairline bg-porcelain/50 px-4">
+            {config.toppingIds.map((t) => (
+              <ScentRow
+                key={`topscent-${t}`}
+                label={TOPPING_BY_ID[t]?.name ?? "Topping"}
+                hex={TOPPING_BY_ID[t]?.hex}
+                value={config.toppingScents[t] ?? DEFAULT_SCENT}
+                onChange={(id) =>
+                  update({ toppingScents: { ...config.toppingScents, [t]: id } })
+                }
+              />
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
