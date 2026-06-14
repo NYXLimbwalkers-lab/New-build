@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { logEvent } from "@/db/db";
+import { addLead, logEvent } from "@/db/db";
 
 /*
   Email capture — the owned channel that fuels back-in-stock, abandoned-cart,
@@ -14,6 +14,7 @@ export function EmailCapture() {
   function submit(e: React.FormEvent) {
     e.preventDefault();
     if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) return;
+    addLead(email, "newsletter");
     logEvent("email_signup", { email }, "storefront");
     setDone(true);
   }

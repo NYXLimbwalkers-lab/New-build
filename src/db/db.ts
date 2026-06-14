@@ -62,6 +62,16 @@ export interface UserReview {
   at: number;
 }
 
+/** A captured contact — newsletter or Candle-of-the-Month club interest. */
+export interface Lead {
+  id: string;
+  email: string;
+  kind: "newsletter" | "club";
+  /** Optional preferred plan/frequency for the club. */
+  plan?: string;
+  at: number;
+}
+
 const db = new Dexie("delaja") as Dexie & {
   builds: EntityTable<SavedBuild, "id">;
   cart: EntityTable<CartItem, "id">;
@@ -71,6 +81,7 @@ const db = new Dexie("delaja") as Dexie & {
   userReviews: EntityTable<UserReview, "id">;
   parties: EntityTable<PartySession, "id">;
   overrides: EntityTable<ProductOverride, "id">;
+  leads: EntityTable<Lead, "id">;
 };
 
 /** No-code admin edits applied over the seed catalog. */
@@ -138,6 +149,18 @@ db.version(5).stores({
   overrides: "id",
 });
 
+db.version(6).stores({
+  builds: "id, createdAt, mode",
+  cart: "id, addedAt",
+  orders: "id, createdAt, synced",
+  events: "id, at, type",
+  favorites: "id, addedAt",
+  userReviews: "id, productId, at",
+  parties: "id, createdAt",
+  overrides: "id",
+  leads: "id, email, kind, at",
+});
+
 export { db };
 
 /* ── Helpers ──────────────────────────────────────────────────────────── */
@@ -160,6 +183,30 @@ export async function saveBuild(
   };
   await db.builds.add(build);
   return build;
+}
+
+/**
+ * Capture a contact. De-dupes on (email, kind) so re-submits don't pile up.
+ * Returns true if a new lead was stored. Best-effort; never throws to the UI.
+ */
+export async function addLead(
+  email: string,
+  kind: Lead["kind"],
+  plan?: string,
+): Promise<boolean> {
+  const clean = email.trim().toLowerCase();
+  if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(clean)) return false;
+  try {
+    const existing = await db.leads.where("email").equals(clean).toArray();
+    if (existing.some((l) => l.kind === kind)) {
+      if (plan) await db.leads.update(existing.find((l) => l.kind === kind)!.id, { plan });
+      return false;
+    }
+    await db.leads.add({ id: uid(), email: clean, kind, plan, at: Date.now() });
+    return true;
+  } catch {
+    return false;
+  }
 }
 
 export async function logEvent(

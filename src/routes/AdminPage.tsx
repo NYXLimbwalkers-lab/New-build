@@ -13,7 +13,7 @@ import { useDocumentTitle } from "@/lib/useTitle";
   party write — a Phase-2 commerce adapter swaps the local store for WooCommerce/
   Square without changing this screen.
 */
-type Tab = "orders" | "analytics" | "catalog";
+type Tab = "orders" | "analytics" | "leads" | "catalog";
 
 export function AdminPage() {
   useDocumentTitle("Owner Dashboard");
@@ -23,7 +23,7 @@ export function AdminPage() {
       <p className="label-caps">DéLa Já · Owner</p>
       <h1 className="font-display text-4xl text-espresso">Dashboard</h1>
       <div className="my-5 flex gap-2">
-        {(["orders", "analytics", "catalog"] as Tab[]).map((t) => (
+        {(["orders", "analytics", "leads", "catalog"] as Tab[]).map((t) => (
           <button
             key={t}
             onClick={() => setTab(t)}
@@ -38,6 +38,7 @@ export function AdminPage() {
       </div>
       {tab === "orders" && <Orders />}
       {tab === "analytics" && <Analytics />}
+      {tab === "leads" && <Leads />}
       {tab === "catalog" && <Catalog />}
     </section>
   );
@@ -97,6 +98,11 @@ function Analytics() {
   const builds = useLiveQuery(() => db.builds.count(), [], 0);
   const reviews = useLiveQuery(() => db.userReviews.count(), [], 0);
   const parties = useLiveQuery(() => db.parties.count(), [], 0);
+  const clubLeads = useLiveQuery(
+    () => db.leads.where("kind").equals("club").count(),
+    [],
+    0,
+  );
 
   const revenue = orders.reduce((s, o) => s + o.total, 0);
   const aov = orders.length ? revenue / orders.length : 0;
@@ -117,6 +123,7 @@ function Analytics() {
         <Stat label="Reviews" value={String(reviews)} />
         <Stat label="Parties booked" value={String(parties)} />
         <Stat label="Add-to-carts" value={String(carts)} />
+        <Stat label="Club interest" value={String(clubLeads)} />
       </div>
 
       <h3 className="mt-8 mb-2 font-display text-xl text-espresso">AOV by channel</h3>
@@ -146,6 +153,100 @@ function Analytics() {
       <p className="mt-6 text-xs text-muted">
         Live, privacy-light data from this device. Aggregates across devices once the
         commerce adapter is connected.
+      </p>
+    </div>
+  );
+}
+
+function Leads() {
+  const leads = useLiveQuery(() => db.leads.orderBy("at").reverse().toArray(), [], []);
+  const [filter, setFilter] = useState<"all" | "club" | "newsletter">("all");
+
+  const shown = leads.filter((l) => filter === "all" || l.kind === filter);
+
+  function exportCsv() {
+    const rows = [
+      ["email", "kind", "plan", "date"],
+      ...shown.map((l) => [
+        l.email,
+        l.kind,
+        l.plan ?? "",
+        new Date(l.at).toISOString(),
+      ]),
+    ];
+    const csv = rows
+      .map((r) => r.map((c) => `"${String(c).replace(/"/g, '""')}"`).join(","))
+      .join("\n");
+    const url = URL.createObjectURL(new Blob([csv], { type: "text/csv" }));
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `delaja-leads-${new Date().toISOString().slice(0, 10)}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
+  return (
+    <div>
+      <div className="mb-4 flex flex-wrap items-center gap-2">
+        {(["all", "club", "newsletter"] as const).map((f) => (
+          <button
+            key={f}
+            onClick={() => setFilter(f)}
+            className={cn(
+              "rounded-full px-3 py-1.5 text-xs uppercase tracking-[0.14em] capitalize",
+              filter === f ? "bg-cocoa text-canvas" : "border hairline bg-porcelain/60 text-cocoa",
+            )}
+          >
+            {f}
+          </button>
+        ))}
+        <button
+          onClick={exportCsv}
+          disabled={shown.length === 0}
+          className="ml-auto rounded-full border hairline bg-porcelain/60 px-4 py-1.5 text-xs uppercase tracking-[0.14em] text-cocoa hover:bg-porcelain disabled:opacity-40"
+        >
+          ↓ Export CSV
+        </button>
+      </div>
+
+      {shown.length === 0 ? (
+        <p className="py-10 text-center font-serif text-plum">No leads yet.</p>
+      ) : (
+        <div className="space-y-2">
+          {shown.map((l) => (
+            <div
+              key={l.id}
+              className="flex flex-wrap items-center gap-3 rounded-2xl border hairline bg-porcelain/60 p-3"
+            >
+              <span
+                className={cn(
+                  "rounded-full px-2 py-0.5 text-[0.6rem] uppercase tracking-[0.14em]",
+                  l.kind === "club"
+                    ? "bg-gold/20 text-cocoa"
+                    : "bg-blush-soft/60 text-plum",
+                )}
+              >
+                {l.kind === "club" ? "Club" : "List"}
+              </span>
+              <span className="text-sm text-espresso">{l.email}</span>
+              {l.plan && <span className="text-xs text-cocoa">· {l.plan}</span>}
+              <span className="ml-auto text-xs text-muted">
+                {new Date(l.at).toLocaleDateString()}
+              </span>
+              <button
+                onClick={() => db.leads.delete(l.id)}
+                className="text-xs text-muted hover:text-rose"
+                aria-label="Remove lead"
+              >
+                ✕
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
+      <p className="mt-6 text-xs text-muted">
+        Real interest captured on this device. Export to import into your email tool,
+        or connect the subscription adapter at launch to convert these to members.
       </p>
     </div>
   );

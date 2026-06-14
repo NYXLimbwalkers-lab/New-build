@@ -2,6 +2,7 @@ import { Hero } from "@/features/menu/Hero";
 import { BrandStory, HowItWorks } from "@/features/menu/HomeSections";
 import { MenuBoard } from "@/features/menu/MenuBoard";
 import { BundlesRail } from "@/features/menu/BundlesRail";
+import { CandleClub } from "@/features/marketing/CandleClub";
 import { useDocumentTitle } from "@/lib/useTitle";
 
 export function StorefrontHome() {
@@ -15,6 +16,7 @@ export function StorefrontHome() {
       <BrandStory />
       <MenuBoard />
       <BundlesRail />
+      <CandleClub />
       <HowItWorks />
     </>
   );
