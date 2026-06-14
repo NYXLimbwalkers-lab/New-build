@@ -117,7 +117,9 @@ export function describeBuild(c: BuildConfig): [string, string][] {
   const lines: [string, string][] = [
     ["Vessel", VESSEL_BY_ID[c.vesselId]?.name ?? c.vesselId],
   ];
-  const layers = [c.waxColorId, ...c.extraLayers];
+  const layers = [c.waxColorId, ...(c.extraLayers ?? [])];
+  const layerScents = c.layerScents ?? [];
+  const toppingScents = c.toppingScents ?? {};
   const sName = (id?: string | null) => (id ? SCENT_BY_ID[id]?.name ?? id : "");
   layers.forEach((colorId, i) => {
     const label =
@@ -129,7 +131,7 @@ export function describeBuild(c: BuildConfig): [string, string][] {
             ? "Top wax"
             : `Wax layer ${i + 1}`;
     const color = WAX_BY_ID[colorId]?.name ?? colorId;
-    const scent = sName(c.layerScents[i] ?? DEFAULT_SCENT);
+    const scent = sName(layerScents[i] ?? DEFAULT_SCENT);
     lines.push([label, scent ? `${color} · ${scent}` : color]);
   });
   if (!isDrinkBuild(c)) {
@@ -141,8 +143,8 @@ export function describeBuild(c: BuildConfig): [string, string][] {
       const s = sName(c.drizzleScentId);
       lines.push(["Drizzle", `${DRIZZLE_BY_ID[c.drizzleId]?.name ?? c.drizzleId}${s ? ` · ${s}` : ""}`]);
     }
-    for (const t of c.toppingIds) {
-      const s = sName(c.toppingScents[t]);
+    for (const t of c.toppingIds ?? []) {
+      const s = sName(toppingScents[t]);
       lines.push(["Topping", `${TOPPING_BY_ID[t]?.name ?? t}${s ? ` · ${s}` : ""}`]);
     }
   }

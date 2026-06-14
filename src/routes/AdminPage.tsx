@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useLiveQuery } from "dexie-react-hooks";
 import { db } from "@/db/db";
 import { PRODUCTS } from "@/data/products";
-import { formatUSD } from "@/data/build";
+import { describeBuild, formatUSD } from "@/data/build";
 import { useOverrides, setOverride } from "@/features/admin/overrides";
 import { BuildRecipe } from "@/features/builder/BuildRecipe";
 import { cn } from "@/lib/cn";
@@ -49,8 +49,50 @@ function Orders() {
   const orders = useLiveQuery(() => db.orders.orderBy("createdAt").reverse().toArray(), [], []);
   if (orders.length === 0)
     return <p className="py-10 text-center font-serif text-plum">No orders yet.</p>;
+
+  function exportCsv() {
+    const rows = [
+      ["date", "mode", "fulfillment", "pickup", "total", "name", "contact", "address", "items"],
+      ...orders.map((o) => [
+        new Date(o.createdAt).toISOString(),
+        o.mode,
+        o.fulfillment ?? "",
+        o.pickupNumber != null ? `#${o.pickupNumber}` : "",
+        String(o.total),
+        o.contact?.name ?? "",
+        o.contact?.email ?? o.contact?.phone ?? "",
+        o.contact?.address ?? "",
+        o.items
+          .map((i) =>
+            i.kind === "build" && i.config
+              ? `${i.qty}× ${i.name} [${describeBuild(i.config).map(([k, v]) => `${k}: ${v}`).join("; ")}]`
+              : `${i.qty}× ${i.name}`,
+          )
+          .join(" | "),
+      ]),
+    ];
+    const csv = rows
+      .map((r) => r.map((c) => `"${String(c).replace(/"/g, '""')}"`).join(","))
+      .join("\n");
+    const url = URL.createObjectURL(new Blob([csv], { type: "text/csv" }));
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `delaja-orders-${new Date().toISOString().slice(0, 10)}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
   return (
     <div className="space-y-3">
+      <div className="flex items-center justify-between">
+        <span className="text-xs text-muted">{orders.length} order{orders.length === 1 ? "" : "s"}</span>
+        <button
+          onClick={exportCsv}
+          className="rounded-full border hairline bg-porcelain/60 px-4 py-1.5 text-xs uppercase tracking-[0.14em] text-cocoa hover:bg-porcelain"
+        >
+          ↓ Export CSV
+        </button>
+      </div>
       {orders.map((o) => (
         <div key={o.id} className="rounded-2xl border hairline bg-porcelain/60 p-4">
           <div className="flex flex-wrap items-center justify-between gap-2">
