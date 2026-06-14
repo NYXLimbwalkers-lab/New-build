@@ -61,8 +61,11 @@ Everything is built behind clean seams; these two need real credentials/access:
    (`docs/ASSETS.md`). The preview renderer swaps from vector to real photos
    automatically. AI cut/relight pipeline target: `generativelanguage.googleapis.com`
    (Gemini "Nano Banana") + `sdk.photoroom.com` (cutouts).
-2. **Payments / real checkout** → Square or WooCommerce credentials. Checkout
-   already records real orders; wire the payment call in the commerce adapter.
+2. **Payments / real checkout** → Square or WooCommerce credentials. All order
+   placement (storefront + kiosk) already flows through one seam,
+   `src/features/commerce/` (`CommerceAdapter`). Going live = add one adapter
+   file (e.g. `squareAdapter.ts`) and set `VITE_COMMERCE=square` — no UI changes.
+   The default `local` adapter queues real made-to-order requests in IndexedDB.
 
 ## Add a product / ingredient
 

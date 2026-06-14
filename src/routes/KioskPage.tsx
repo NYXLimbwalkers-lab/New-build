@@ -6,6 +6,7 @@ import { CandleBar } from "@/features/builder/CandleBar";
 import { CandleRenderer } from "@/features/builder/renderer";
 import { surpriseBuild, formatUSD } from "@/data/build";
 import { db, logEvent } from "@/db/db";
+import { getAdapter } from "@/features/commerce";
 import { addPoints } from "@/features/loyalty/loyalty";
 import { Button } from "@/components/ui/Button";
 import { useDocumentTitle } from "@/lib/useTitle";
@@ -18,12 +19,6 @@ import { useDocumentTitle } from "@/lib/useTitle";
   commerce adapter syncs + takes card payment). Real, shippable plumbing.
 */
 const IDLE_MS = 60_000;
-
-function nextPickup(): number {
-  const n = (Number(localStorage.getItem("delaja_pickup") || "100") + 1) % 1000;
-  localStorage.setItem("delaja_pickup", String(n));
-  return n;
-}
 
 async function goFullscreen() {
   try {
@@ -80,17 +75,13 @@ export function KioskPage() {
   async function complete() {
     const items = await db.cart.toArray();
     const total = items.reduce((s, i) => s + i.unitPrice * i.qty, 0);
-    const pickup = nextPickup();
-    await db.orders.add({
-      id: crypto.randomUUID?.() ?? `${Date.now()}`,
+    const result = await getAdapter().placeOrder({
       items,
       total,
       mode: "kiosk",
       fulfillment: "pickup",
-      pickupNumber: pickup,
-      createdAt: Date.now(),
-      synced: false,
     });
+    const pickup = result.pickupNumber ?? 0;
     logEvent("kiosk_order", { total, pickup }, "kiosk");
     addPoints(total);
     await db.cart.clear();

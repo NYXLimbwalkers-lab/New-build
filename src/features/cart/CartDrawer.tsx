@@ -10,7 +10,8 @@ import {
   FREE_SHIP_THRESHOLD,
 } from "./cart";
 import { formatUSD } from "@/data/build";
-import { db, logEvent } from "@/db/db";
+import { logEvent } from "@/db/db";
+import { getAdapter } from "@/features/commerce";
 import { addPoints } from "@/features/loyalty/loyalty";
 import { Button } from "@/components/ui/Button";
 import { CandleRenderer } from "@/features/builder/renderer";
@@ -56,10 +57,9 @@ export function CartDrawer() {
   const total = cart.subtotal + giftTotal;
 
   async function checkout() {
-    // TODO(Phase 2): hand off to the commerce adapter (WooCommerce/Square) for
-    // real payment. For now we record a made-to-order request locally.
-    await db.orders.add({
-      id: crypto.randomUUID?.() ?? `${Date.now()}`,
+    // Single seam: the configured adapter records/syncs the order and takes
+    // payment when one is connected (local made-to-order queue by default).
+    const result = await getAdapter().placeOrder({
       items: cart.items,
       total,
       mode: "storefront",
@@ -67,13 +67,11 @@ export function CartDrawer() {
       gift: isGift
         ? { wrap: giftWrap, note: giftNote, recipient, receipt: giftReceipt }
         : undefined,
-      createdAt: Date.now(),
-      synced: false,
     });
     logEvent("checkout", { total, items: cart.count, gift: isGift, fulfillment }, "storefront");
     await clearCart();
     const earned = addPoints(total);
-    setOrderNo(`DJ-${1000 + Math.floor(Math.random() * 9000)}`);
+    setOrderNo(result.orderNo);
     setEarnedPts(earned);
     setPlaced(true);
   }
