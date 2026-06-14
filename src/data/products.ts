@@ -150,6 +150,12 @@ export const PRODUCTS: Product[] = [
     notes: "Waffle base + scoop + syrup + blueberries",
     badges: ["bestseller"],
     image: `${UPLOADS}/2025/07/6845-scaled.jpg`,
+    images: [
+      `${UPLOADS}/2025/07/6845-scaled.jpg`,
+      `${UPLOADS}/2025/07/6842-scaled.jpg`,
+      `${UPLOADS}/2025/07/6841-scaled.jpg`,
+      `${UPLOADS}/2025/07/6846-scaled.jpg`,
+    ],
     recipe: {
       vesselId: "jar-14",
       waxColorId: "cream",

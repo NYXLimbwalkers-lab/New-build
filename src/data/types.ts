@@ -43,6 +43,8 @@ export interface Product {
   notes: string;
   /** Hero image — remote source URL from her site (Appendix A). */
   image?: string;
+  /** Additional angles for the detail gallery (falls back to [image]). */
+  images?: string[];
   badges?: ("bestseller" | "new" | "staff-pick" | "seasonal")[];
   /** Month numbers (1-12) this item should be surfaced on the seasonal rail. */
   seasonalMonths?: number[];

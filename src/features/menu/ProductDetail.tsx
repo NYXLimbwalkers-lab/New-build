@@ -28,6 +28,17 @@ export function ProductDetail({
   const navigate = useNavigate();
   const { setOpen } = useCartUI();
   const { readAloud } = useA11y();
+  const [activeImg, setActiveImg] = useState(0);
+
+  const gallery = product?.images?.length
+    ? product.images
+    : product?.image
+      ? [product.image]
+      : [];
+
+  useEffect(() => {
+    setActiveImg(0);
+  }, [product]);
 
   useEffect(() => {
     if (product && readAloud) {
@@ -83,8 +94,29 @@ export function ProductDetail({
             transition={SPRING.glide}
             className="mx-auto aspect-square w-full max-w-sm overflow-hidden rounded-3xl bg-gradient-to-b from-blush-soft/40 to-canvas-deep/30"
           >
-            <ProductMedia product={product} active />
+            <ProductMedia
+              product={{ ...product, image: gallery[activeImg] ?? product.image }}
+              active
+            />
           </motion.div>
+
+          {gallery.length > 1 && (
+            <div className="mx-auto mt-3 flex max-w-sm justify-center gap-2">
+              {gallery.map((src, i) => (
+                <button
+                  key={src}
+                  onClick={() => setActiveImg(i)}
+                  aria-label={`View image ${i + 1}`}
+                  className={
+                    "h-14 w-14 overflow-hidden rounded-xl border-2 transition-colors " +
+                    (i === activeImg ? "border-gold" : "border-transparent hairline")
+                  }
+                >
+                  <img src={src} alt="" loading="lazy" className="h-full w-full object-cover" />
+                </button>
+              ))}
+            </div>
+          )}
 
           <div className="mx-auto mt-6 max-w-md text-center">
             <p className="label-caps">{CATEGORY_NAME[product.category]}</p>

@@ -33,6 +33,7 @@ export function Footer() {
           <Link to="/build" viewTransition className="hover:text-cocoa">Candle Bar</Link>
           <Link to="/creations" viewTransition className="hover:text-cocoa">My Creations</Link>
           <Link to="/about" viewTransition className="hover:text-cocoa">Our Story</Link>
+          <Link to="/help" viewTransition className="hover:text-cocoa">Help &amp; Info</Link>
         </nav>
         <p className="mt-6 text-xs text-muted">
           © {new Date().getFullYear()} DéLa Já Candles &amp; Wax Melts

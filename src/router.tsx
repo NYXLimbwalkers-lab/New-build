@@ -17,6 +17,7 @@ const BuilderPage = lz(() => import("./routes/BuilderPage"), "BuilderPage");
 const CreationsPage = lz(() => import("./routes/CreationsPage"), "CreationsPage");
 const AdminPage = lz(() => import("./routes/AdminPage"), "AdminPage");
 const AboutPage = lz(() => import("./routes/AboutPage"), "AboutPage");
+const HelpPage = lz(() => import("./routes/HelpPage"), "HelpPage");
 const KioskPage = lz(() => import("./routes/KioskPage"), "KioskPage");
 const PartyPage = lz(() => import("./routes/PartyPage"), "PartyPage");
 
@@ -60,6 +61,7 @@ export const router = createBrowserRouter(
         { path: "creations", element: S(<CreationsPage />) },
         { path: "admin", element: S(<AdminPage />) },
         { path: "about", element: S(<AboutPage />) },
+        { path: "help", element: S(<HelpPage />) },
         { path: "*", element: <NotFound /> },
       ],
     },
