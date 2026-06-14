@@ -59,6 +59,16 @@ export function CandleBar({
   const [[page, dir], setPage] = useState<[number, number]>([0, 0]);
   const [reveal, setReveal] = useState(false);
   const [favOpen, setFavOpen] = useState(false);
+  const [hint, setHint] = useState(() => localStorage.getItem("delaja-builder-hint") !== "1");
+
+  function dismissHint() {
+    setHint(false);
+    localStorage.setItem("delaja-builder-hint", "1");
+  }
+  function makeForMe() {
+    surprise();
+    setReveal(true);
+  }
 
   const current = Math.min(page, steps.length - 1);
   const stepId = steps[current];
@@ -169,6 +179,22 @@ export function CandleBar({
 
         {/* ── STEPS ── */}
         <div className="lg:w-1/2">
+          {/* simplest path: one tap to a finished candle */}
+          <Button variant="gold" size="lg" className="mb-3 w-full" onClick={makeForMe}>
+            ✨ Make one for me
+          </Button>
+          {hint && (
+            <div className="mb-3 flex items-start gap-2 rounded-2xl border hairline bg-blush-soft/40 p-3 text-sm text-cocoa">
+              <span>
+                Tap any part of the candle to change it — or just press Next. There's no
+                wrong way ✦
+              </span>
+              <button onClick={dismissHint} className="ml-auto shrink-0 text-muted" aria-label="Dismiss hint">
+                ✕
+              </button>
+            </div>
+          )}
+
           <StepRail steps={steps} current={current} onJump={(i) => setPage([i, i > current ? 1 : -1])} />
 
           <p className="sr-only" aria-live="polite">

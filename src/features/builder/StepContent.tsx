@@ -55,7 +55,7 @@ function StepHeading({ title, hint }: { title: string; hint: string }) {
 function Swatch({ hex }: { hex: string }) {
   return (
     <span
-      className="mb-2 block h-9 w-9 rounded-full border border-white/60 shadow-inner"
+      className="mb-2 block h-11 w-11 rounded-full border-2 border-white/70 shadow-inner"
       style={{ backgroundColor: hex }}
     />
   );
