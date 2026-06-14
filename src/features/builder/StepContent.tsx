@@ -5,6 +5,7 @@ import {
   DRIZZLES,
   MAX_LAYERS,
   SCENTS,
+  SCENT_BY_ID,
   SCENT_FAMILIES,
   TOPPINGS,
   VESSELS,
@@ -201,13 +202,23 @@ const FAMILY_META: Record<string, { hex: string; note: string }> = {
 
 function ScentStep({ config, update }: StepProps) {
   const selected = config.scents.map((s) => s.scentId);
+  const total = config.scents.reduce((s, x) => s + x.ratio, 0) || 1;
 
   function toggle(id: string) {
-    const has = selected.includes(id);
-    let next = has ? selected.filter((s) => s !== id) : [...selected, id].slice(0, 3);
-    if (next.length === 0) next = [id]; // always keep at least one
-    const ratio = Math.round(100 / next.length);
-    update({ scents: next.map((scentId) => ({ scentId, ratio })) });
+    const has = config.scents.some((s) => s.scentId === id);
+    let next = has
+      ? config.scents.filter((s) => s.scentId !== id)
+      : config.scents.length >= 3
+        ? config.scents
+        : [...config.scents, { scentId: id, ratio: 50 }];
+    if (next.length === 0) next = [{ scentId: id, ratio: 100 }];
+    update({ scents: next });
+  }
+
+  function setRatio(id: string, value: number) {
+    update({
+      scents: config.scents.map((s) => (s.scentId === id ? { ...s, ratio: value } : s)),
+    });
   }
 
   return (
@@ -263,8 +274,31 @@ function ScentStep({ config, update }: StepProps) {
           </div>
         );
       })}
-      {selected.length >= 2 && (
-        <p className="mt-1 text-xs text-rose">A custom blend — beautifully you.</p>
+      {config.scents.length >= 2 && (
+        <div className="mt-4 rounded-2xl border hairline bg-porcelain/50 p-4">
+          <span className="label-caps">Your blend</span>
+          <div className="mt-3 space-y-2.5">
+            {config.scents.map((s) => (
+              <div key={s.scentId} className="flex items-center gap-3">
+                <span className="w-28 shrink-0 text-sm text-cocoa">
+                  {SCENT_BY_ID[s.scentId]?.name}
+                </span>
+                <input
+                  type="range"
+                  min={5}
+                  max={100}
+                  value={s.ratio}
+                  onChange={(e) => setRatio(s.scentId, Number(e.target.value))}
+                  className="flex-1 accent-rose"
+                  aria-label={`${SCENT_BY_ID[s.scentId]?.name} amount`}
+                />
+                <span className="w-9 text-right text-xs text-muted">
+                  {Math.round((s.ratio / total) * 100)}%
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
       )}
     </div>
   );

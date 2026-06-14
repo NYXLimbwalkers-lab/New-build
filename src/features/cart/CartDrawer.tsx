@@ -32,6 +32,10 @@ export function CartDrawer() {
   const cart = useCart();
   const [giftWrap, setGiftWrap] = useState(false);
   const [giftNote, setGiftNote] = useState("");
+  const [isGift, setIsGift] = useState(false);
+  const [recipient, setRecipient] = useState("");
+  const [giftReceipt, setGiftReceipt] = useState(false);
+  const [fulfillment, setFulfillment] = useState<"ship" | "pickup">("ship");
   const [placed, setPlaced] = useState(false);
 
   useEffect(() => {
@@ -45,7 +49,7 @@ export function CartDrawer() {
     };
   }, [open]);
 
-  const giftTotal = giftWrap ? GIFT_WRAP : 0;
+  const giftTotal = isGift && giftWrap ? GIFT_WRAP : 0;
   const total = cart.subtotal + giftTotal;
 
   async function checkout() {
@@ -56,10 +60,14 @@ export function CartDrawer() {
       items: cart.items,
       total,
       mode: "storefront",
+      fulfillment,
+      gift: isGift
+        ? { wrap: giftWrap, note: giftNote, recipient, receipt: giftReceipt }
+        : undefined,
       createdAt: Date.now(),
       synced: false,
     });
-    logEvent("checkout", { total, items: cart.count }, "storefront");
+    logEvent("checkout", { total, items: cart.count, gift: isGift, fulfillment }, "storefront");
     await clearCart();
     setPlaced(true);
   }
@@ -204,35 +212,64 @@ export function CartDrawer() {
                     </div>
                   ))}
 
-                  {/* gift options */}
+                  {/* gifting */}
                   <div className="mt-4 rounded-2xl border hairline bg-porcelain/50 p-4">
                     <button
-                      onClick={() => setGiftWrap(!giftWrap)}
+                      onClick={() => setIsGift(!isGift)}
                       className="flex w-full items-center justify-between"
                     >
-                      <span className="text-sm text-cocoa">
-                        🎀 Gift wrap it{" "}
-                        <span className="text-muted">+{formatUSD(GIFT_WRAP)}</span>
-                      </span>
+                      <span className="text-sm text-cocoa">🎁 Send as a gift</span>
                       <span
                         className={cn(
                           "flex h-5 w-5 items-center justify-center rounded-full border text-[0.6rem]",
-                          giftWrap ? "border-gold bg-gold text-canvas" : "hairline",
+                          isGift ? "border-gold bg-gold text-canvas" : "hairline",
                         )}
                       >
-                        {giftWrap && "✓"}
+                        {isGift && "✓"}
                       </span>
                     </button>
-                    {giftWrap && (
-                      <textarea
-                        value={giftNote}
-                        onChange={(e) => setGiftNote(e.target.value)}
-                        maxLength={200}
-                        placeholder="Add a gift note…"
-                        className="mt-3 w-full resize-none rounded-xl border hairline bg-porcelain px-3 py-2 text-sm text-cocoa outline-none focus:border-gold"
-                        rows={2}
-                      />
+                    {isGift && (
+                      <div className="mt-3 space-y-2">
+                        <input
+                          value={recipient}
+                          onChange={(e) => setRecipient(e.target.value)}
+                          placeholder="Recipient's name"
+                          className="w-full rounded-xl border hairline bg-porcelain px-3 py-2 text-sm text-cocoa outline-none focus:border-gold"
+                        />
+                        <textarea
+                          value={giftNote}
+                          onChange={(e) => setGiftNote(e.target.value)}
+                          maxLength={200}
+                          placeholder="Gift message…"
+                          className="w-full resize-none rounded-xl border hairline bg-porcelain px-3 py-2 text-sm text-cocoa outline-none focus:border-gold"
+                          rows={2}
+                        />
+                        <label className="flex cursor-pointer items-center justify-between text-sm text-cocoa">
+                          <span>🎀 Gift wrap <span className="text-muted">+{formatUSD(GIFT_WRAP)}</span></span>
+                          <input type="checkbox" checked={giftWrap} onChange={(e) => setGiftWrap(e.target.checked)} className="accent-gold" />
+                        </label>
+                        <label className="flex cursor-pointer items-center justify-between text-sm text-cocoa">
+                          <span>🧾 Gift receipt <span className="text-muted">(hide prices)</span></span>
+                          <input type="checkbox" checked={giftReceipt} onChange={(e) => setGiftReceipt(e.target.checked)} className="accent-gold" />
+                        </label>
+                      </div>
                     )}
+                  </div>
+
+                  {/* fulfillment */}
+                  <div className="mt-3 flex gap-2">
+                    {(["ship", "pickup"] as const).map((f) => (
+                      <button
+                        key={f}
+                        onClick={() => setFulfillment(f)}
+                        className={cn(
+                          "flex-1 rounded-2xl border py-2.5 text-xs uppercase tracking-[0.14em] transition-colors",
+                          fulfillment === f ? "border-gold bg-blush-soft/50 text-espresso" : "hairline text-muted",
+                        )}
+                      >
+                        {f === "ship" ? "Ship it" : "Local pickup"}
+                      </button>
+                    ))}
                   </div>
 
                   <CrossSell inCart={cart.items.map((i) => i.refId)} />

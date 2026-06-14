@@ -18,12 +18,22 @@ export interface CartItem {
   addedAt: number;
 }
 
+export interface GiftInfo {
+  wrap: boolean;
+  note: string;
+  recipient: string; // name (+ "ship to recipient" intent)
+  receipt: boolean; // gift receipt = hide prices
+}
+
 // TODO(Phase 3): queued offline kiosk orders that sync when back online.
 export interface QueuedOrder {
   id: string;
   items: CartItem[];
   total: number;
   mode: "storefront" | "kiosk" | "party";
+  fulfillment?: "ship" | "pickup";
+  pickupNumber?: number;
+  gift?: GiftInfo;
   createdAt: number;
   synced: boolean;
 }
