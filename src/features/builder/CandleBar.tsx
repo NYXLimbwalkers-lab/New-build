@@ -44,7 +44,14 @@ const HOTSPOTS: Partial<Record<StepId, { top: string; left: string; label: strin
   vessel: { top: "80%", left: "55%", label: "Vessel" },
 };
 
-export function CandleBar({ initial }: { initial?: BuildConfig }) {
+export function CandleBar({
+  initial,
+  onComplete,
+}: {
+  initial?: BuildConfig;
+  /** Kiosk/party override for the add-to-cart completion (e.g. show a ticket). */
+  onComplete?: () => void;
+}) {
   const mode = useMode();
   const { setOpen } = useCartUI();
   const { config, update, undo, surprise, loadFrom, steps, price, canUndo } =
@@ -79,7 +86,8 @@ export function CandleBar({ initial }: { initial?: BuildConfig }) {
     await saveBuild(config, price.total, mode);
     await addBuildToCart(config, price.total, mode);
     setReveal(false);
-    setOpen(true);
+    if (onComplete) onComplete();
+    else setOpen(true);
   }
 
   const NextButton = atLast ? (
