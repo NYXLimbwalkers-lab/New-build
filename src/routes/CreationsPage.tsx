@@ -8,12 +8,14 @@ import { useCartUI } from "@/features/cart/CartContext";
 import { CandleRenderer } from "@/features/builder/renderer";
 import { Button } from "@/components/ui/Button";
 import { STAGGER } from "@/lib/motionPresets";
+import { useDocumentTitle } from "@/lib/useTitle";
 
 /*
   "My Creations" — every candle you build/save persists locally and becomes a
   one-click reorderable object (reorder) or a starting point to tweak (edit).
 */
 export function CreationsPage() {
+  useDocumentTitle("My Creations");
   const navigate = useNavigate();
   const { setOpen } = useCartUI();
   const builds = useLiveQuery(

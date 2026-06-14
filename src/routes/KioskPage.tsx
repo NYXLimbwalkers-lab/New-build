@@ -7,6 +7,7 @@ import { CandleRenderer } from "@/features/builder/renderer";
 import { surpriseBuild, formatUSD } from "@/data/build";
 import { db, logEvent } from "@/db/db";
 import { Button } from "@/components/ui/Button";
+import { useDocumentTitle } from "@/lib/useTitle";
 
 /*
   PHASE 3 — KIOSK MODE.
@@ -32,6 +33,7 @@ async function goFullscreen() {
 }
 
 export function KioskPage() {
+  useDocumentTitle("In-store Candle Bar");
   const [attract, setAttract] = useState(true);
   const [nonce, setNonce] = useState(0);
   const [ticket, setTicket] = useState<{ pickup: number; total: number; items: number } | null>(null);

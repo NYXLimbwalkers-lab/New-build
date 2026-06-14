@@ -35,6 +35,38 @@ export function ProductDetail({
     }
   }, [product, readAloud]);
 
+  // Product structured data (rich results / SEO).
+  useEffect(() => {
+    if (!product) return;
+    const r = getRating(product.id);
+    const data = {
+      "@context": "https://schema.org",
+      "@type": "Product",
+      name: product.name,
+      description: `${product.looksLike}. Smells like ${product.smellsLike}.`,
+      category: CATEGORY_NAME[product.category],
+      brand: { "@type": "Brand", name: "DéLa Já" },
+      offers: {
+        "@type": "Offer",
+        price: product.price,
+        priceCurrency: "USD",
+        availability: "https://schema.org/InStock",
+      },
+      ...(r
+        ? { aggregateRating: { "@type": "AggregateRating", ratingValue: r.avg, reviewCount: r.count } }
+        : {}),
+    };
+    let s = document.getElementById("product-jsonld") as HTMLScriptElement | null;
+    if (!s) {
+      s = document.createElement("script");
+      s.id = "product-jsonld";
+      s.type = "application/ld+json";
+      document.head.appendChild(s);
+    }
+    s.textContent = JSON.stringify(data);
+    return () => document.getElementById("product-jsonld")?.remove();
+  }, [product]);
+
   async function addToCart() {
     if (!product) return;
     await addProductToCart(product);

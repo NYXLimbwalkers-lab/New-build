@@ -2,6 +2,7 @@ import { motion } from "motion/react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/Button";
 import { TrustBadges } from "@/components/TrustBadges";
+import { useDocumentTitle } from "@/lib/useTitle";
 
 const reveal = {
   initial: { opacity: 0, y: 24 },
@@ -15,6 +16,7 @@ const reveal = {
   facts, not slogans). Editorial, warm, restrained.
 */
 export function AboutPage() {
+  useDocumentTitle("Our Story", "Veteran-founded, mom-owned, hand-poured in small batches in Great Falls, South Carolina.");
   return (
     <article className="mx-auto max-w-3xl px-6 pb-10 pt-10">
       <motion.header {...reveal} className="text-center">

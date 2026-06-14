@@ -5,6 +5,7 @@ import { PRODUCTS } from "@/data/products";
 import { formatUSD } from "@/data/build";
 import { useOverrides, setOverride } from "@/features/admin/overrides";
 import { cn } from "@/lib/cn";
+import { useDocumentTitle } from "@/lib/useTitle";
 
 /*
   No-code admin. Reads REAL local data (orders, events, builds) and writes REAL
@@ -15,6 +16,7 @@ import { cn } from "@/lib/cn";
 type Tab = "orders" | "analytics" | "catalog";
 
 export function AdminPage() {
+  useDocumentTitle("Owner Dashboard");
   const [tab, setTab] = useState<Tab>("orders");
   return (
     <section className="mx-auto max-w-5xl px-5 pb-16 pt-8">

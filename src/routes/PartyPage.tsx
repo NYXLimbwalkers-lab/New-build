@@ -8,6 +8,7 @@ import { CandleBar } from "@/features/builder/CandleBar";
 import { CandleRenderer } from "@/features/builder/renderer";
 import { Footer } from "@/shell/Footer";
 import { Button } from "@/components/ui/Button";
+import { useDocumentTitle } from "@/lib/useTitle";
 import { db } from "@/db/db";
 import type { BuildConfig } from "@/data/types";
 import { formatUSD } from "@/data/build";
@@ -30,6 +31,7 @@ import {
 */
 export function PartyPage() {
   const { sessionId } = useParams();
+  useDocumentTitle(sessionId ? "Build your candle" : "Book a candle party");
   return (
     <ModeContext.Provider value="party">
       <SmoothScroll>
