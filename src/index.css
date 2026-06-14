@@ -69,6 +69,8 @@
     color: var(--color-cocoa);
     font-family: var(--font-sans);
     font-weight: 300;
+    font-size: 1.0625rem; /* 17px — premium, readable body (research: 16 floor / 18 ideal) */
+    line-height: 1.6;
     -webkit-font-smoothing: antialiased;
     text-rendering: optimizeLegibility;
     /* whisper-soft blush -> champagne wash across the boutique */
@@ -78,13 +80,21 @@
     background-attachment: fixed;
   }
 
+  /* Display serif: large, tight, with the faint negative tracking couture type uses. */
   h1,
-  h2,
+  h2 {
+    font-family: var(--font-display);
+    font-weight: 500;
+    letter-spacing: -0.018em;
+    line-height: 1.1;
+    color: var(--color-espresso);
+  }
   h3,
   h4 {
     font-family: var(--font-display);
     font-weight: 500;
-    letter-spacing: 0.01em;
+    letter-spacing: -0.005em;
+    line-height: 1.22;
     color: var(--color-espresso);
   }
 

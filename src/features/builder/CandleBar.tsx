@@ -11,8 +11,15 @@ import { saveBuild, logEvent } from "@/db/db";
 import { addBuildToCart } from "@/features/cart/cart";
 import { useCartUI } from "@/features/cart/CartContext";
 import { useMode } from "@/lib/mode";
+import { formatUSD, isDrinkBuild } from "@/data/build";
+import {
+  SCENT_BY_ID,
+  VESSEL_BY_ID,
+  WAX_BY_ID,
+  WHIP_BY_ID,
+  DRIZZLE_BY_ID,
+} from "@/data/ingredients";
 import { Button } from "@/components/ui/Button";
-import { PricePill } from "@/components/ui/PricePill";
 import { CandleRenderer } from "./renderer";
 import { useCandleBuild, STEP_LABEL } from "./useCandleBuild";
 import { StepRail } from "./StepRail";
@@ -22,9 +29,9 @@ import { FavoritePicker } from "./FavoritePicker";
 import { SPRING, swipePower, SWIPE_CONFIDENCE } from "@/lib/motionPresets";
 
 const variants = {
-  enter: (dir: number) => ({ x: dir > 0 ? 60 : -60, opacity: 0 }),
+  enter: (dir: number) => ({ x: dir > 0 ? 56 : -56, opacity: 0 }),
   center: { x: 0, opacity: 1 },
-  exit: (dir: number) => ({ x: dir < 0 ? 60 : -60, opacity: 0 }),
+  exit: (dir: number) => ({ x: dir < 0 ? 56 : -56, opacity: 0 }),
 };
 
 export function CandleBar({ initial }: { initial?: BuildConfig }) {
@@ -36,22 +43,16 @@ export function CandleBar({ initial }: { initial?: BuildConfig }) {
   const [reveal, setReveal] = useState(false);
   const [favOpen, setFavOpen] = useState(false);
 
-  // Clamp the page if the step set shrinks (e.g. switching to the drink path).
   const current = Math.min(page, steps.length - 1);
   const stepId = steps[current];
   const atFirst = current === 0;
   const atLast = current === steps.length - 1;
 
-  // Drag x drives a subtle parallax on the persistent stage (no re-renders).
   const dragX = useMotionValue(0);
-  const stageX = useTransform(dragX, (v) => v * 0.06);
+  const stageX = useTransform(dragX, (v) => v * 0.05);
 
-  const paginate = (d: number) => {
-    setPage(([p]) => {
-      const next = Math.min(Math.max(p + d, 0), steps.length - 1);
-      return [next, d];
-    });
-  };
+  const paginate = (d: number) =>
+    setPage(([p]) => [Math.min(Math.max(p + d, 0), steps.length - 1), d]);
 
   function onDragEnd(_: unknown, info: PanInfo) {
     dragX.set(0);
@@ -64,57 +65,62 @@ export function CandleBar({ initial }: { initial?: BuildConfig }) {
     logEvent("builder_step", { step: stepId }, mode);
   }, [stepId, mode]);
 
-  async function finish() {
-    setReveal(true);
-    logEvent("builder_reveal", { name: config.name }, mode);
-  }
-
   async function addToCart() {
     await saveBuild(config, price.total, mode);
     await addBuildToCart(config, price.total, mode);
     setReveal(false);
-    setOpen(true); // open the bag (no-op outside the storefront shell)
+    setOpen(true);
   }
 
+  const NextButton = atLast ? (
+    <Button variant="gold" size="lg" onClick={() => setReveal(true)} className="flex-1 lg:flex-none">
+      Light it ✦
+    </Button>
+  ) : (
+    <Button variant="primary" size="md" onClick={() => paginate(1)} className="flex-1 lg:flex-none">
+      Next →
+    </Button>
+  );
+
   return (
-    <div className="mx-auto max-w-6xl px-4 pb-28 pt-4 lg:pb-10">
-      <div className="flex flex-col gap-6 lg:flex-row lg:items-start">
-        {/* ── PERSISTENT STAGE (never inside AnimatePresence; never reloads) ── */}
+    <div className="mx-auto max-w-6xl px-4 pb-32 pt-4 lg:pb-12">
+      <div className="flex flex-col gap-8 lg:flex-row lg:items-start">
+        {/* ── PERSISTENT STAGE ── */}
         <div className="lg:sticky lg:top-24 lg:w-1/2">
           <motion.div
             style={{ x: stageX }}
-            className="relative mx-auto w-full max-w-md overflow-hidden rounded-[2rem] border hairline bg-gradient-to-b from-blush-soft/30 to-canvas-deep/30 p-3 shadow-[var(--shadow-soft)]"
+            className="relative mx-auto w-full max-w-md"
           >
-            <CandleRenderer config={config} revealed={reveal} />
-            <div className="absolute left-1/2 top-4 -translate-x-1/2">
-              <PricePill amount={price.total} />
+            {/* soft pedestal glow instead of a hard bordered box */}
+            <div className="absolute inset-x-6 bottom-6 top-10 rounded-[3rem] bg-gradient-to-b from-blush-soft/30 to-transparent blur-2xl" />
+            <div className="relative">
+              <CandleRenderer config={config} revealed={reveal} />
             </div>
           </motion.div>
 
-          {/* persistent controls */}
-          <div className="mt-4 flex flex-wrap items-center justify-center gap-2">
-            <Button variant="outline" size="sm" onClick={() => setFavOpen(true)}>
-              ★ Start from a Favorite
-            </Button>
-            <Button variant="ghost" size="sm" onClick={surprise}>
-              ✨ Surprise Me
-            </Button>
-            <Button variant="ghost" size="sm" onClick={undo} disabled={!canUndo}>
-              ↶ Undo
-            </Button>
+          {/* running recipe summary — glanceable */}
+          <RecipeSummary config={config} />
+
+          {/* quiet secondary toolbar */}
+          <div className="mt-4 flex items-center justify-center gap-1">
+            <TextAction onClick={() => setFavOpen(true)}>★ Favorite</TextAction>
+            <Dot />
+            <TextAction onClick={surprise}>✨ Surprise me</TextAction>
+            <Dot />
+            <TextAction onClick={undo} disabled={!canUndo}>↶ Undo</TextAction>
           </div>
         </div>
 
-        {/* ── SWIPEABLE STEPS ── */}
+        {/* ── STEPS ── */}
         <div className="lg:w-1/2">
           <StepRail steps={steps} current={current} onJump={(i) => setPage([i, i > current ? 1 : -1])} />
 
-          {/* live region for SR users on step change */}
           <p className="sr-only" aria-live="polite">
             Step {current + 1} of {steps.length}: {STEP_LABEL[stepId]}
           </p>
 
-          <div className="relative mt-2 min-h-[22rem] overflow-hidden">
+          {/* lighter panel — no heavy border box */}
+          <div className="relative mt-3 min-h-[20rem] overflow-hidden">
             <AnimatePresence mode="wait" custom={dir} initial={false}>
               <motion.section
                 key={stepId}
@@ -126,10 +132,10 @@ export function CandleBar({ initial }: { initial?: BuildConfig }) {
                 transition={SPRING.page}
                 drag="x"
                 dragConstraints={{ left: 0, right: 0 }}
-                dragElastic={{ left: atLast ? 0.12 : 0.7, right: atFirst ? 0.12 : 0.7 }}
+                dragElastic={{ left: atLast ? 0.1 : 0.6, right: atFirst ? 0.1 : 0.6 }}
                 onDrag={(_, info) => dragX.set(info.offset.x)}
                 onDragEnd={onDragEnd}
-                className="touch-pan-y rounded-3xl border hairline bg-porcelain/60 p-5"
+                className="touch-pan-y"
                 role="group"
                 aria-roledescription="slide"
                 aria-label={`Step ${current + 1} of ${steps.length}`}
@@ -139,21 +145,32 @@ export function CandleBar({ initial }: { initial?: BuildConfig }) {
             </AnimatePresence>
           </div>
 
-          {/* nav */}
-          <div className="mt-4 flex items-center justify-between">
+          {/* desktop inline nav */}
+          <div className="mt-6 hidden items-center justify-between lg:flex">
             <Button variant="ghost" size="md" onClick={() => paginate(-1)} disabled={atFirst}>
               ← Back
             </Button>
-            {atLast ? (
-              <Button variant="gold" size="lg" onClick={finish}>
-                Light it ✦
-              </Button>
-            ) : (
-              <Button variant="primary" size="md" onClick={() => paginate(1)}>
-                Next →
-              </Button>
-            )}
+            <span className="price text-lg text-cocoa">{formatUSD(price.total)}</span>
+            {NextButton}
           </div>
+        </div>
+      </div>
+
+      {/* ── MOBILE sticky CTA bar (always reachable) ── */}
+      <div className="fixed inset-x-0 bottom-0 z-30 lg:hidden">
+        <div className="glass mx-3 mb-3 flex items-center gap-3 rounded-full border hairline px-4 py-2.5 shadow-[var(--shadow-lift)]">
+          <button
+            onClick={() => paginate(-1)}
+            disabled={atFirst}
+            className="shrink-0 px-2 py-2 text-cocoa disabled:opacity-30"
+            aria-label="Back"
+          >
+            ←
+          </button>
+          <span className="price flex-1 text-center text-lg text-espresso">
+            {formatUSD(price.total)}
+          </span>
+          {NextButton}
         </div>
       </div>
 
@@ -172,6 +189,54 @@ export function CandleBar({ initial }: { initial?: BuildConfig }) {
           setPage([0, -1]);
         }}
       />
+    </div>
+  );
+}
+
+function TextAction({
+  children,
+  onClick,
+  disabled,
+}: {
+  children: React.ReactNode;
+  onClick: () => void;
+  disabled?: boolean;
+}) {
+  return (
+    <button
+      onClick={onClick}
+      disabled={disabled}
+      className="rounded-full px-3 py-1.5 text-xs uppercase tracking-[0.14em] text-muted transition-colors hover:text-cocoa disabled:opacity-30"
+    >
+      {children}
+    </button>
+  );
+}
+
+const Dot = () => <span className="text-mauve/40" aria-hidden>·</span>;
+
+/** Glanceable summary of the current build (clean-configurator principle). */
+function RecipeSummary({ config }: { config: BuildConfig }) {
+  const drink = isDrinkBuild(config);
+  const parts = [
+    VESSEL_BY_ID[config.vesselId]?.name.split(" · ")[0],
+    WAX_BY_ID[config.waxColorId]?.name,
+    config.scents.map((s) => SCENT_BY_ID[s.scentId]?.name).filter(Boolean).join(" + "),
+    !drink && config.whipId ? WHIP_BY_ID[config.whipId]?.name : null,
+    !drink && config.drizzleId ? `${DRIZZLE_BY_ID[config.drizzleId]?.name} drizzle` : null,
+    !drink && config.toppingIds.length ? `${config.toppingIds.length} topping${config.toppingIds.length > 1 ? "s" : ""}` : null,
+  ].filter(Boolean) as string[];
+
+  return (
+    <div className="no-scrollbar mt-5 flex flex-wrap justify-center gap-1.5 px-2">
+      {parts.map((p, i) => (
+        <span
+          key={i}
+          className="rounded-full bg-porcelain/70 px-3 py-1 text-[0.7rem] text-cocoa"
+        >
+          {p}
+        </span>
+      ))}
     </div>
   );
 }
