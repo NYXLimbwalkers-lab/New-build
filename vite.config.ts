@@ -40,12 +40,28 @@ export default defineConfig({
         ],
       },
       workbox: {
-        // Cache the app shell + ingredient/candle layer assets so the kiosk
-        // works offline (Phase 3 requirement, set up early).
-        globPatterns: ["**/*.{js,css,html,svg,png,webp,woff2}"],
+        // Precache hashed JS/CSS/assets (immutable) — but NOT html, so the page
+        // shell is fetched fresh when online (deploys show immediately; no stale
+        // cached app during iteration). Offline still works via the NetworkFirst
+        // fallback below.
+        globPatterns: ["**/*.{js,css,svg,png,webp,woff2}"],
+        cleanupOutdatedCaches: true,
+        skipWaiting: true,
+        clientsClaim: true,
+        navigateFallback: null,
         runtimeCaching: [
           {
-            urlPattern: ({ url }) => url.pathname.startsWith("/layers/"),
+            // Always try the network for page navigations; fall back to cache offline.
+            urlPattern: ({ request }) => request.mode === "navigate",
+            handler: "NetworkFirst",
+            options: {
+              cacheName: "html",
+              networkTimeoutSeconds: 3,
+              expiration: { maxEntries: 10 },
+            },
+          },
+          {
+            urlPattern: ({ url }) => url.pathname.includes("/layers/"),
             handler: "CacheFirst",
             options: {
               cacheName: "candle-layers",
