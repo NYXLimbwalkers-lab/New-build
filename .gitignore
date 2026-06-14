@@ -9,3 +9,6 @@ dist-ssr
 
 # Crawled source assets (large; re-fetch with scripts/fetch-assets.mjs)
 assets/raw
+
+# Dev preview artifact
+candle-preview.png

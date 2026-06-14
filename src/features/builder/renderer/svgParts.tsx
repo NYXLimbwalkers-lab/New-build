@@ -2,296 +2,264 @@ import { motion } from "motion/react";
 import { SPRING } from "@/lib/motionPresets";
 
 /*
-  Hand-drawn SVG layer art for the candle. Each part is its own layer, composited
-  in recipe order by SvgLayerRenderer. Geometry shares ONE camera framing
-  (viewBox 0 0 400 470, surface at y≈402, centered x=200) so any combination
-  reads as a single studio photo — the same discipline the PNG pipeline will use.
+  Semi-realistic candle art (viewBox 600×740), parametric on ingredient colors.
+  Designed offline with a rasterizer (scripts/preview-candle.mjs) so the forms
+  and shading are verified, then ported here with the Confiserie animations.
+  One shared camera framing so every combination reads as one illustration.
 */
 
-export interface VesselGeometry {
-  /** Inner region the wax fills: x, top y, width, bottom y. */
-  fill: { x: number; top: number; w: number; bottom: number; rx: number };
-  /** Where whip/toppings sit (the "mouth" center + half-width). */
-  mouth: { cx: number; cy: number; rx: number };
+export const VIEW = { w: 600, h: 740 };
+/** Where cream/toppings sit, and where the wick roots. */
+export const MOUTH = { cx: 300, cy: 350 };
+
+export function GlowDefs() {
+  return (
+    <defs>
+      <linearGradient id="cglass" x1="0" y1="0" x2="1" y2="0">
+        <stop offset="0" stopColor="#ffffff" stopOpacity=".55" />
+        <stop offset=".16" stopColor="#ffffff" stopOpacity=".10" />
+        <stop offset=".5" stopColor="#e9e2dd" stopOpacity=".05" />
+        <stop offset=".84" stopColor="#9b908a" stopOpacity=".10" />
+        <stop offset="1" stopColor="#8c817b" stopOpacity=".22" />
+      </linearGradient>
+      <linearGradient id="cdepth" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stopColor="#ffffff" stopOpacity=".18" />
+        <stop offset=".5" stopColor="#3A2C2A" stopOpacity="0" />
+        <stop offset="1" stopColor="#3A2C2A" stopOpacity=".22" />
+      </linearGradient>
+      <radialGradient id="ccreamHi" cx="38%" cy="26%" r="60%">
+        <stop offset="0" stopColor="#ffffff" stopOpacity=".85" />
+        <stop offset="100%" stopColor="#ffffff" stopOpacity="0" />
+      </radialGradient>
+      <radialGradient id="cglow" cx="50%" cy="50%" r="50%">
+        <stop offset="0" stopColor="#F8D89A" stopOpacity=".8" />
+        <stop offset="55%" stopColor="#F0C0A0" stopOpacity=".25" />
+        <stop offset="100%" stopColor="#F0C0A0" stopOpacity="0" />
+      </radialGradient>
+      <filter id="csoft" x="-40%" y="-40%" width="180%" height="180%">
+        <feDropShadow dx="0" dy="6" stdDeviation="7" floodColor="#3A2C2A" floodOpacity=".18" />
+      </filter>
+      <filter id="ctiny" x="-50%" y="-50%" width="200%" height="200%">
+        <feDropShadow dx="0" dy="3" stdDeviation="3" floodColor="#3A2C2A" floodOpacity=".3" />
+      </filter>
+    </defs>
+  );
 }
 
-const GLASS = "#EBE6E4";
-const GLASS_EDGE = "#D7CFCb";
+export function SurfaceShadow() {
+  return <ellipse cx="300" cy="664" rx="170" ry="30" fill="#3A2C2A" opacity=".15" />;
+}
 
-/* ── Vessels ──────────────────────────────────────────────────────────── */
+/* ── Jar (glass + animated wax pour). Used for soy vessels. ───────────── */
+const JAR_GLASS = "M171 350 L164 614 Q164 648 198 648 L402 648 Q436 648 436 614 L429 350 Z";
+const JAR_WAX = "M186 392 L180 612 Q180 632 200 632 L400 632 Q420 632 420 612 L414 392 Z";
 
-export function JarVessel({ tall }: { tall?: boolean }) {
-  const top = tall ? 150 : 178;
+export function JarVessel({ waxHex, tin }: { waxHex: string; tin?: boolean }) {
   return (
     <g>
-      {/* glass body */}
-      <rect
-        x="120"
-        y={top}
-        width="160"
-        height={402 - top}
-        rx="26"
-        fill={GLASS}
-        fillOpacity="0.55"
-        stroke={GLASS_EDGE}
-        strokeWidth="2"
-      />
-      {/* glass tint gradient (light left edge → darker right edge) */}
-      <rect x="120" y={top} width="160" height={402 - top} rx="26" fill="url(#glassV)" />
-      {/* pearlescent highlights */}
-      <rect x="134" y={top + 12} width="20" height={402 - top - 30} rx="10" fill="#fff" fillOpacity="0.5" />
-      <rect x="250" y={top + 20} width="10" height={402 - top - 50} rx="5" fill="#fff" fillOpacity="0.25" />
-      {/* rim */}
-      <ellipse cx="200" cy={top} rx="80" ry="11" fill={GLASS} fillOpacity="0.7" stroke={GLASS_EDGE} strokeWidth="2" />
-    </g>
-  );
-}
-
-export function jarGeometry(tall?: boolean): VesselGeometry {
-  const top = tall ? 150 : 178;
-  return {
-    fill: { x: 126, top: top + 4, w: 148, bottom: 396, rx: 22 },
-    mouth: { cx: 200, cy: top, rx: 78 },
-  };
-}
-
-export function TinVessel() {
-  return (
-    <g>
-      <rect x="128" y="250" width="144" height="152" rx="14" fill="#E8E2DA" stroke="#C9BFB2" strokeWidth="2" />
-      <rect x="128" y="250" width="144" height="18" rx="9" fill="#D8CFC2" />
-      <rect x="140" y="262" width="14" height="128" rx="7" fill="#fff" fillOpacity="0.45" />
-      <ellipse cx="200" cy="250" rx="72" ry="9" fill="#EDE7DF" stroke="#C9BFB2" strokeWidth="2" />
-    </g>
-  );
-}
-export function tinGeometry(): VesselGeometry {
-  return { fill: { x: 134, top: 256, w: 132, bottom: 396, rx: 10 }, mouth: { cx: 200, cy: 250, rx: 70 } };
-}
-
-export function DessertGlass() {
-  return (
-    <g>
-      {/* footed coupe */}
-      <path d="M130 196 Q130 300 200 312 Q270 300 270 196 Z" fill={GLASS} fillOpacity="0.5" stroke={GLASS_EDGE} strokeWidth="2" />
-      <rect x="196" y="310" width="8" height="58" fill={GLASS} fillOpacity="0.55" />
-      <ellipse cx="200" cy="392" rx="46" ry="10" fill={GLASS} fillOpacity="0.6" stroke={GLASS_EDGE} strokeWidth="2" />
-      <ellipse cx="200" cy="196" rx="70" ry="12" fill={GLASS} fillOpacity="0.65" stroke={GLASS_EDGE} strokeWidth="2" />
-      <path d="M146 206 Q150 280 196 300" fill="none" stroke="#fff" strokeOpacity="0.5" strokeWidth="6" strokeLinecap="round" />
-    </g>
-  );
-}
-export function dessertGeometry(): VesselGeometry {
-  return { fill: { x: 138, top: 202, w: 124, bottom: 305, rx: 60 }, mouth: { cx: 200, cy: 196, rx: 68 } };
-}
-
-export function WineGlass() {
-  return (
-    <g>
-      <path d="M138 150 Q138 250 200 268 Q262 250 262 150 Z" fill={GLASS} fillOpacity="0.45" stroke={GLASS_EDGE} strokeWidth="2" />
-      <rect x="196" y="266" width="8" height="96" fill={GLASS} fillOpacity="0.5" />
-      <ellipse cx="200" cy="392" rx="52" ry="11" fill={GLASS} fillOpacity="0.55" stroke={GLASS_EDGE} strokeWidth="2" />
-      <ellipse cx="200" cy="150" rx="62" ry="11" fill={GLASS} fillOpacity="0.6" stroke={GLASS_EDGE} strokeWidth="2" />
-      <path d="M152 160 Q156 230 196 256" fill="none" stroke="#fff" strokeOpacity="0.45" strokeWidth="6" strokeLinecap="round" />
-    </g>
-  );
-}
-export function wineGeometry(): VesselGeometry {
-  return { fill: { x: 144, top: 156, w: 112, bottom: 262, rx: 56 }, mouth: { cx: 200, cy: 150, rx: 60 } };
-}
-
-/* ── Wax fill (animated pour) ─────────────────────────────────────────── */
-
-export function WaxFill({ geo, hex, gel }: { geo: VesselGeometry; hex: string; gel?: boolean }) {
-  const { x, top, w, bottom, rx } = geo.fill;
-  const h = bottom - top;
-  return (
-    <motion.g
-      initial={{ scaleY: 0, opacity: 0.4 }}
-      animate={{ scaleY: 1, opacity: 1 }}
-      transition={{ ...SPRING.pour }}
-      style={{ transformOrigin: `200px ${bottom}px` }}
-    >
-      {/* body */}
-      <rect x={x} y={top} width={w} height={h} rx={rx} fill={hex} fillOpacity={gel ? 0.7 : 0.96} />
-      {/* depth toward the bottom + glassy top sheen */}
-      <rect x={x} y={top} width={w} height={h} rx={rx} fill="url(#depthBottom)" />
-      <rect x={x} y={top} width={w} height={h} rx={rx} fill="url(#sheenTop)" />
-      {/* crisp specular streak down the left */}
-      <rect x={x + 7} y={top + 8} width="9" height={h - 22} rx="4.5" fill="#fff" fillOpacity={gel ? 0.3 : 0.2} />
-      {/* liquid surface meniscus */}
-      <ellipse cx={x + w / 2} cy={top} rx={w / 2 - 3} ry="6.5" fill="#fff" fillOpacity={gel ? 0.18 : 0.26} />
-      <ellipse cx={x + w / 2} cy={top + 1.5} rx={w / 2 - 7} ry="4" fill={hex} fillOpacity="0.5" />
-      {gel && (
-        <>
-          {/* suspended bubbles for the "drink" look */}
-          <circle cx={x + w * 0.66} cy={top + h * 0.4} r="5" fill="#fff" fillOpacity="0.45" />
-          <circle cx={x + w * 0.4} cy={top + h * 0.62} r="3.5" fill="#fff" fillOpacity="0.4" />
-          <circle cx={x + w * 0.55} cy={top + h * 0.78} r="2.5" fill="#fff" fillOpacity="0.32" />
-        </>
-      )}
-    </motion.g>
-  );
-}
-
-/* ── Whipped topping (pipes on) ───────────────────────────────────────── */
-
-export function WhipTopping({ geo, hex }: { geo: VesselGeometry; hex: string }) {
-  const { cx, cy, rx } = geo.mouth;
-  const r = rx * 0.92;
-  // a stacked swirl built from a few softening ellipses + a peak
-  return (
-    <motion.g
-      initial={{ scale: 0.2, y: 18, opacity: 0 }}
-      animate={{ scale: 1, y: 0, opacity: 1 }}
-      transition={{ ...SPRING.pipe }}
-      style={{ transformOrigin: `${cx}px ${cy}px` }}
-    >
-      {/* contact shadow where the cream meets the wax */}
-      <ellipse cx={cx} cy={cy + 2} rx={r * 0.96} ry={r * 0.2} fill="#3A2C2A" fillOpacity="0.12" />
-      {/* piped cream lobes (soft drop shadow grounds the swirl) */}
-      <g filter="url(#softShadow)">
-        <ellipse cx={cx} cy={cy} rx={r} ry={r * 0.34} fill={hex} />
-        <ellipse cx={cx} cy={cy - r * 0.28} rx={r * 0.74} ry={r * 0.3} fill={hex} />
-        <ellipse cx={cx} cy={cy - r * 0.54} rx={r * 0.5} ry={r * 0.26} fill={hex} />
-        <ellipse cx={cx} cy={cy - r * 0.78} rx={r * 0.28} ry={r * 0.2} fill={hex} />
-        <path d={`M${cx} ${cy - r * 0.95} q6 -14 0 -22 q-6 8 0 22`} fill={hex} />
+      <g filter="url(#csoft)">
+        <path d={JAR_GLASS} fill={tin ? "#E6DFD6" : "#ECE7E3"} fillOpacity={tin ? 0.95 : 0.5} />
       </g>
-      {/* soft volumetric highlight + crisp specular */}
-      <ellipse cx={cx} cy={cy - r * 0.22} rx={r * 0.88} ry={r * 0.5} fill="url(#whipHi)" />
-      <ellipse cx={cx - r * 0.32} cy={cy - r * 0.36} rx={r * 0.12} ry={r * 0.07} fill="#fff" fillOpacity="0.55" />
+      {/* animated wax pour (clipped to the inset wax shape) */}
+      <motion.g
+        initial={{ scaleY: 0, opacity: 0.5 }}
+        animate={{ scaleY: 1, opacity: 1 }}
+        transition={SPRING.pour}
+        style={{ transformOrigin: "300px 632px" }}
+      >
+        <path d={JAR_WAX} fill={waxHex} />
+        <path d={JAR_WAX} fill="url(#cdepth)" />
+        <path d="M186 392 L414 392 L412 422 L188 422 Z" fill="#fff" opacity=".28" />
+      </motion.g>
+      {/* glass tint + highlights over the wax */}
+      {!tin && <path d={JAR_GLASS} fill="url(#cglass)" />}
+      <rect x="184" y="372" width="16" height="250" rx="8" fill="#fff" opacity={tin ? 0.3 : 0.5} />
+      <rect x="408" y="380" width="8" height="220" rx="4" fill="#fff" opacity=".22" />
+      {/* rim */}
+      <ellipse cx="300" cy="350" rx="129" ry="20" fill={tin ? "#D8CFC4" : "#E7E0DB"} stroke="#D2C8C1" strokeWidth="2" />
+      <ellipse cx="300" cy="350" rx="118" ry="14" fill={waxHex} fillOpacity=".5" />
+    </g>
+  );
+}
+
+/* ── Wine glass (gel "drink" path) ────────────────────────────────────── */
+export function WineGlass({ waxHex }: { waxHex: string }) {
+  return (
+    <g>
+      <g filter="url(#csoft)">
+        <path d="M198 210 Q198 360 300 392 Q402 360 402 210 Z" fill="#ECE7E3" fillOpacity=".42" />
+      </g>
+      {/* gel fill */}
+      <motion.g
+        initial={{ scaleY: 0, opacity: 0.5 }}
+        animate={{ scaleY: 1, opacity: 1 }}
+        transition={SPRING.pour}
+        style={{ transformOrigin: "300px 392px" }}
+      >
+        <path d="M210 250 Q210 352 300 380 Q390 352 390 250 Z" fill={waxHex} fillOpacity=".75" />
+        <ellipse cx="300" cy="250" rx="90" ry="12" fill="#fff" fillOpacity=".2" />
+        <circle cx="330" cy="300" r="7" fill="#fff" fillOpacity=".4" />
+        <circle cx="280" cy="330" r="5" fill="#fff" fillOpacity=".35" />
+        <circle cx="312" cy="345" r="4" fill="#fff" fillOpacity=".3" />
+      </motion.g>
+      <path d="M198 210 Q198 360 300 392 Q402 360 402 210 Z" fill="url(#cglass)" />
+      <path d="M214 222 Q216 320 290 360" fill="none" stroke="#fff" strokeOpacity=".45" strokeWidth="8" strokeLinecap="round" />
+      <ellipse cx="300" cy="210" rx="102" ry="16" fill="#EDE7DF" fillOpacity=".7" stroke="#D2C8C1" strokeWidth="2" />
+      {/* stem + foot */}
+      <rect x="294" y="390" width="12" height="150" fill="#ECE7E3" fillOpacity=".55" />
+      <ellipse cx="300" cy="548" rx="74" ry="16" fill="#EDE7DF" fillOpacity=".6" stroke="#D2C8C1" strokeWidth="2" />
+    </g>
+  );
+}
+
+/* ── Whipped cream swirl (piped dollops, parametric color) ────────────── */
+const DOLLOPS = [
+  { x: 300, y: 330, r: 116, ry: 60 },
+  { x: 268, y: 300, r: 78 },
+  { x: 336, y: 292, r: 70 },
+  { x: 286, y: 256, r: 64 },
+  { x: 322, y: 224, r: 52 },
+  { x: 300, y: 196, r: 40 },
+  { x: 300, y: 168, r: 26 },
+];
+
+export function CreamSwirl({ hex }: { hex: string }) {
+  return (
+    <motion.g
+      initial={{ scale: 0.4, y: 26, opacity: 0 }}
+      animate={{ scale: 1, y: 0, opacity: 1 }}
+      transition={SPRING.pipe}
+      style={{ transformOrigin: "300px 330px" }}
+    >
+      <ellipse cx="300" cy="334" rx="118" ry="22" fill="#3A2C2A" opacity=".14" />
+      <g filter="url(#csoft)">
+        {DOLLOPS.map((d, i) => (
+          <ellipse key={i} cx={d.x} cy={d.y} rx={d.r} ry={d.ry ?? d.r * 0.9} fill={hex} />
+        ))}
+      </g>
+      {DOLLOPS.map((d, i) => {
+        const ry = d.ry ?? d.r * 0.9;
+        return (
+          <g key={`s${i}`}>
+            <ellipse cx={d.x + d.r * 0.22} cy={d.y + ry * 0.34} rx={d.r * 0.62} ry={ry * 0.5} fill="#3A2C2A" opacity=".07" />
+            <ellipse cx={d.x - d.r * 0.28} cy={d.y - ry * 0.42} rx={d.r * 0.5} ry={ry * 0.4} fill="url(#ccreamHi)" />
+          </g>
+        );
+      })}
     </motion.g>
   );
 }
 
-/* ── Drizzle (pours slow + glossy) ────────────────────────────────────── */
-
-export function Drizzle({ geo, hex }: { geo: VesselGeometry; hex: string }) {
-  const { cx, cy, rx } = geo.mouth;
-  const r = rx * 0.92;
-  const d = `M${cx - r * 0.7} ${cy - r * 0.1}
-    q ${r * 0.35} ${r * 0.22} ${r * 0.7} 0
-    q ${r * 0.35} -${r * 0.22} ${r * 0.7} ${r * 0.05}
-    M${cx - r * 0.5} ${cy - r * 0.35}
-    q ${r * 0.5} ${r * 0.3} ${r} -${r * 0.05}`;
+/* ── Drizzle (glossy, parametric) ─────────────────────────────────────── */
+export function Drizzle({ hex }: { hex: string }) {
+  const d = "M214 250 q34 26 70 6 q34 -20 70 4 q26 16 44 2";
   return (
     <motion.g
+      fill="none"
+      strokeLinecap="round"
       initial={{ pathLength: 0, opacity: 0 }}
       animate={{ pathLength: 1, opacity: 1 }}
-      transition={{ ...SPRING.drizzle }}
+      transition={SPRING.drizzle}
     >
-      {/* glossy drizzle: colored body + a thin specular highlight on top */}
-      <motion.path d={d} fill="none" stroke={hex} strokeWidth="6.5" strokeLinecap="round" />
-      <motion.path
-        d={d}
-        fill="none"
-        stroke="#fff"
-        strokeOpacity="0.45"
-        strokeWidth="2"
-        strokeLinecap="round"
-        transform="translate(0 -1.4)"
-      />
+      <motion.path d={d} stroke={hex} strokeWidth="9" />
+      <motion.path d={d} stroke="#fff" strokeOpacity=".4" strokeWidth="3" transform="translate(0 -2)" />
     </motion.g>
   );
 }
 
-/* ── Toppings (drop in with a soft bounce) ────────────────────────────── */
-
-const TOPPING_SHAPE: Record<string, (p: { x: number; y: number; hex: string }) => React.ReactNode> = {
-  strawberry: ({ x, y, hex }) => (
+/* ── Toppings (drop in, soft shadow) ──────────────────────────────────── */
+const TOPPING_SHAPE: Record<string, (hex: string) => React.ReactNode> = {
+  strawberry: (hex) => (
     <g>
-      <path d={`M${x} ${y - 9} q11 2 9 13 q-2 11 -9 12 q-7 -1 -9 -12 q-2 -11 9 -13z`} fill={hex} />
-      <path d={`M${x - 4} ${y - 11} l4 -5 l4 5z`} fill="#3f7a3f" />
-      <circle cx={x - 3} cy={y + 3} r="1" fill="#fff8" />
-      <circle cx={x + 3} cy={y + 6} r="1" fill="#fff8" />
+      <path d="M0 -20 C18 -16 22 6 0 26 C-22 6 -18 -16 0 -20 Z" fill={hex} />
+      <path d="M-10 -22 L-2 -30 L0 -22 L3 -30 L11 -22 Z" fill="#3F7A3A" />
+      <circle cx="-5" cy="0" r="1.6" fill="#ffe" /><circle cx="5" cy="5" r="1.6" fill="#ffe" />
+      <circle cx="0" cy="13" r="1.6" fill="#ffe" />
     </g>
   ),
-  blueberry: ({ x, y, hex }) => (
+  blueberry: (hex) => (
     <g>
-      <circle cx={x} cy={y} r="9" fill={hex} />
-      <circle cx={x - 3} cy={y - 3} r="2" fill="#fff5" />
-      <path d={`M${x} ${y - 3} l2 2 l-2 2 l-2 -2z`} fill="#1f2a4a" />
+      <circle cx="0" cy="0" r="15" fill={hex} /><circle cx="-5" cy="-5" r="4" fill="#7C8BB8" />
+      <path d="M0 -4 l3 3 l-3 3 l-3 -3 z" fill="#26304f" />
     </g>
   ),
-  "orange-slice": ({ x, y, hex }) => (
+  "orange-slice": (hex) => (
     <g>
-      <circle cx={x} cy={y} r="11" fill={hex} />
-      <circle cx={x} cy={y} r="8" fill="#fbe0b0" />
-      <path d={`M${x} ${y} L${x} ${y - 8} M${x} ${y} L${x + 7} ${y + 4} M${x} ${y} L${x - 7} ${y + 4}`} stroke={hex} strokeWidth="1.4" />
+      <circle cx="0" cy="0" r="17" fill={hex} /><circle cx="0" cy="0" r="12" fill="#FBE0B0" />
+      <path d="M0 0 V-12 M0 0 L10 6 M0 0 L-10 6" stroke={hex} strokeWidth="2" />
     </g>
   ),
-  waffle: ({ x, y, hex }) => (
-    <g>
-      <rect x={x - 11} y={y - 9} width="22" height="18" rx="4" fill={hex} transform={`rotate(-12 ${x} ${y})`} />
-      <path d={`M${x - 8} ${y - 6} h16 M${x - 8} ${y} h16 M${x - 8} ${y + 6} h16 M${x - 4} ${y - 9} v18 M${x + 4} ${y - 9} v18`} stroke="#b3823f" strokeWidth="1.2" transform={`rotate(-12 ${x} ${y})`} />
+  waffle: (hex) => (
+    <g transform="rotate(-12)">
+      <rect x="-17" y="-14" width="34" height="28" rx="6" fill={hex} />
+      <path d="M-12 -9 H12 M-12 0 H12 M-12 9 H12 M-6 -14 V14 M6 -14 V14" stroke="#b3823f" strokeWidth="2" />
     </g>
   ),
-  sprinkles: ({ x, y }) => (
+  sprinkles: () => (
     <g>
       {["#E8A0C0", "#9ACBE0", "#F6E4B8", "#C4E0B0", "#E0A0A0"].map((c, i) => (
-        <rect key={i} x={x - 10 + i * 5} y={y - 6 + (i % 2) * 8} width="9" height="3.4" rx="1.7" fill={c} transform={`rotate(${i * 40} ${x - 6 + i * 5} ${y})`} />
+        <rect key={i} x={-16 + i * 7} y={-8 + (i % 2) * 12} width="13" height="5" rx="2.5" fill={c} transform={`rotate(${i * 40})`} />
       ))}
     </g>
   ),
-  pecan: ({ x, y, hex }) => (
+  pecan: (hex) => (
     <g>
-      <ellipse cx={x} cy={y} rx="10" ry="7" fill={hex} />
-      <path d={`M${x} ${y - 6} v12 M${x - 6} ${y - 3} q6 3 12 0 M${x - 6} ${y + 3} q6 -3 12 0`} stroke="#5e3c1f" strokeWidth="1" fill="none" />
+      <ellipse cx="0" cy="0" rx="15" ry="11" fill={hex} />
+      <path d="M0 -9 V9 M-9 -4 q9 4 18 0 M-9 4 q9 -4 18 0" stroke="#5e3c1f" strokeWidth="1.5" fill="none" />
     </g>
   ),
-  crumble: ({ x, y, hex }) => (
+  crumble: (hex) => (
     <g>
       {[0, 1, 2, 3, 4].map((i) => (
-        <rect key={i} x={x - 9 + (i % 3) * 7} y={y - 6 + Math.floor(i / 3) * 7} width="6" height="6" rx="2" fill={hex} fillOpacity={0.85 - i * 0.08} transform={`rotate(${i * 25} ${x} ${y})`} />
+        <rect key={i} x={-13 + (i % 3) * 10} y={-9 + Math.floor(i / 3) * 10} width="9" height="9" rx="3" fill={hex} fillOpacity={0.9 - i * 0.08} transform={`rotate(${i * 22})`} />
       ))}
     </g>
   ),
-  candy: ({ x, y, hex }) => (
+  candy: (hex) => (
     <g>
-      <circle cx={x} cy={y} r="8" fill={hex} />
-      <path d={`M${x - 8} ${y} q8 -6 16 0 q-8 6 -16 0z`} fill="#fff7" />
+      <circle cx="0" cy="0" r="12" fill={hex} />
+      <path d="M-12 0 q12 -8 24 0 q-12 8 -24 0z" fill="#fff" fillOpacity=".5" />
     </g>
   ),
-  marshmallow: ({ x, y, hex }) => (
+  marshmallow: (hex) => (
     <g>
-      <rect x={x - 9} y={y - 8} width="18" height="16" rx="6" fill={hex} stroke="#e7d9c4" strokeWidth="1" />
-      <ellipse cx={x} cy={y - 8} rx="9" ry="3" fill="#fff" />
-      <path d={`M${x - 5} ${y + 4} q5 3 10 0`} stroke="#caa97f" strokeWidth="1" fill="none" />
+      <rect x="-14" y="-12" width="28" height="24" rx="9" fill={hex} stroke="#e7d9c4" strokeWidth="1.5" />
+      <ellipse cx="0" cy="-12" rx="14" ry="4" fill="#fff" />
     </g>
   ),
-  cherry: ({ x, y, hex }) => (
+  cherry: (hex) => (
     <g>
-      <circle cx={x} cy={y + 2} r="9" fill={hex} />
-      <circle cx={x - 3} cy={y - 1} r="2" fill="#fff7" />
-      <path d={`M${x} ${y - 7} q4 -10 10 -12`} stroke="#5e7d3a" strokeWidth="1.6" fill="none" />
+      <path d="M0 -10 q26 -36 52 -44" stroke="#5E7D3A" strokeWidth="4" fill="none" />
+      <circle cx="0" cy="0" r="17" fill={hex} />
+      <ellipse cx="-7" cy="-7" rx="5" ry="3.5" fill="#fff" fillOpacity=".55" />
     </g>
   ),
 };
 
-export function ToppingCluster({
-  geo,
-  ids,
-}: {
-  geo: VesselGeometry;
-  ids: { id: string; hex: string }[];
-}) {
-  const { cx, cy, rx } = geo.mouth;
-  // arrange around the mouth in a gentle ring + center
-  const positions = layoutToppings(cx, cy - rx * 0.45, rx * 0.62, ids.length);
+const TOP_SPOTS = [
+  { x: 232, y: 200 },
+  { x: 372, y: 210 },
+  { x: 300, y: 162 },
+  { x: 392, y: 250 },
+  { x: 224, y: 256 },
+  { x: 336, y: 178 },
+];
+
+export function ToppingCluster({ ids }: { ids: { id: string; hex: string }[] }) {
   return (
     <g>
       {ids.map((t, i) => {
         const shape = TOPPING_SHAPE[t.id] ?? TOPPING_SHAPE.candy;
-        const p = positions[i];
+        const p = TOP_SPOTS[i % TOP_SPOTS.length];
         return (
           <motion.g
             key={`${t.id}-${i}`}
-            initial={{ y: -60, opacity: 0, rotate: -12 }}
+            initial={{ y: -90, opacity: 0, rotate: -14 }}
             animate={{ y: 0, opacity: 1, rotate: 0 }}
-            transition={{ ...SPRING.drop, delay: i * 0.05 }}
-            filter="url(#softShadow)"
+            transition={{ ...SPRING.drop, delay: i * 0.06 }}
+            filter="url(#ctiny)"
           >
-            {shape({ x: p.x, y: p.y, hex: t.hex })}
+            <g transform={`translate(${p.x} ${p.y})`}>{shape(t.hex)}</g>
           </motion.g>
         );
       })}
@@ -299,90 +267,44 @@ export function ToppingCluster({
   );
 }
 
-function layoutToppings(cx: number, cy: number, radius: number, n: number) {
-  if (n <= 0) return [];
-  if (n === 1) return [{ x: cx, y: cy }];
-  const pts: { x: number; y: number }[] = [];
-  const ring = Math.min(n, 6);
-  for (let i = 0; i < ring; i++) {
-    const a = (i / ring) * Math.PI * 2 - Math.PI / 2;
-    pts.push({ x: cx + Math.cos(a) * radius, y: cy + Math.sin(a) * radius * 0.7 });
-  }
-  for (let i = ring; i < n; i++) pts.push({ x: cx, y: cy });
-  return pts;
-}
-
 /* ── Flame + glow (reveal) ────────────────────────────────────────────── */
-
-export function Flame({ geo }: { geo: VesselGeometry }) {
-  const { cx, cy } = geo.mouth;
-  const baseY = cy - 6;
+export function Flame() {
   return (
     <g>
-      {/* wick */}
-      <rect x={cx - 1.4} y={baseY - 16} width="2.8" height="18" rx="1.4" fill="#3A2C2A" />
-      {/* glow bloom */}
       <motion.circle
-        cx={cx}
-        cy={baseY - 30}
-        r="70"
-        fill="url(#flameGlow)"
+        cx="300" cy="130" r="86" fill="url(#cglow)"
         initial={{ opacity: 0, scale: 0.6 }}
-        animate={{ opacity: 0.9, scale: 1 }}
+        animate={{ opacity: 1, scale: 1 }}
         transition={{ duration: 0.8, ease: "easeOut" }}
       />
-      {/* flame */}
+      <rect x="297" y="120" width="6" height="40" rx="3" fill="#3A2C2A" />
       <motion.g
-        style={{ transformOrigin: `${cx}px ${baseY - 16}px` }}
+        style={{ transformOrigin: "300px 124px" }}
         animate={{ scaleY: [1, 1.12, 0.96, 1.06, 1], scaleX: [1, 0.96, 1.04, 0.98, 1] }}
         transition={{ duration: 1.6, repeat: Infinity, ease: "easeInOut" }}
       >
-        <path d={`M${cx} ${baseY - 44} q12 14 0 30 q-12 -16 0 -30z`} fill="#E9B65A" />
-        <path d={`M${cx} ${baseY - 36} q7 9 0 19 q-7 -10 0 -19z`} fill="#F6E2B0" />
-        <ellipse cx={cx} cy={baseY - 14} rx="3" ry="5" fill="#9ec5ff" fillOpacity="0.8" />
+        <path d="M300 40 C326 70 326 102 300 128 C274 102 274 70 300 40 Z" fill="#F0B24E" />
+        <path d="M300 62 C316 82 316 104 300 126 C284 104 284 82 300 62 Z" fill="#F8E6B0" />
+        <ellipse cx="300" cy="118" rx="6" ry="10" fill="#9ec5ff" fillOpacity=".75" />
       </motion.g>
     </g>
   );
 }
 
-export function GlowDefs() {
+/* ── Name label on the vessel ─────────────────────────────────────────── */
+export function NameLabel({ name }: { name: string }) {
+  const text = name.trim().length > 18 ? name.trim().slice(0, 17) + "…" : name.trim();
   return (
-    <defs>
-      <radialGradient id="flameGlow" cx="50%" cy="50%" r="50%">
-        <stop offset="0%" stopColor="#F6D89A" stopOpacity="0.7" />
-        <stop offset="45%" stopColor="#E8C4C8" stopOpacity="0.3" />
-        <stop offset="100%" stopColor="#E8C4C8" stopOpacity="0" />
-      </radialGradient>
-      <radialGradient id="surfaceShadow" cx="50%" cy="50%" r="50%">
-        <stop offset="0%" stopColor="#3A2C2A" stopOpacity="0.18" />
-        <stop offset="100%" stopColor="#3A2C2A" stopOpacity="0" />
-      </radialGradient>
-
-      {/* Color-agnostic lighting overlays — give any tinted shape real depth. */}
-      <linearGradient id="sheenTop" x1="0" y1="0" x2="0" y2="1">
-        <stop offset="0%" stopColor="#fff" stopOpacity="0.55" />
-        <stop offset="24%" stopColor="#fff" stopOpacity="0.12" />
-        <stop offset="55%" stopColor="#fff" stopOpacity="0" />
-      </linearGradient>
-      <linearGradient id="depthBottom" x1="0" y1="0" x2="0" y2="1">
-        <stop offset="50%" stopColor="#3A2C2A" stopOpacity="0" />
-        <stop offset="100%" stopColor="#3A2C2A" stopOpacity="0.24" />
-      </linearGradient>
-      <radialGradient id="whipHi" cx="38%" cy="26%" r="72%">
-        <stop offset="0%" stopColor="#fff" stopOpacity="0.7" />
-        <stop offset="42%" stopColor="#fff" stopOpacity="0.12" />
-        <stop offset="100%" stopColor="#fff" stopOpacity="0" />
-      </radialGradient>
-      <linearGradient id="glassV" x1="0" y1="0" x2="1" y2="0">
-        <stop offset="0%" stopColor="#fff" stopOpacity="0.5" />
-        <stop offset="20%" stopColor="#fff" stopOpacity="0.08" />
-        <stop offset="78%" stopColor="#9a908b" stopOpacity="0.1" />
-        <stop offset="100%" stopColor="#9a908b" stopOpacity="0.24" />
-      </linearGradient>
-      {/* Soft contact shadow / fake ambient occlusion to ground elements. */}
-      <filter id="softShadow" x="-40%" y="-40%" width="180%" height="180%">
-        <feDropShadow dx="0" dy="2.5" stdDeviation="2.5" floodColor="#3A2C2A" floodOpacity="0.28" />
-      </filter>
-    </defs>
+    <motion.g
+      initial={{ opacity: 0, scale: 0.92 }}
+      animate={{ opacity: 1, scale: 1 }}
+      transition={SPRING.gentle}
+      style={{ transformOrigin: "300px 520px" }}
+    >
+      <rect x="206" y="496" width="188" height="56" rx="10" fill="#FFFAF7" fillOpacity=".93" stroke="#C8A15A" strokeWidth="1.5" />
+      <text x="300" y="526" textAnchor="middle" dominantBaseline="middle" fontFamily="'Playfair Display', Georgia, serif" fontSize="24" fill="#3A2C2A">
+        {text}
+      </text>
+    </motion.g>
   );
 }
