@@ -3,6 +3,7 @@ import { RootLayout } from "./shell/RootLayout";
 import { StorefrontHome } from "./routes/StorefrontHome";
 import { BuilderPage } from "./routes/BuilderPage";
 import { CreationsPage } from "./routes/CreationsPage";
+import { AdminPage } from "./routes/AdminPage";
 import { AboutPage } from "./routes/AboutPage";
 import { KioskPage } from "./routes/KioskPage";
 import { PartyPage } from "./routes/PartyPage";
@@ -25,6 +26,7 @@ export const router = createBrowserRouter(
         { index: true, element: <StorefrontHome /> },
         { path: "build", element: <BuilderPage /> },
         { path: "creations", element: <CreationsPage /> },
+        { path: "admin", element: <AdminPage /> },
         { path: "about", element: <AboutPage /> },
       ],
     },

@@ -12,6 +12,7 @@ import { ScentQuiz } from "./ScentQuiz";
 import { Button } from "@/components/ui/Button";
 import { getRating } from "@/data/reviews";
 import { useFavorites, toggleFavorite } from "@/features/favorites/favorites";
+import { useOverrides, applyOverride } from "@/features/admin/overrides";
 import { STAGGER } from "@/lib/motionPresets";
 
 type SortKey = "featured" | "price-asc" | "price-desc" | "rating";
@@ -45,6 +46,8 @@ export function MenuBoard() {
   const [selected, setSelected] = useState<Product | null>(null);
   const [quizOpen, setQuizOpen] = useState(false);
   const favorites = useFavorites();
+  const overrides = useOverrides();
+  const ovKey = [...overrides.entries()].map(([k, v]) => `${k}:${v.price}:${v.hidden}`).join();
   const [params, setParams] = useSearchParams();
 
   // Deep link: /?product=<id> (e.g. from search) opens the detail sheet.
@@ -63,8 +66,9 @@ export function MenuBoard() {
 
   const favKey = [...favorites].sort().join(",");
   const visible = useMemo(() => {
-    const list = PRODUCTS.filter(
+    const list = PRODUCTS.map((p) => applyOverride(p, overrides)).filter(
       (p) =>
+        !p.hidden &&
         (category === "all" || p.category === category) &&
         (scent === "All" || p.scentFamily === scent) &&
         (!savedOnly || favorites.has(p.id)),
@@ -85,7 +89,7 @@ export function MenuBoard() {
         return [...list].sort((a, b) => score(b) - score(a));
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [category, scent, sort, savedOnly, favKey]);
+  }, [category, scent, sort, savedOnly, favKey, ovKey]);
 
   return (
     <section id="menu" className="mx-auto max-w-6xl px-5 py-10">

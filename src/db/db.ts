@@ -70,7 +70,15 @@ const db = new Dexie("delaja") as Dexie & {
   favorites: EntityTable<Favorite, "id">;
   userReviews: EntityTable<UserReview, "id">;
   parties: EntityTable<PartySession, "id">;
+  overrides: EntityTable<ProductOverride, "id">;
 };
+
+/** No-code admin edits applied over the seed catalog. */
+export interface ProductOverride {
+  id: string; // productId
+  price?: number;
+  hidden?: boolean;
+}
 
 export interface PartySession {
   id: string;
@@ -117,6 +125,17 @@ db.version(4).stores({
   favorites: "id, addedAt",
   userReviews: "id, productId, at",
   parties: "id, createdAt",
+});
+
+db.version(5).stores({
+  builds: "id, createdAt, mode",
+  cart: "id, addedAt",
+  orders: "id, createdAt, synced",
+  events: "id, at, type",
+  favorites: "id, addedAt",
+  userReviews: "id, productId, at",
+  parties: "id, createdAt",
+  overrides: "id",
 });
 
 export { db };
