@@ -1,5 +1,8 @@
 import { motion } from "motion/react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useLiveQuery } from "dexie-react-hooks";
+import { db } from "@/db/db";
 import type { Product } from "@/data/types";
 import { CATEGORY_NAME } from "@/data/categories";
 import { formatUSD } from "@/data/build";
@@ -135,30 +138,64 @@ function Spec({ k, v }: { k: string; v: string }) {
 }
 
 function Reviews({ productId }: { productId: string }) {
-  const reviews = getReviews(productId);
-  const rating = getRating(productId);
+  const seed = getReviews(productId);
+  const seedRating = getRating(productId);
+  const userReviews = useLiveQuery(
+    () => db.userReviews.where("productId").equals(productId).reverse().sortBy("at"),
+    [productId],
+    [],
+  );
+  const [writing, setWriting] = useState(false);
+
+  // combined aggregate
+  const all = [...userReviews, ...seed];
+  const count = all.length;
+  const avg = count
+    ? Math.round((all.reduce((s, r) => s + r.rating, 0) / count) * 10) / 10
+    : seedRating?.avg ?? 0;
 
   return (
     <div id="reviews" className="mx-auto mt-10 max-w-md scroll-mt-6">
       <div className="mb-4 flex items-center justify-between">
         <h3 className="font-display text-2xl text-espresso">Reviews</h3>
-        {rating && (
+        {count > 0 && (
           <span className="flex items-center gap-2">
-            <RatingStars value={rating.avg} size={15} />
-            <span className="text-sm text-cocoa">
-              {rating.avg} · {rating.count}
-            </span>
+            <RatingStars value={avg} size={15} />
+            <span className="text-sm text-cocoa">{avg} · {count}</span>
           </span>
         )}
       </div>
 
-      {reviews.length === 0 ? (
+      {!writing && (
+        <button
+          onClick={() => setWriting(true)}
+          className="mb-4 w-full rounded-full border hairline bg-porcelain/70 py-2.5 text-xs uppercase tracking-[0.16em] text-cocoa hover:bg-porcelain"
+        >
+          ✎ Write a review
+        </button>
+      )}
+      {writing && <ReviewForm productId={productId} onDone={() => setWriting(false)} />}
+
+      {count === 0 ? (
         <p className="rounded-2xl border hairline bg-porcelain/50 p-5 text-center font-serif text-plum">
           No reviews yet — be the first to share the love.
         </p>
       ) : (
         <ul className="space-y-3">
-          {reviews.map((r) => (
+          {userReviews.map((r) => (
+            <li key={r.id} className="rounded-2xl border border-gold/40 bg-blush-soft/20 p-4">
+              <div className="flex items-center justify-between">
+                <span className="flex items-center gap-2">
+                  <RatingStars value={r.rating} size={13} />
+                  <span className="rounded-full bg-blush/30 px-2 py-0.5 text-[0.6rem] uppercase tracking-[0.14em] text-plum">You</span>
+                </span>
+                <span className="text-[0.65rem] text-muted">{r.name || "Anonymous"}</span>
+              </div>
+              {r.title && <p className="mt-1.5 font-display text-base text-espresso">{r.title}</p>}
+              <p className="mt-1 text-sm leading-relaxed text-plum">{r.body}</p>
+            </li>
+          ))}
+          {seed.map((r) => (
             <li key={r.id} className="rounded-2xl border hairline bg-porcelain/50 p-4">
               <div className="flex items-center justify-between">
                 <span className="flex items-center gap-2">
@@ -178,5 +215,56 @@ function Reviews({ productId }: { productId: string }) {
         </ul>
       )}
     </div>
+  );
+}
+
+function ReviewForm({ productId, onDone }: { productId: string; onDone: () => void }) {
+  const [rating, setRating] = useState(5);
+  const [name, setName] = useState("");
+  const [title, setTitle] = useState("");
+  const [body, setBody] = useState("");
+
+  async function submit(e: React.FormEvent) {
+    e.preventDefault();
+    if (!body.trim()) return;
+    await db.userReviews.add({
+      id: crypto.randomUUID?.() ?? `${Date.now()}`,
+      productId,
+      name: name.trim(),
+      rating,
+      title: title.trim(),
+      body: body.trim(),
+      at: Date.now(),
+    });
+    onDone();
+  }
+
+  return (
+    <form onSubmit={submit} className="mb-4 rounded-2xl border hairline bg-porcelain/60 p-4">
+      <div className="mb-3 flex items-center gap-2">
+        <span className="label-caps">Your rating</span>
+        <span className="flex">
+          {[1, 2, 3, 4, 5].map((n) => (
+            <button
+              key={n}
+              type="button"
+              onClick={() => setRating(n)}
+              className="px-0.5 text-lg leading-none"
+              style={{ color: n <= rating ? "var(--color-gold)" : "var(--color-mauve)" }}
+              aria-label={`${n} star${n > 1 ? "s" : ""}`}
+            >
+              ★
+            </button>
+          ))}
+        </span>
+      </div>
+      <input value={name} onChange={(e) => setName(e.target.value)} placeholder="Your name (optional)" className="mb-2 w-full rounded-xl border hairline bg-porcelain px-3 py-2 text-sm outline-none focus:border-gold" />
+      <input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Title (optional)" className="mb-2 w-full rounded-xl border hairline bg-porcelain px-3 py-2 text-sm outline-none focus:border-gold" />
+      <textarea value={body} onChange={(e) => setBody(e.target.value)} required rows={3} placeholder="What did you love about it?" className="mb-3 w-full resize-none rounded-xl border hairline bg-porcelain px-3 py-2 text-sm outline-none focus:border-gold" />
+      <div className="flex gap-2">
+        <Button type="submit" size="sm" variant="primary">Post review</Button>
+        <Button type="button" size="sm" variant="ghost" onClick={onDone}>Cancel</Button>
+      </div>
+    </form>
   );
 }

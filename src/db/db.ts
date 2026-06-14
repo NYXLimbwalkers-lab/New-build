@@ -42,12 +42,23 @@ export interface Favorite {
   addedAt: number;
 }
 
+export interface UserReview {
+  id: string;
+  productId: string;
+  name: string;
+  rating: number;
+  title: string;
+  body: string;
+  at: number;
+}
+
 const db = new Dexie("delaja") as Dexie & {
   builds: EntityTable<SavedBuild, "id">;
   cart: EntityTable<CartItem, "id">;
   orders: EntityTable<QueuedOrder, "id">;
   events: EntityTable<AnalyticsEvent, "id">;
   favorites: EntityTable<Favorite, "id">;
+  userReviews: EntityTable<UserReview, "id">;
 };
 
 db.version(1).stores({
@@ -63,6 +74,15 @@ db.version(2).stores({
   orders: "id, createdAt, synced",
   events: "id, at, type",
   favorites: "id, addedAt",
+});
+
+db.version(3).stores({
+  builds: "id, createdAt, mode",
+  cart: "id, addedAt",
+  orders: "id, createdAt, synced",
+  events: "id, at, type",
+  favorites: "id, addedAt",
+  userReviews: "id, productId, at",
 });
 
 export { db };
