@@ -1,4 +1,4 @@
-import type { CartItem, GiftInfo } from "@/db/db";
+import type { CartItem, ContactInfo, GiftInfo } from "@/db/db";
 
 /*
   The commerce seam. Everything that "places an order" goes through a single
@@ -13,6 +13,7 @@ export interface OrderDraft {
   mode: "storefront" | "kiosk" | "party";
   fulfillment?: "ship" | "pickup";
   gift?: GiftInfo;
+  contact?: ContactInfo;
 }
 
 export interface OrderResult {

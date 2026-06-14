@@ -38,6 +38,7 @@ export const localAdapter: CommerceAdapter = {
       fulfillment: draft.fulfillment,
       pickupNumber,
       gift: draft.gift,
+      contact: draft.contact,
       createdAt: Date.now(),
       synced: false,
     });

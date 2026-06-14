@@ -25,6 +25,13 @@ export interface GiftInfo {
   receipt: boolean; // gift receipt = hide prices
 }
 
+/** How to reach the customer to confirm a made-to-order request. */
+export interface ContactInfo {
+  name: string;
+  email?: string;
+  phone?: string;
+}
+
 // TODO(Phase 3): queued offline kiosk orders that sync when back online.
 export interface QueuedOrder {
   id: string;
@@ -34,6 +41,7 @@ export interface QueuedOrder {
   fulfillment?: "ship" | "pickup";
   pickupNumber?: number;
   gift?: GiftInfo;
+  contact?: ContactInfo;
   createdAt: number;
   synced: boolean;
 }

@@ -38,6 +38,8 @@ export function CartDrawer() {
   const [recipient, setRecipient] = useState("");
   const [giftReceipt, setGiftReceipt] = useState(false);
   const [fulfillment, setFulfillment] = useState<"ship" | "pickup">("ship");
+  const [name, setName] = useState("");
+  const [contact, setContact] = useState("");
   const [placed, setPlaced] = useState(false);
   const [orderNo, setOrderNo] = useState("");
   const [earnedPts, setEarnedPts] = useState(0);
@@ -56,7 +58,12 @@ export function CartDrawer() {
   const giftTotal = isGift && giftWrap ? GIFT_WRAP : 0;
   const total = cart.subtotal + giftTotal;
 
+  const isEmail = /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(contact.trim());
+  const isPhone = contact.replace(/\D/g, "").length >= 10;
+  const canCheckout = name.trim().length > 1 && (isEmail || isPhone);
+
   async function checkout() {
+    if (!canCheckout) return;
     // Single seam: the configured adapter records/syncs the order and takes
     // payment when one is connected (local made-to-order queue by default).
     const result = await getAdapter().placeOrder({
@@ -67,6 +74,11 @@ export function CartDrawer() {
       gift: isGift
         ? { wrap: giftWrap, note: giftNote, recipient, receipt: giftReceipt }
         : undefined,
+      contact: {
+        name: name.trim(),
+        email: isEmail ? contact.trim() : undefined,
+        phone: isPhone ? contact.trim() : undefined,
+      },
     });
     logEvent("checkout", { total, items: cart.count, gift: isGift, fulfillment }, "storefront");
     await clearCart();
@@ -270,6 +282,28 @@ export function CartDrawer() {
                     )}
                   </div>
 
+                  {/* contact — how she confirms your made-to-order request */}
+                  <div className="mt-4 rounded-2xl border hairline bg-porcelain/50 p-4">
+                    <p className="text-sm text-cocoa">Where should she reach you?</p>
+                    <p className="mt-0.5 text-xs text-muted">
+                      So she can confirm your candle and let you know it's ready.
+                    </p>
+                    <input
+                      value={name}
+                      onChange={(e) => setName(e.target.value)}
+                      placeholder="Your name"
+                      autoComplete="name"
+                      className="mt-3 w-full rounded-xl border hairline bg-porcelain px-3 py-2 text-sm text-cocoa outline-none focus:border-gold"
+                    />
+                    <input
+                      value={contact}
+                      onChange={(e) => setContact(e.target.value)}
+                      placeholder="Email or phone"
+                      autoComplete="email"
+                      className="mt-2 w-full rounded-xl border hairline bg-porcelain px-3 py-2 text-sm text-cocoa outline-none focus:border-gold"
+                    />
+                  </div>
+
                   {/* fulfillment */}
                   <div className="mt-3 flex gap-2">
                     {(["ship", "pickup"] as const).map((f) => (
@@ -295,11 +329,19 @@ export function CartDrawer() {
                     <span className="label-caps">Subtotal</span>
                     <span className="price text-xl text-espresso">{formatUSD(total)}</span>
                   </div>
-                  <Button variant="primary" size="lg" className="w-full" onClick={checkout}>
+                  <Button
+                    variant="primary"
+                    size="lg"
+                    className="w-full"
+                    onClick={checkout}
+                    disabled={!canCheckout}
+                  >
                     Place made-to-order request
                   </Button>
                   <p className="mt-2 text-center text-[0.65rem] text-muted">
-                    Hand-poured to order · pay at pickup or we'll send a secure link.
+                    {canCheckout
+                      ? "Hand-poured to order · pay at pickup or we'll send a secure link."
+                      : "Add your name and an email or phone to continue."}{" "}
                     Free shipping over {formatUSD(FREE_SHIP_THRESHOLD)}.
                   </p>
                 </footer>

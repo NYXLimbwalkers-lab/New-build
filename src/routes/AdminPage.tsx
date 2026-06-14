@@ -69,6 +69,26 @@ function Orders() {
           <p className="mt-1 text-sm text-cocoa">
             {o.items.map((i) => `${i.qty}× ${i.name}`).join(", ")}
           </p>
+          {o.contact && (
+            <p className="mt-1 text-sm text-plum">
+              {o.contact.name}
+              {(o.contact.email || o.contact.phone) && (
+                <>
+                  {" · "}
+                  <a
+                    href={
+                      o.contact.email
+                        ? `mailto:${o.contact.email}`
+                        : `tel:${o.contact.phone}`
+                    }
+                    className="text-cocoa underline decoration-gold/50 underline-offset-2"
+                  >
+                    {o.contact.email ?? o.contact.phone}
+                  </a>
+                </>
+              )}
+            </p>
+          )}
           <div className="mt-1 flex flex-wrap gap-x-4 text-xs text-muted">
             {o.fulfillment && <span>{o.fulfillment === "ship" ? "Ship" : "Pickup"}</span>}
             {o.gift && <span>🎁 Gift{o.gift.recipient ? ` for ${o.gift.recipient}` : ""}</span>}
