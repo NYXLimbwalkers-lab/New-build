@@ -14,15 +14,19 @@ import { PartyPage } from "./routes/PartyPage";
   The RootLayout is the PERSISTENT SHELL — it mounts once and never unmounts, so
   Lenis smooth-scroll + chrome persist while only the page content transitions.
 */
-export const router = createBrowserRouter([
-  {
-    path: "/",
-    element: <RootLayout />,
-    children: [
-      { index: true, element: <StorefrontHome /> },
-      { path: "build", element: <BuilderPage /> },
-    ],
-  },
-  { path: "/kiosk", element: <KioskPage /> },
-  { path: "/party/:sessionId?", element: <PartyPage /> },
-]);
+export const router = createBrowserRouter(
+  [
+    {
+      path: "/",
+      element: <RootLayout />,
+      children: [
+        { index: true, element: <StorefrontHome /> },
+        { path: "build", element: <BuilderPage /> },
+      ],
+    },
+    { path: "/kiosk", element: <KioskPage /> },
+    { path: "/party/:sessionId?", element: <PartyPage /> },
+  ],
+  // Honor Vite's base so deep links work under a sub-path (e.g. GitHub Pages).
+  { basename: import.meta.env.BASE_URL.replace(/\/$/, "") || "/" },
+);

@@ -5,7 +5,10 @@ import { VitePWA } from "vite-plugin-pwa";
 import { fileURLToPath, URL } from "node:url";
 
 // https://vite.dev/config/
+// BASE_PATH lets the GitHub Pages build serve under /New-build/ while local
+// dev + other hosts stay at root.
 export default defineConfig({
+  base: process.env.BASE_PATH || "/",
   plugins: [
     react(),
     tailwindcss(),
