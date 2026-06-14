@@ -1,5 +1,6 @@
 import { useLiveQuery } from "dexie-react-hooks";
 import { db } from "@/db/db";
+import { toast } from "@/lib/toast";
 
 /*
   Wishlist / favorites — saved locally (IndexedDB). A heart on any product card
@@ -7,8 +8,13 @@ import { db } from "@/db/db";
 */
 export async function toggleFavorite(productId: string) {
   const existing = await db.favorites.get(productId);
-  if (existing) await db.favorites.delete(productId);
-  else await db.favorites.add({ id: productId, addedAt: Date.now() });
+  if (existing) {
+    await db.favorites.delete(productId);
+    toast("Removed from saved");
+  } else {
+    await db.favorites.add({ id: productId, addedAt: Date.now() });
+    toast("Saved to favorites ♥");
+  }
 }
 
 /** Live set of favorited product ids. */

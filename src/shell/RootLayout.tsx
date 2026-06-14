@@ -20,9 +20,15 @@ export function RootLayout() {
       <CartUIProvider>
         <SmoothScroll>
           <ScrollManager />
+          <a
+            href="#main"
+            className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[100] focus:rounded-full focus:bg-cocoa focus:px-5 focus:py-3 focus:text-canvas"
+          >
+            Skip to content
+          </a>
           <div className="flex min-h-screen flex-col">
             <Header />
-            <main className="flex-1">
+            <main id="main" className="flex-1">
               <TransitionOutlet />
             </main>
             <Footer />

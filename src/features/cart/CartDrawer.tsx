@@ -37,6 +37,7 @@ export function CartDrawer() {
   const [giftReceipt, setGiftReceipt] = useState(false);
   const [fulfillment, setFulfillment] = useState<"ship" | "pickup">("ship");
   const [placed, setPlaced] = useState(false);
+  const [orderNo, setOrderNo] = useState("");
 
   useEffect(() => {
     if (open) setPlaced(false);
@@ -69,6 +70,7 @@ export function CartDrawer() {
     });
     logEvent("checkout", { total, items: cart.count, gift: isGift, fulfillment }, "storefront");
     await clearCart();
+    setOrderNo(`DJ-${1000 + Math.floor(Math.random() * 9000)}`);
     setPlaced(true);
   }
 
@@ -109,6 +111,11 @@ export function CartDrawer() {
             {placed ? (
               <div className="flex flex-1 flex-col items-center justify-center px-8 text-center">
                 <p className="font-display text-3xl text-espresso">Thank you ✦</p>
+                {orderNo && (
+                  <p className="mt-2 rounded-full bg-blush-soft/50 px-4 py-1.5 text-sm text-cocoa">
+                    Order {orderNo}
+                  </p>
+                )}
                 <p className="mt-3 font-serif text-lg text-plum">
                   Your made-to-order request is in. She'll hand-pour it and reach out
                   to confirm pickup or shipping.
