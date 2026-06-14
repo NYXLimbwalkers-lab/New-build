@@ -115,22 +115,26 @@ export type ScentStrength = "light" | "medium" | "strong";
 
 /* ── A complete build ─────────────────────────────────────────────────── */
 
-export interface ScentSelection {
-  scentId: string;
-  /** 0-100 ratio share when blending. Single scent = 100. */
-  ratio: number;
-}
-
 export interface BuildConfig {
   vesselId: string;
-  waxColorId: string; // base (bottom) wax layer
+  waxColorId: string; // base (bottom) wax layer color
   /** Extra wax layers poured ABOVE the base, bottom→top. Each +price. */
   extraLayers: string[];
-  scents: ScentSelection[]; // 1-3 blended scents
+  /**
+   * Scent of each wax layer, index-aligned to [waxColorId, ...extraLayers].
+   * Length always equals the number of wax layers — she scents each pour.
+   */
+  layerScents: string[];
   strength: ScentStrength;
   whipId: string | null;
+  /** Scent of the whipped topping (null when there's no whip). */
+  whipScentId: string | null;
   drizzleId: string | null;
+  /** Scent of the drizzle (null when there's no drizzle). */
+  drizzleScentId: string | null;
   toppingIds: string[];
+  /** Optional scent per topping (toppingId → scentId). */
+  toppingScents: Record<string, string>;
   name: string;
   wick: WickType;
   giftBox: boolean;

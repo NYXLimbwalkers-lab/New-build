@@ -3,16 +3,18 @@ import { useState } from "react";
 import type { BuildConfig, ScentStrength } from "@/data/types";
 import {
   DRIZZLES,
+  DRIZZLE_BY_ID,
   MAX_LAYERS,
   SCENTS,
-  SCENT_BY_ID,
   SCENT_FAMILIES,
   TOPPINGS,
+  TOPPING_BY_ID,
   VESSELS,
   WAX_BY_ID,
+  WHIP_BY_ID,
   WHIP_COLORS,
 } from "@/data/ingredients";
-import { toppingLoad, validWaxColors } from "@/data/build";
+import { DEFAULT_SCENT, toppingLoad, validWaxColors } from "@/data/build";
 import { SelectTile } from "@/components/ui/SelectTile";
 import { Chip } from "@/components/ui/Chip";
 import { haptic } from "@/lib/haptics";
@@ -107,7 +109,9 @@ function WaxStep({ config, update }: StepProps) {
   function removeLayer(i: number) {
     const e = [...config.extraLayers];
     e.splice(i - 1, 1);
-    update({ extraLayers: e });
+    const s = [...config.layerScents];
+    s.splice(i, 1); // layerScents is index-aligned to [base, ...extraLayers]
+    update({ extraLayers: e, layerScents: s });
     setSel(0);
   }
 
@@ -190,116 +194,183 @@ function WaxStep({ config, update }: StepProps) {
 
 const STRENGTHS: ScentStrength[] = ["light", "medium", "strong"];
 
-/* Color-coded scent families — makes the invisible legible & premium. */
-const FAMILY_META: Record<string, { hex: string; note: string }> = {
-  Dessert: { hex: "#D99FA6", note: "sweet, whipped, indulgent" },
-  Bakery: { hex: "#C89B62", note: "warm, fresh-baked" },
-  Fruity: { hex: "#E0904B", note: "bright & juicy" },
-  Fresh: { hex: "#9CC3B0", note: "clean & airy" },
-  Woody: { hex: "#8A5A33", note: "smooth & grounding" },
-  Boozy: { hex: "#7A1F3D", note: "bold & spirited" },
-};
+/** Accessible scent picker — native select grouped by family (big tap target). */
+function ScentSelect({
+  value,
+  onChange,
+  label,
+}: {
+  value: string;
+  onChange: (id: string) => void;
+  label: string;
+}) {
+  return (
+    <select
+      value={value}
+      aria-label={`Scent for ${label}`}
+      onChange={(e) => onChange(e.target.value)}
+      className="w-full max-w-[12rem] shrink-0 rounded-xl border hairline bg-porcelain px-3 py-2 text-sm text-espresso outline-none focus:border-gold"
+    >
+      {SCENT_FAMILIES.map((fam) => {
+        const inFam = SCENTS.filter((s) => s.family === fam);
+        if (inFam.length === 0) return null;
+        return (
+          <optgroup key={fam} label={fam}>
+            {inFam.map((s) => (
+              <option key={s.id} value={s.id}>
+                {s.name}
+              </option>
+            ))}
+          </optgroup>
+        );
+      })}
+    </select>
+  );
+}
+
+/** One row: what the part is + a swatch + its scent picker. */
+function ScentRow({
+  label,
+  sub,
+  hex,
+  value,
+  onChange,
+}: {
+  label: string;
+  sub?: string;
+  hex?: string;
+  value: string;
+  onChange: (id: string) => void;
+}) {
+  return (
+    <div className="flex items-center gap-3 border-b hairline py-3 last:border-0">
+      {hex && (
+        <span
+          className="h-7 w-7 shrink-0 rounded-full border-2 border-white/70 shadow-inner"
+          style={{ backgroundColor: hex }}
+          aria-hidden
+        />
+      )}
+      <span className="min-w-0 flex-1">
+        <span className="block text-sm text-espresso">{label}</span>
+        {sub && <span className="block text-[0.65rem] uppercase tracking-[0.12em] text-muted">{sub}</span>}
+      </span>
+      <ScentSelect value={value} onChange={onChange} label={label} />
+    </div>
+  );
+}
 
 function ScentStep({ config, update }: StepProps) {
-  const selected = config.scents.map((s) => s.scentId);
-  const total = config.scents.reduce((s, x) => s + x.ratio, 0) || 1;
+  const drink = VESSELS.find((v) => v.id === config.vesselId)?.gel ?? false;
+  const layers = [config.waxColorId, ...config.extraLayers];
 
-  function toggle(id: string) {
-    const has = config.scents.some((s) => s.scentId === id);
-    let next = has
-      ? config.scents.filter((s) => s.scentId !== id)
-      : config.scents.length >= 3
-        ? config.scents
-        : [...config.scents, { scentId: id, ratio: 50 }];
-    if (next.length === 0) next = [{ scentId: id, ratio: 100 }];
-    update({ scents: next });
+  const layerLabel = (i: number) =>
+    i === 0 ? "Base wax" : i === layers.length - 1 ? "Top wax" : `Wax layer ${i + 1}`;
+
+  function setLayerScent(i: number, id: string) {
+    const s = [...config.layerScents];
+    s[i] = id;
+    update({ layerScents: s });
   }
 
-  function setRatio(id: string, value: number) {
+  // "Make everything smell the same" — one tap, great for quick or guided use.
+  function matchAll() {
+    const id = config.layerScents[0] ?? DEFAULT_SCENT;
     update({
-      scents: config.scents.map((s) => (s.scentId === id ? { ...s, ratio: value } : s)),
+      layerScents: layers.map(() => id),
+      whipScentId: config.whipId ? id : null,
+      drizzleScentId: config.drizzleId ? id : null,
+      toppingScents: Object.fromEntries(config.toppingIds.map((t) => [t, id])),
     });
   }
 
+  const hasMany =
+    layers.length +
+      (config.whipId ? 1 : 0) +
+      (config.drizzleId ? 1 : 0) +
+      config.toppingIds.length >
+    1;
+
   return (
     <div>
-      <StepHeading title="Layer the scent" hint="Blend up to three. Set the strength." />
+      <StepHeading
+        title="Scent each part"
+        hint="Pick a fragrance for every layer, the cream, the drizzle, and each topping — just like she pours them."
+      />
 
       <div className="mb-5">
         <span className="label-caps">Strength</span>
         <div className="mt-2 flex gap-2">
           {STRENGTHS.map((s) => (
-            <Chip
-              key={s}
-              active={config.strength === s}
-              onClick={() => update({ strength: s })}
-            >
+            <Chip key={s} active={config.strength === s} onClick={() => update({ strength: s })}>
               {s}
             </Chip>
           ))}
         </div>
       </div>
 
-      {SCENT_FAMILIES.map((fam) => {
-        const inFam = SCENTS.filter((s) => s.family === fam);
-        if (inFam.length === 0) return null;
-        const meta = FAMILY_META[fam];
-        return (
-          <div key={fam} className="mb-4">
-            <div className="flex items-baseline gap-2">
-              <span
-                className="inline-block h-2.5 w-2.5 shrink-0 translate-y-0.5 rounded-full"
-                style={{ background: meta?.hex }}
-                aria-hidden
-              />
-              <span className="label-caps">{fam}</span>
-              {meta && (
-                <span className="text-[0.65rem] lowercase tracking-normal text-muted">
-                  · {meta.note}
-                </span>
-              )}
-            </div>
-            <div className="mt-2 flex flex-wrap gap-2">
-              {inFam.map((s) => (
-                <Chip
-                  key={s.id}
-                  active={selected.includes(s.id)}
-                  disabled={!selected.includes(s.id) && selected.length >= 3}
-                  onClick={() => toggle(s.id)}
-                >
-                  {s.name}
-                </Chip>
-              ))}
-            </div>
-          </div>
-        );
-      })}
-      {config.scents.length >= 2 && (
-        <div className="mt-4 rounded-2xl border hairline bg-porcelain/50 p-4">
-          <span className="label-caps">Your blend</span>
-          <div className="mt-3 space-y-2.5">
-            {config.scents.map((s) => (
-              <div key={s.scentId} className="flex items-center gap-3">
-                <span className="w-28 shrink-0 text-sm text-cocoa">
-                  {SCENT_BY_ID[s.scentId]?.name}
-                </span>
-                <input
-                  type="range"
-                  min={5}
-                  max={100}
-                  value={s.ratio}
-                  onChange={(e) => setRatio(s.scentId, Number(e.target.value))}
-                  className="flex-1 accent-rose"
-                  aria-label={`${SCENT_BY_ID[s.scentId]?.name} amount`}
-                />
-                <span className="w-9 text-right text-xs text-muted">
-                  {Math.round((s.ratio / total) * 100)}%
-                </span>
-              </div>
-            ))}
-          </div>
-        </div>
+      {hasMany && (
+        <button
+          type="button"
+          onClick={matchAll}
+          className="mb-3 rounded-full border border-dashed hairline px-3 py-1.5 text-xs text-cocoa hover:bg-porcelain"
+        >
+          ✦ Scent everything the same
+        </button>
       )}
+
+      <div className="rounded-2xl border hairline bg-porcelain/50 px-4">
+        {/* wax layers (top shown first to match the stage) */}
+        {layers
+          .map((colorId, i) => ({ colorId, i }))
+          .reverse()
+          .map(({ colorId, i }) => (
+            <ScentRow
+              key={`wax-${i}`}
+              label={layerLabel(i)}
+              sub={WAX_BY_ID[colorId]?.name}
+              hex={WAX_BY_ID[colorId]?.hex}
+              value={config.layerScents[i] ?? DEFAULT_SCENT}
+              onChange={(id) => setLayerScent(i, id)}
+            />
+          ))}
+
+        {!drink && config.whipId && (
+          <ScentRow
+            label="Whipped cream"
+            sub={WHIP_BY_ID[config.whipId]?.name}
+            hex={WHIP_BY_ID[config.whipId]?.hex}
+            value={config.whipScentId ?? DEFAULT_SCENT}
+            onChange={(id) => update({ whipScentId: id })}
+          />
+        )}
+
+        {!drink && config.drizzleId && (
+          <ScentRow
+            label="Drizzle"
+            sub={DRIZZLE_BY_ID[config.drizzleId]?.name}
+            hex={DRIZZLE_BY_ID[config.drizzleId]?.hex}
+            value={config.drizzleScentId ?? DEFAULT_SCENT}
+            onChange={(id) => update({ drizzleScentId: id })}
+          />
+        )}
+
+        {!drink &&
+          config.toppingIds.map((t) => (
+            <ScentRow
+              key={`top-${t}`}
+              label={TOPPING_BY_ID[t]?.name ?? "Topping"}
+              sub="Topping"
+              hex={TOPPING_BY_ID[t]?.hex}
+              value={config.toppingScents[t] ?? DEFAULT_SCENT}
+              onChange={(id) => update({ toppingScents: { ...config.toppingScents, [t]: id } })}
+            />
+          ))}
+      </div>
+
+      <p className="mt-3 text-xs text-muted">
+        Tip: add layers and toppings first, then come back to scent each one.
+      </p>
     </div>
   );
 }

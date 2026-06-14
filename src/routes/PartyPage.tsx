@@ -11,7 +11,7 @@ import { Button } from "@/components/ui/Button";
 import { useDocumentTitle } from "@/lib/useTitle";
 import { db } from "@/db/db";
 import type { BuildConfig } from "@/data/types";
-import { formatUSD } from "@/data/build";
+import { formatUSD, usedScents } from "@/data/build";
 import { PARTY_PACKAGES, PKG_BY_ID, DEPOSIT, TRAVEL_FEE } from "@/data/party";
 import {
   VESSEL_BY_ID,
@@ -213,7 +213,7 @@ function recipeLines(c: BuildConfig): [string, string][] {
     ],
     [
       "Scent",
-      c.scents.map((s) => SCENT_BY_ID[s.scentId]?.name).filter(Boolean).join(" + ") +
+      usedScents(c).map((id) => SCENT_BY_ID[id]?.name).filter(Boolean).join(" + ") +
         ` (${c.strength})`,
     ],
   ];

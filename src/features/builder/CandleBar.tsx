@@ -13,7 +13,7 @@ import { useCartUI } from "@/features/cart/CartContext";
 import { useMode } from "@/lib/mode";
 import { useA11y } from "@/lib/a11y";
 import { speak } from "@/lib/speak";
-import { formatUSD, isDrinkBuild } from "@/data/build";
+import { formatUSD, isDrinkBuild, usedScents } from "@/data/build";
 import {
   SCENT_BY_ID,
   VESSEL_BY_ID,
@@ -314,7 +314,7 @@ function RecipeSummary({ config }: { config: BuildConfig }) {
     config.extraLayers.length
       ? `${config.extraLayers.length + 1} wax layers`
       : WAX_BY_ID[config.waxColorId]?.name,
-    config.scents.map((s) => SCENT_BY_ID[s.scentId]?.name).filter(Boolean).join(" + "),
+    usedScents(config).map((id) => SCENT_BY_ID[id]?.name).filter(Boolean).join(" + "),
     !drink && config.whipId ? WHIP_BY_ID[config.whipId]?.name : null,
     !drink && config.drizzleId ? `${DRIZZLE_BY_ID[config.drizzleId]?.name} drizzle` : null,
     !drink && config.toppingIds.length ? `${config.toppingIds.length} topping${config.toppingIds.length > 1 ? "s" : ""}` : null,

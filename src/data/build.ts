@@ -1,6 +1,7 @@
 import {
   FINISHING_PRICES,
   MAX_LAYERS,
+  SCENTS,
   TOPPING_BY_ID,
   VESSEL_BY_ID,
   VESSELS,
@@ -14,21 +15,43 @@ import type {
   Vessel,
 } from "./types";
 
+/** The scent every new component starts with until the guest changes it. */
+export const DEFAULT_SCENT = "vanilla";
+
 /** A sensible, makeable starting build so a guest is never on a blank stage. */
 export function defaultBuild(): BuildConfig {
   return {
     vesselId: "jar-14",
     waxColorId: "cream",
     extraLayers: [],
-    scents: [{ scentId: "vanilla", ratio: 100 }],
+    layerScents: [DEFAULT_SCENT],
     strength: "medium",
     whipId: "whip-vanilla",
+    whipScentId: DEFAULT_SCENT,
     drizzleId: null,
+    drizzleScentId: null,
     toppingIds: [],
+    toppingScents: {},
     name: "",
     wick: "cotton",
     giftBox: false,
   };
+}
+
+/** Distinct scents actually in use across all present components. */
+export function usedScents(config: BuildConfig): string[] {
+  const ids = new Set<string>();
+  const drink = isDrinkBuild(config);
+  for (const s of config.layerScents ?? []) if (s) ids.add(s);
+  if (!drink) {
+    if (config.whipId && config.whipScentId) ids.add(config.whipScentId);
+    if (config.drizzleId && config.drizzleScentId) ids.add(config.drizzleScentId);
+    for (const t of config.toppingIds) {
+      const s = config.toppingScents?.[t];
+      if (s) ids.add(s);
+    }
+  }
+  return [...ids];
 }
 
 /** USD price for a complete build — drives the live price pill. */
@@ -43,11 +66,11 @@ export function priceBuild(config: BuildConfig): PriceBreakdown {
     if (t) addons.push({ label: t.name, amount: t.price });
   }
 
-  // Blending extra scents.
-  const extraScents = Math.max(0, config.scents.length - 1);
+  // Each distinct fragrance beyond the first means another oil to hand-measure.
+  const extraScents = Math.max(0, usedScents(config).length - 1);
   if (extraScents > 0) {
     addons.push({
-      label: `Scent blend ×${extraScents}`,
+      label: `Extra scents ×${extraScents}`,
       amount: extraScents * FINISHING_PRICES.scentBlend,
     });
   }
@@ -128,11 +151,32 @@ export function reconcile(config: BuildConfig): BuildConfig {
   next.extraLayers = (next.extraLayers ?? [])
     .filter((id) => valid.some((w) => w.id === id))
     .slice(0, MAX_LAYERS - 1);
+
+  // Scent per wax layer — keep aligned to the layer count.
+  const layerCount = 1 + next.extraLayers.length;
+  const ls = [...(next.layerScents ?? [])];
+  while (ls.length < layerCount) ls.push(ls[ls.length - 1] ?? DEFAULT_SCENT);
+  ls.length = layerCount;
+  next.layerScents = ls.map((s) => s || DEFAULT_SCENT);
+
+  // Whip/drizzle carry a scent only when they're present.
+  next.whipScentId = next.whipId ? next.whipScentId ?? DEFAULT_SCENT : null;
+  next.drizzleScentId = next.drizzleId ? next.drizzleScentId ?? DEFAULT_SCENT : null;
+
+  // Topping scents — one per present topping, drop the rest.
+  const ts: Record<string, string> = {};
+  for (const t of next.toppingIds) ts[t] = next.toppingScents?.[t] ?? DEFAULT_SCENT;
+  next.toppingScents = ts;
+
   if (isDrinkBuild(next)) {
     next.whipId = null;
+    next.whipScentId = null;
     next.drizzleId = null;
+    next.drizzleScentId = null;
     next.toppingIds = [];
+    next.toppingScents = {};
     next.extraLayers = []; // a poured drink is a single fill
+    next.layerScents = [next.layerScents[0] ?? DEFAULT_SCENT];
   }
   return next;
 }
@@ -142,10 +186,10 @@ export function buildFromProduct(productId: string): BuildConfig {
   const product = PRODUCT_BY_ID[productId];
   const base = defaultBuild();
   if (!product?.recipe) return base;
+  // reconcile() fills in a default scent for every component the recipe adds.
   return reconcile({
     ...base,
     ...product.recipe,
-    scents: product.recipe.scents ?? base.scents,
     toppingIds: product.recipe.toppingIds ?? base.toppingIds,
     name: product.name,
   });
@@ -185,5 +229,15 @@ export function surpriseBuild(): BuildConfig {
     const id = pick(allToppings);
     if (!config.toppingIds.includes(id)) config.toppingIds.push(id);
   }
+
+  // Scent every part — sometimes matching, sometimes a playful mix.
+  const scentIds = SCENTS.map((s) => s.id);
+  const oneScent = Math.random() < 0.4 ? pick(scentIds) : null;
+  const aScent = () => oneScent ?? pick(scentIds);
+  config.layerScents = Array.from({ length: 1 + config.extraLayers.length }, aScent);
+  config.whipScentId = config.whipId ? aScent() : null;
+  config.drizzleScentId = config.drizzleId ? aScent() : null;
+  config.toppingScents = Object.fromEntries(config.toppingIds.map((t) => [t, aScent()]));
+
   return reconcile(config);
 }
