@@ -115,24 +115,65 @@ function placed(id) {
   }
 }
 
-// Stacked wax layers (parfait look): layers[0] is the bottom pour.
-function waxLayers(layers) {
-  const top = 392, bottom = 632, span = bottom - top;
+// Stacked wax layers (parfait look), clipped to a vessel's inner region.
+function waxBands(layers, clipId, top, bottom) {
+  const span = bottom - top;
   const bandH = span / layers.length;
-  let out = `<g clip-path="url(#waxclip)">`;
+  let out = `<g clip-path="url(#${clipId})">`;
   layers.forEach((hex, i) => {
-    const y = bottom - bandH * (i + 1);
-    out += `<rect x="168" y="${y}" width="264" height="${bandH + 1}" fill="${hex}"/>`;
+    out += `<rect x="120" y="${bottom - bandH * (i + 1)}" width="360" height="${bandH + 1}" fill="${hex}"/>`;
   });
-  // separation lines between layers + top sheen
   for (let i = 1; i < layers.length; i++) {
     const y = bottom - bandH * i;
-    out += `<rect x="168" y="${y - 2}" width="264" height="3" fill="#3A2C2A" opacity=".10"/>`;
-    out += `<rect x="168" y="${y - 4}" width="264" height="2" fill="#fff" opacity=".25"/>`;
+    out += `<rect x="120" y="${y - 2}" width="360" height="3" fill="#3A2C2A" opacity=".10"/>`;
+    out += `<rect x="120" y="${y - 4}" width="360" height="2" fill="#fff" opacity=".25"/>`;
   }
-  out += `<rect x="168" y="392" width="264" height="26" fill="#fff" opacity=".22"/>`;
-  out += `</g>`;
+  out += `<rect x="120" y="${top}" width="360" height="26" fill="#fff" opacity=".22"/></g>`;
   return out;
+}
+
+// Container art per vessel — mouth kept at y≈350 so cream/toppings code is shared.
+function vesselArt(vessel, layers) {
+  const top = layers[layers.length - 1];
+  if (vessel === "tin") {
+    // opaque metal tin: straight sides, label band, metallic sheen
+    return `
+      <g filter="url(#soft)"><path d="M174 356 L174 632 Q174 648 190 648 L410 648 Q426 648 426 632 L426 356 Z" fill="#CFC7BE"/></g>
+      <rect x="174" y="356" width="252" height="290" fill="url(#metal)"/>
+      <rect x="174" y="470" width="252" height="78" fill="#fff" opacity=".14"/>
+      <rect x="186" y="362" width="14" height="280" fill="#fff" opacity=".35"/>
+      <ellipse cx="300" cy="356" rx="128" ry="18" fill="#BDB4AA"/>
+      <ellipse cx="300" cy="352" rx="120" ry="14" fill="${top}" fill-opacity=".55"/>
+      <ellipse cx="300" cy="356" rx="128" ry="18" fill="none" stroke="#A89E92" stroke-width="2"/>`;
+  }
+  if (vessel === "dessert") {
+    // footed sundae glass: wide bowl, stem, foot
+    const bowl = "M168 350 Q176 470 300 506 Q424 470 432 350 Z";
+    const inner = "M186 364 Q196 462 300 492 Q404 462 414 364 Z";
+    return `
+      <g filter="url(#soft)"><path d="${bowl}" fill="#ECE7E3" fill-opacity=".45"/></g>
+      <clipPath id="dclip"><path d="${inner}"/></clipPath>
+      ${waxBands(layers, "dclip", 372, 496)}
+      <path d="${inner}" fill="url(#depth)"/>
+      <path d="${bowl}" fill="url(#glass)"/>
+      <path d="M186 360 Q196 450 296 488" fill="none" stroke="#fff" stroke-opacity=".5" stroke-width="9" stroke-linecap="round"/>
+      <rect x="294" y="500" width="12" height="120" fill="#ECE7E3" fill-opacity=".5"/>
+      <ellipse cx="300" cy="636" rx="84" ry="16" fill="#EDE7DF" fill-opacity=".6" stroke="#D2C8C1" stroke-width="2"/>
+      <ellipse cx="300" cy="350" rx="132" ry="18" fill="#E7E0DB" stroke="#D2C8C1" stroke-width="2"/>
+      <ellipse cx="300" cy="350" rx="120" ry="13" fill="${top}" fill-opacity=".5"/>`;
+  }
+  // default: glass jar
+  return `
+    <g filter="url(#soft)"><path d="M171 350 L164 614 Q164 648 198 648 L402 648 Q436 648 436 614 L429 350 Z" fill="#ECE7E3" fill-opacity=".5"/></g>
+    <clipPath id="jclip"><path d="M186 392 L180 612 Q180 632 200 632 L400 632 Q420 632 420 612 L414 392 Z"/></clipPath>
+    ${waxBands(layers, "jclip", 392, 632)}
+    <path d="M186 392 L180 612 Q180 632 200 632 L400 632 Q420 632 420 612 L414 392 Z" fill="url(#depth)"/>
+    <path d="M171 350 L164 614 Q164 648 198 648 L402 648 Q436 648 436 614 L429 350 Z" fill="url(#glass)"/>
+    <rect x="184" y="372" width="16" height="250" rx="8" fill="#fff" opacity=".5"/>
+    <rect x="408" y="380" width="8" height="220" rx="4" fill="#fff" opacity=".22"/>
+    <ellipse cx="300" cy="628" rx="118" ry="18" fill="#3A2C2A" opacity=".10"/>
+    <ellipse cx="300" cy="350" rx="129" ry="20" fill="#E7E0DB" stroke="#D2C8C1" stroke-width="2"/>
+    <ellipse cx="300" cy="350" rx="118" ry="14" fill="${top}" fill-opacity=".5"/>`;
 }
 
 export function candleSVG(opts = {}) {
@@ -149,6 +190,7 @@ export function candleSVG(opts = {}) {
     <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FFF9F5"/><stop offset="1" stop-color="#F6E7E2"/></linearGradient>
     <linearGradient id="glass" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#ffffff" stop-opacity=".55"/><stop offset=".16" stop-color="#ffffff" stop-opacity=".10"/><stop offset=".5" stop-color="#e9e2dd" stop-opacity=".05"/><stop offset=".84" stop-color="#9b908a" stop-opacity=".10"/><stop offset="1" stop-color="#8c817b" stop-opacity=".22"/></linearGradient>
     <linearGradient id="depth" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffffff" stop-opacity=".18"/><stop offset=".5" stop-color="#3A2C2A" stop-opacity="0"/><stop offset="1" stop-color="#3A2C2A" stop-opacity=".22"/></linearGradient>
+    <linearGradient id="metal" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#fff" stop-opacity=".5"/><stop offset=".2" stop-color="#E9E2DA" stop-opacity=".2"/><stop offset=".5" stop-color="#CFC7BE" stop-opacity="0"/><stop offset=".82" stop-color="#A89E92" stop-opacity=".25"/><stop offset="1" stop-color="#8c817b" stop-opacity=".4"/></linearGradient>
     <radialGradient id="creamHi" cx="38%" cy="26%" r="60%"><stop offset="0" stop-color="#ffffff" stop-opacity=".85"/><stop offset="100%" stop-color="#ffffff" stop-opacity="0"/></radialGradient>
     <radialGradient id="creamShade" cx="50%" cy="18%" r="95%"><stop offset="58%" stop-color="#3A2C2A" stop-opacity="0"/><stop offset="100%" stop-color="#3A2C2A" stop-opacity=".13"/></radialGradient>
     <radialGradient id="berry" cx="35%" cy="30%" r="75%"><stop offset="0" stop-color="#F06A78"/><stop offset="1" stop-color="#B92038"/></radialGradient>
@@ -158,16 +200,7 @@ export function candleSVG(opts = {}) {
   </defs>
   <rect width="600" height="740" fill="url(#bg)"/>
   <ellipse cx="300" cy="664" rx="170" ry="30" fill="#3A2C2A" opacity=".16"/>
-  <g filter="url(#soft)"><path d="M171 350 L164 614 Q164 648 198 648 L402 648 Q436 648 436 614 L429 350 Z" fill="#ECE7E3" fill-opacity=".5"/></g>
-  <clipPath id="waxclip"><path d="M186 392 L180 612 Q180 632 200 632 L400 632 Q420 632 420 612 L414 392 Z"/></clipPath>
-  ${waxLayers(opts.layers || [waxHex])}
-  <path d="M186 392 L180 612 Q180 632 200 632 L400 632 Q420 632 420 612 L414 392 Z" fill="url(#depth)"/>
-  <path d="M171 350 L164 614 Q164 648 198 648 L402 648 Q436 648 436 614 L429 350 Z" fill="url(#glass)"/>
-  <rect x="184" y="372" width="16" height="250" rx="8" fill="#fff" opacity=".5"/>
-  <rect x="408" y="380" width="8" height="220" rx="4" fill="#fff" opacity=".22"/>
-  <ellipse cx="300" cy="628" rx="118" ry="18" fill="#3A2C2A" opacity=".10"/>
-  <ellipse cx="300" cy="350" rx="129" ry="20" fill="#E7E0DB" stroke="#D2C8C1" stroke-width="2"/>
-  <ellipse cx="300" cy="350" rx="118" ry="14" fill="${waxHex}" fill-opacity=".5"/>
+  ${vesselArt(opts.vessel || "jar", opts.layers || [waxHex])}
   ${hasWhip ? cream(whipHex) : ""}
   ${hasDrizzle ? drizzle(DRIP[drizzleId] || DRIP.caramel) : ""}
   ${toppings(toppingIds)}
@@ -237,11 +270,10 @@ function board(list, label) {
   writeFileSync(new URL(`../${label}.png`, import.meta.url), new Resvg(svg, { fitTo: { mode: "width", value: 460 * list.length } }).render().asPng());
 }
 
-// Multi-layer wax test (parfait look).
+// Distinct vessels test.
 board([
-  { name: "1 layer", layers: ["#F4E4C9"], whipHex: "#FBF3E4", drizzleId: "caramel", toppingIds: ["cherry"] },
-  { name: "2 layers", layers: ["#EBB7BE", "#F4E4C9"], whipHex: "#F4CAD2", drizzleId: "berry", toppingIds: ["strawberry"] },
-  { name: "3 layers", layers: ["#D9A86A", "#F1C79A", "#F4E4C9"], whipHex: "#FBF3E4", drizzleId: "chocolate", toppingIds: ["sprinkles"] },
-  { name: "4 layers", layers: ["#9C6B4F", "#EBB7BE", "#F1C79A", "#F4E4C9"], whipHex: "#FBF3E4", drizzleId: "caramel", toppingIds: ["cherry", "blueberry"] },
+  { name: "Glass Jar", vessel: "jar", layers: ["#F4E4C9"], whipHex: "#FBF3E4", drizzleId: "caramel", toppingIds: ["strawberry", "cherry"] },
+  { name: "Tin", vessel: "tin", layers: ["#F4E4C9"], whipHex: "#FBF3E4", drizzleId: "chocolate", toppingIds: ["sprinkles"] },
+  { name: "Dessert Glass", vessel: "dessert", layers: ["#EBB7BE", "#F4E4C9"], whipHex: "#F4CAD2", drizzleId: "berry", toppingIds: ["cherry", "blueberry"] },
 ], "candle-preview");
 console.log("wrote candle-preview.png");

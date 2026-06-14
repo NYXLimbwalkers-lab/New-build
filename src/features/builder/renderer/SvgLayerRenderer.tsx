@@ -11,12 +11,14 @@ import { cn } from "@/lib/cn";
 import type { RendererProps } from "./types";
 import {
   CreamSwirl,
+  DessertGlass,
   Drizzle,
   Flame,
   GlowDefs,
   JarVessel,
   NameLabel,
   SurfaceShadow,
+  TinVessel,
   ToppingCluster,
   WineGlass,
 } from "./svgParts";
@@ -75,7 +77,13 @@ export function SvgLayerRenderer({ config, revealed, showcase, className }: Rend
           <WineGlass waxHex={layerHexes[0]} />
         ) : (
           <>
-            <JarVessel layers={layerHexes} tin={vessel?.shape === "tin"} />
+            {vessel?.shape === "tin" ? (
+              <TinVessel topColor={layerHexes[layerHexes.length - 1]} />
+            ) : vessel?.shape === "dessert" ? (
+              <DessertGlass layers={layerHexes} />
+            ) : (
+              <JarVessel layers={layerHexes} />
+            )}
             <AnimatePresence mode="popLayout">
               {whip && <CreamSwirl key={`whip-${whip.id}`} hex={whip.hex} />}
             </AnimatePresence>

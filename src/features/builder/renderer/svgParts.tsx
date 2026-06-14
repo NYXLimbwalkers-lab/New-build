@@ -27,6 +27,13 @@ export function GlowDefs() {
         <stop offset=".5" stopColor="#3A2C2A" stopOpacity="0" />
         <stop offset="1" stopColor="#3A2C2A" stopOpacity=".22" />
       </linearGradient>
+      <linearGradient id="cmetal" x1="0" y1="0" x2="1" y2="0">
+        <stop offset="0" stopColor="#fff" stopOpacity=".5" />
+        <stop offset=".2" stopColor="#E9E2DA" stopOpacity=".2" />
+        <stop offset=".5" stopColor="#CFC7BE" stopOpacity="0" />
+        <stop offset=".82" stopColor="#A89E92" stopOpacity=".25" />
+        <stop offset="1" stopColor="#8c817b" stopOpacity=".4" />
+      </linearGradient>
       <radialGradient id="ccreamHi" cx="38%" cy="26%" r="60%">
         <stop offset="0" stopColor="#ffffff" stopOpacity=".85" />
         <stop offset="100%" stopColor="#ffffff" stopOpacity="0" />
@@ -49,6 +56,9 @@ export function GlowDefs() {
       <clipPath id="cwaxclip">
         <path d={JAR_WAX} />
       </clipPath>
+      <clipPath id="cdclip">
+        <path d="M186 364 Q196 462 300 492 Q404 462 414 364 Z" />
+      </clipPath>
     </defs>
   );
 }
@@ -61,35 +71,80 @@ export function SurfaceShadow() {
 const JAR_GLASS = "M171 350 L164 614 Q164 648 198 648 L402 648 Q436 648 436 614 L429 350 Z";
 const JAR_WAX = "M186 392 L180 612 Q180 632 200 632 L400 632 Q420 632 420 612 L414 392 Z";
 
-/** Stacked wax layers (parfait look). layers[0] = bottom pour. */
-function WaxBands({ layers }: { layers: string[] }) {
-  const top = 392, bottom = 632, span = bottom - top;
-  const bandH = span / layers.length;
+/** Stacked wax layers (parfait look), clipped to a vessel's inner region. */
+function WaxBands({ layers, clipId = "cwaxclip", top = 392, bottom = 632 }: { layers: string[]; clipId?: string; top?: number; bottom?: number }) {
+  const bandH = (bottom - top) / layers.length;
   return (
-    <g clipPath="url(#cwaxclip)">
+    <g clipPath={`url(#${clipId})`}>
       {layers.map((hex, i) => (
-        <rect key={i} x="168" y={bottom - bandH * (i + 1)} width="264" height={bandH + 1} fill={hex} />
+        <rect key={i} x="120" y={bottom - bandH * (i + 1)} width="360" height={bandH + 1} fill={hex} />
       ))}
       {layers.slice(1).map((_, idx) => {
         const y = bottom - bandH * (idx + 1);
         return (
           <g key={`sep${idx}`}>
-            <rect x="168" y={y - 2} width="264" height="3" fill="#3A2C2A" opacity=".10" />
-            <rect x="168" y={y - 4} width="264" height="2" fill="#fff" opacity=".25" />
+            <rect x="120" y={y - 2} width="360" height="3" fill="#3A2C2A" opacity=".10" />
+            <rect x="120" y={y - 4} width="360" height="2" fill="#fff" opacity=".25" />
           </g>
         );
       })}
-      <rect x="168" y="392" width="264" height="26" fill="#fff" opacity=".22" />
+      <rect x="120" y={top} width="360" height="26" fill="#fff" opacity=".22" />
     </g>
   );
 }
 
-export function JarVessel({ layers, tin }: { layers: string[]; tin?: boolean }) {
+/** Opaque metal tin — wax isn't visible through it; mouth shows the top color. */
+export function TinVessel({ topColor }: { topColor: string }) {
+  return (
+    <g>
+      <g filter="url(#csoft)">
+        <path d="M174 356 L174 632 Q174 648 190 648 L410 648 Q426 648 426 632 L426 356 Z" fill="#CFC7BE" />
+      </g>
+      <rect x="174" y="356" width="252" height="290" fill="url(#cmetal)" />
+      <rect x="174" y="470" width="252" height="78" fill="#fff" opacity=".14" />
+      <rect x="186" y="362" width="14" height="280" fill="#fff" opacity=".35" />
+      <ellipse cx="300" cy="356" rx="128" ry="18" fill="#BDB4AA" />
+      <ellipse cx="300" cy="352" rx="120" ry="14" fill={topColor} fillOpacity=".55" />
+      <ellipse cx="300" cy="356" rx="128" ry="18" fill="none" stroke="#A89E92" strokeWidth="2" />
+    </g>
+  );
+}
+
+/** Footed sundae glass — layered wax in the bowl, stem + foot. */
+const DBOWL = "M168 350 Q176 470 300 506 Q424 470 432 350 Z";
+const DINNER = "M186 364 Q196 462 300 492 Q404 462 414 364 Z";
+export function DessertGlass({ layers }: { layers: string[] }) {
+  const top = layers[layers.length - 1];
+  return (
+    <g>
+      <g filter="url(#csoft)">
+        <path d={DBOWL} fill="#ECE7E3" fillOpacity=".45" />
+      </g>
+      <motion.g
+        initial={{ scaleY: 0, opacity: 0.5 }}
+        animate={{ scaleY: 1, opacity: 1 }}
+        transition={SPRING.pour}
+        style={{ transformOrigin: "300px 496px" }}
+      >
+        <WaxBands layers={layers} clipId="cdclip" top={372} bottom={496} />
+        <path d={DINNER} fill="url(#cdepth)" />
+      </motion.g>
+      <path d={DBOWL} fill="url(#cglass)" />
+      <path d="M186 360 Q196 450 296 488" fill="none" stroke="#fff" strokeOpacity=".5" strokeWidth="9" strokeLinecap="round" />
+      <rect x="294" y="500" width="12" height="120" fill="#ECE7E3" fillOpacity=".5" />
+      <ellipse cx="300" cy="636" rx="84" ry="16" fill="#EDE7DF" fillOpacity=".6" stroke="#D2C8C1" strokeWidth="2" />
+      <ellipse cx="300" cy="350" rx="132" ry="18" fill="#E7E0DB" stroke="#D2C8C1" strokeWidth="2" />
+      <ellipse cx="300" cy="350" rx="120" ry="13" fill={top} fillOpacity=".5" />
+    </g>
+  );
+}
+
+export function JarVessel({ layers }: { layers: string[] }) {
   const topColor = layers[layers.length - 1];
   return (
     <g>
       <g filter="url(#csoft)">
-        <path d={JAR_GLASS} fill={tin ? "#E6DFD6" : "#ECE7E3"} fillOpacity={tin ? 0.95 : 0.5} />
+        <path d={JAR_GLASS} fill="#ECE7E3" fillOpacity={0.5} />
       </g>
       {/* animated wax pour */}
       <motion.g
@@ -102,12 +157,12 @@ export function JarVessel({ layers, tin }: { layers: string[]; tin?: boolean }) 
         <path d={JAR_WAX} fill="url(#cdepth)" />
       </motion.g>
       {/* glass tint + highlights over the wax */}
-      {!tin && <path d={JAR_GLASS} fill="url(#cglass)" />}
-      <rect x="184" y="372" width="16" height="250" rx="8" fill="#fff" opacity={tin ? 0.3 : 0.5} />
+      <path d={JAR_GLASS} fill="url(#cglass)" />
+      <rect x="184" y="372" width="16" height="250" rx="8" fill="#fff" opacity={0.5} />
       <rect x="408" y="380" width="8" height="220" rx="4" fill="#fff" opacity=".22" />
       <ellipse cx="300" cy="628" rx="118" ry="18" fill="#3A2C2A" opacity=".10" />
       {/* rim (top layer color shows at the mouth) */}
-      <ellipse cx="300" cy="350" rx="129" ry="20" fill={tin ? "#D8CFC4" : "#E7E0DB"} stroke="#D2C8C1" strokeWidth="2" />
+      <ellipse cx="300" cy="350" rx="129" ry="20" fill="#E7E0DB" stroke="#D2C8C1" strokeWidth="2" />
       <ellipse cx="300" cy="350" rx="118" ry="14" fill={topColor} fillOpacity=".5" />
     </g>
   );
