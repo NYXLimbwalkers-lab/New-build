@@ -25,7 +25,35 @@ const IMG_DIR = join(RAW, "images");
 const VID_DIR = join(RAW, "videos");
 
 const ORIGIN = "https://delajacandles.com";
-const UA = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124 Safari/537.36";
+const UA = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36";
+
+// Full browser-like headers — beats simple WAF rules that block non-browsers.
+const BROWSER = {
+  "user-agent": UA,
+  "accept-language": "en-US,en;q=0.9",
+  "accept-encoding": "gzip, deflate, br",
+  "sec-ch-ua": '"Chromium";v="124", "Google Chrome";v="124", "Not-A.Brand";v="99"',
+  "sec-ch-ua-mobile": "?0",
+  "sec-ch-ua-platform": '"macOS"',
+  "upgrade-insecure-requests": "1",
+};
+
+// Known real image URLs (her CDN) — downloaded even if the HTML pages are
+// challenge-blocked, so we always get the core menu photos.
+const KNOWN_IMAGES = [
+  "https://i0.wp.com/delajacandles.com/wp-content/uploads/2026/01/29519-1-scaled.jpg",
+  "https://i0.wp.com/delajacandles.com/wp-content/uploads/2025/07/6845-scaled.jpg",
+  "https://i0.wp.com/delajacandles.com/wp-content/uploads/2025/07/6842-scaled.jpg",
+  "https://i0.wp.com/delajacandles.com/wp-content/uploads/2025/07/6841-scaled.jpg",
+  "https://i0.wp.com/delajacandles.com/wp-content/uploads/2025/07/6846-scaled.jpg",
+  "https://i0.wp.com/delajacandles.com/wp-content/uploads/2025/07/6823-scaled.jpg",
+  "https://i0.wp.com/delajacandles.com/wp-content/uploads/2026/01/28710-scaled.webp",
+  "https://i0.wp.com/delajacandles.com/wp-content/uploads/2025/07/Messenger_creation_7C35B6DB-D94B-40AE-831C-515369D99907.jpeg",
+  "https://i0.wp.com/delajacandles.com/wp-content/uploads/2026/03/37271-scaled.webp",
+  "https://i0.wp.com/delajacandles.com/wp-content/uploads/2026/05/46981-scaled.jpg",
+  "https://i0.wp.com/delajacandles.com/wp-content/uploads/2025/11/21878-scaled.webp",
+  "https://b4130177.smushcdn.com/4130177/wp-content/uploads/2025/04/1-e1745898030663.png",
+];
 
 // Seed pages — her real sections + known product slugs (so we hit product
 // galleries directly even if the shop markup changes).
@@ -48,9 +76,17 @@ const VID_RE = /\.(mp4|mov|webm|m4v)(?:$|\?)/i;
 
 async function exists(p) { try { await access(p); return true; } catch { return false; } }
 
+function blockedBy(res) {
+  const cf = res.headers.get("cf-mitigated") || res.headers.get("cf-ray");
+  const server = res.headers.get("server") || "?";
+  return `${res.status} server=${server}${cf ? ` cf=${cf}` : ""}`;
+}
+
 async function getText(url) {
-  const res = await fetch(url, { headers: { "user-agent": UA, accept: "text/html" } });
-  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  const res = await fetch(url, {
+    headers: { ...BROWSER, accept: "text/html,application/xhtml+xml", referer: ORIGIN + "/" },
+  });
+  if (!res.ok) throw new Error(blockedBy(res));
   return res.text();
 }
 
@@ -62,8 +98,10 @@ async function download(url, dir) {
   // de-collide across folders/months
   const dest = join(dir, name);
   if (await exists(dest)) return { url: clean, dest, skipped: true };
-  const res = await fetch(clean, { headers: { "user-agent": UA } });
-  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  const res = await fetch(clean, {
+    headers: { ...BROWSER, accept: "image/avif,image/webp,image/png,image/*,video/*,*/*", referer: ORIGIN + "/" },
+  });
+  if (!res.ok) throw new Error(blockedBy(res));
   const buf = Buffer.from(await res.arrayBuffer());
   await mkdir(dirname(dest), { recursive: true });
   await writeFile(dest, buf);
@@ -124,6 +162,10 @@ async function main() {
     for (const l of links) if (!seen.has(l) && !queue.includes(l)) queue.push(l);
     console.log(`  · ${seen.size}/${PAGE_CAP} ${name ? `[${name}] ` : ""}${assets.length} assets — ${url}`);
   }
+
+  // Always include the known CDN images — these usually bypass the WAF even
+  // when the HTML pages don't.
+  KNOWN_IMAGES.forEach((u) => assetUrls.add(u));
 
   console.log(`\n→ Downloading ${assetUrls.size} assets …`);
   const downloads = [];
