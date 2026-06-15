@@ -1,128 +1,157 @@
 #!/usr/bin/env node
 /*
-  DéLa Já — asset crawler.
-  Pulls her REAL catalog + product photos from her live site into
-  `assets/raw/` and writes `assets/raw/catalog.json`. These raw photos are the
-  SOURCE for the transparent-PNG layer library used by the photo-compositing
-  preview engine (see docs/ASSETS.md).
+  DéLa Já — full asset crawler.
+  Walks her live site (same-domain BFS) and pulls EVERY product photo and video
+  into assets/raw/images and assets/raw/videos, plus a structured catalog.json
+  (product name, price, page, image list). These raw photos are the SOURCE for
+  the transparent-PNG layer library used by the photo-compositing preview engine
+  (see docs/ASSETS.md).
 
-  Requires her domains on the environment's network egress allowlist:
-    delajacandles.com, i0.wp.com (i1/i2), b4130177.smushcdn.com
+  ── RUN THIS ON A MACHINE WITH OPEN NETWORK (e.g. the Mac), or in the web
+     environment AFTER her domains are added to the egress allowlist. ──
+  In the locked-down web sandbox every request 403s and nothing downloads.
 
-  Usage:  node scripts/fetch-assets.mjs
-  Safe to re-run (skips files already downloaded).
+  Allowlisted download hosts: delajacandles.com, *.wp.com, *.smushcdn.com.
+
+  Usage:  node scripts/fetch-assets.mjs            (or: npm run fetch:assets)
+  Safe to re-run — already-downloaded files are skipped.
 */
-import { mkdir, writeFile, readFile, access } from "node:fs/promises";
-import { dirname, join, extname } from "node:path";
+import { mkdir, writeFile, access } from "node:fs/promises";
+import { dirname, join, extname, basename } from "node:path";
 
 const ROOT = new URL("..", import.meta.url).pathname;
 const RAW = join(ROOT, "assets", "raw");
-const SHOP = "https://delajacandles.com/shop/";
+const IMG_DIR = join(RAW, "images");
+const VID_DIR = join(RAW, "videos");
 
-// Known high-res source images from the deep plan (Appendix A) — seed set so we
-// have something even if shop markup changes.
-const SEED = {
-  logo: "https://b4130177.smushcdn.com/4130177/wp-content/uploads/2025/04/1-e1745898030663.png",
-  "choc-strawberries": "https://i0.wp.com/delajacandles.com/wp-content/uploads/2026/01/29519-1-scaled.jpg",
-  "waffles-ice-cream-1": "https://i0.wp.com/delajacandles.com/wp-content/uploads/2025/07/6845-scaled.jpg",
-  "waffles-ice-cream-2": "https://i0.wp.com/delajacandles.com/wp-content/uploads/2025/07/6842-scaled.jpg",
-  "waffles-ice-cream-3": "https://i0.wp.com/delajacandles.com/wp-content/uploads/2025/07/6841-scaled.jpg",
-  "waffles-ice-cream-4": "https://i0.wp.com/delajacandles.com/wp-content/uploads/2025/07/6846-scaled.jpg",
-  "maple-bourbon-apple-crisp": "https://i0.wp.com/delajacandles.com/wp-content/uploads/2025/07/6823-scaled.jpg",
-  "driftwood-midnight": "https://i0.wp.com/delajacandles.com/wp-content/uploads/2026/01/28710-scaled.webp",
-  "orange-dreamsicle": "https://i0.wp.com/delajacandles.com/wp-content/uploads/2025/07/Messenger_creation_7C35B6DB-D94B-40AE-831C-515369D99907.jpeg",
-  "banana-pudding": "https://i0.wp.com/delajacandles.com/wp-content/uploads/2026/03/37271-scaled.webp",
-  "toasted-mellow": "https://i0.wp.com/delajacandles.com/wp-content/uploads/2026/05/46981-scaled.jpg",
-  "site-hero": "https://delajacandles.com/wp-content/uploads/2025/11/21878-scaled.webp",
-};
+const ORIGIN = "https://delajacandles.com";
+const UA = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124 Safari/537.36";
 
-async function exists(p) {
-  try {
-    await access(p);
-    return true;
-  } catch {
-    return false;
-  }
+// Seed pages — her real sections + known product slugs (so we hit product
+// galleries directly even if the shop markup changes).
+const SEED_PAGES = [
+  "/", "/home/", "/shop/", "/contact/",
+  "/product-category/home-decor-candles/",
+  "/product-category/dessert-candles/",
+  "/product-category/wax-melts/",
+  "/product/berry-intoxicating-candle/",
+  "/product/festive-peppermint-whip-candle/",
+  "/product/lavender-lullabies-candle/",
+];
+
+const PAGE_CAP = 120;       // safety limit on pages crawled
+const isDownloadHost = (h) =>
+  h === "delajacandles.com" || h.endsWith(".wp.com") || h.endsWith(".smushcdn.com");
+
+const IMG_RE = /\.(jpe?g|png|webp|gif|avif)(?:$|\?)/i;
+const VID_RE = /\.(mp4|mov|webm|m4v)(?:$|\?)/i;
+
+async function exists(p) { try { await access(p); return true; } catch { return false; } }
+
+async function getText(url) {
+  const res = await fetch(url, { headers: { "user-agent": UA, accept: "text/html" } });
+  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  return res.text();
 }
 
-async function download(url, dest) {
-  if (await exists(dest)) return { url, dest, skipped: true };
-  const res = await fetch(url, { headers: { "user-agent": "Mozilla/5.0 DelaJaAssetBot" } });
-  if (!res.ok) throw new Error(`HTTP ${res.status} for ${url}`);
+async function download(url, dir) {
+  // Normalize wp.com Photon: strip resize/scale params to get the original.
+  const clean = url.replace(/([?&])(resize|fit|w|h|crop|quality|strip|ssl)=[^&]*/g, "$1").replace(/[?&]+$/, "");
+  let name = basename(new URL(clean).pathname) || `asset-${Date.now()}`;
+  if (!extname(name)) name += ".jpg";
+  // de-collide across folders/months
+  const dest = join(dir, name);
+  if (await exists(dest)) return { url: clean, dest, skipped: true };
+  const res = await fetch(clean, { headers: { "user-agent": UA } });
+  if (!res.ok) throw new Error(`HTTP ${res.status}`);
   const buf = Buffer.from(await res.arrayBuffer());
   await mkdir(dirname(dest), { recursive: true });
   await writeFile(dest, buf);
-  return { url, dest, bytes: buf.length };
+  return { url: clean, dest, bytes: buf.length };
 }
 
-/** Pull WooCommerce product cards + image srcs from the shop HTML (all pages). */
-async function crawlShop() {
-  const products = [];
-  for (let page = 1; page <= 20; page++) {
-    const url = page === 1 ? SHOP : `${SHOP}page/${page}/`;
-    let html;
-    try {
-      const res = await fetch(url, { headers: { "user-agent": "Mozilla/5.0 DelaJaAssetBot" } });
-      if (!res.ok) break;
-      html = await res.text();
-    } catch {
-      break;
-    }
-    // WooCommerce product list items
-    const blocks = html.split(/<li[^>]*class="[^"]*product[^"]*"/i).slice(1);
-    if (blocks.length === 0) break;
-    for (const b of blocks) {
-      const name = (b.match(/woocommerce-loop-product__title[^>]*>([^<]+)</i) || [])[1];
-      const price = (b.match(/woocommerce-Price-amount[^>]*><bdi>([^<]+)</i) || [])[1];
-      const img = (b.match(/<img[^>]+src="([^"]+)"/i) || [])[1];
-      const link = (b.match(/href="([^"]+)"/i) || [])[1];
-      if (name) products.push({ name: name.trim(), price, img, link });
-    }
-    if (!html.includes("page/" + (page + 1))) break;
+/** Pull every asset URL + same-origin link + product meta from one page's HTML. */
+function parse(html, pageUrl) {
+  const abs = (u) => { try { return new URL(u, pageUrl).href; } catch { return null; } };
+  const assets = new Set();
+  const links = new Set();
+
+  // src / href / data-src / data-large_image / content (og)
+  for (const m of html.matchAll(/(?:src|href|data-src|data-large_image|data-srcset|content)\s*=\s*["']([^"']+)["']/gi)) {
+    const u = abs(m[1]); if (!u) continue;
+    if (IMG_RE.test(u) || VID_RE.test(u)) assets.add(u);
+    else if (u.startsWith(ORIGIN) && /\/(product|product-category|shop|home)\b/.test(u)) links.add(u.split("#")[0]);
   }
-  return products;
+  // srcset: take the largest candidate of each set
+  for (const m of html.matchAll(/srcset\s*=\s*["']([^"']+)["']/gi)) {
+    const cands = m[1].split(",").map((s) => s.trim().split(/\s+/)[0]).filter(Boolean);
+    for (const c of cands) { const u = abs(c); if (u && IMG_RE.test(u)) assets.add(u); }
+  }
+  // <video><source>, <source src>
+  for (const m of html.matchAll(/<source[^>]+src\s*=\s*["']([^"']+)["']/gi)) {
+    const u = abs(m[1]); if (u && VID_RE.test(u)) assets.add(u);
+  }
+  // social/video embeds (recorded for reference; not downloaded here)
+  const embeds = [...html.matchAll(/(https?:\/\/(?:www\.)?(?:tiktok|youtube|youtu\.be|instagram)\.[^"'\s<>]+)/gi)].map((m) => m[1]);
+
+  const name = (html.match(/<h1[^>]*product[^>]*>([^<]+)</i) || html.match(/<h1[^>]*>([^<]+)</i) || [])[1];
+  const price = (html.match(/woocommerce-Price-amount[^>]*><bdi>([^<]+)</i) || [])[1];
+
+  return { assets: [...assets], links: [...links], embeds, name: name?.trim(), price: price?.trim() };
 }
 
 async function main() {
-  await mkdir(RAW, { recursive: true });
-  console.log("→ Crawling shop catalog…");
-  let crawled = [];
-  try {
-    crawled = await crawlShop();
-    console.log(`  found ${crawled.length} products`);
-  } catch (e) {
-    console.warn("  shop crawl failed:", e.message);
+  await mkdir(IMG_DIR, { recursive: true });
+  await mkdir(VID_DIR, { recursive: true });
+
+  const queue = SEED_PAGES.map((p) => ORIGIN + p);
+  const seen = new Set();
+  const assetUrls = new Set();
+  const embeds = new Set();
+  const products = [];
+
+  console.log("→ Crawling delajacandles.com …");
+  while (queue.length && seen.size < PAGE_CAP) {
+    const url = queue.shift();
+    if (seen.has(url)) continue;
+    seen.add(url);
+    let html;
+    try { html = await getText(url); } catch (e) { console.warn(`  ✗ ${url} (${e.message})`); continue; }
+    const { assets, links, embeds: emb, name, price } = parse(html, url);
+    assets.forEach((a) => assetUrls.add(a));
+    emb.forEach((e) => embeds.add(e));
+    if (url.includes("/product/")) products.push({ url, name, price, images: assets.filter((a) => IMG_RE.test(a)) });
+    for (const l of links) if (!seen.has(l) && !queue.includes(l)) queue.push(l);
+    console.log(`  · ${seen.size}/${PAGE_CAP} ${name ? `[${name}] ` : ""}${assets.length} assets — ${url}`);
   }
 
-  const results = [];
-  const all = { ...SEED };
-  crawled.forEach((p, i) => {
-    if (p.img) all[`shop-${i}-${p.name.toLowerCase().replace(/[^a-z0-9]+/g, "-")}`] = p.img;
-  });
-
-  for (const [id, url] of Object.entries(all)) {
-    const ext = extname(new URL(url).pathname) || ".jpg";
-    const dest = join(RAW, `${id}${ext}`);
+  console.log(`\n→ Downloading ${assetUrls.size} assets …`);
+  const downloads = [];
+  for (const url of assetUrls) {
+    const host = new URL(url).hostname;
+    if (!isDownloadHost(host)) { console.warn(`  ⤬ skip off-host ${host}`); continue; }
+    const dir = VID_RE.test(url) ? VID_DIR : IMG_DIR;
     try {
-      const r = await download(url, dest);
-      results.push({ id, ...r });
-      console.log(r.skipped ? `  · ${id} (cached)` : `  ✓ ${id} (${r.bytes} bytes)`);
-    } catch (e) {
-      console.warn(`  ✗ ${id}: ${e.message}`);
-    }
+      const r = await download(url, dir);
+      downloads.push({ url: r.url, file: r.dest.replace(ROOT, ""), bytes: r.bytes ?? null, skipped: !!r.skipped });
+      console.log(r.skipped ? `  · cached ${basename(r.dest)}` : `  ✓ ${basename(r.dest)} (${r.bytes} b)`);
+    } catch (e) { console.warn(`  ✗ ${url} (${e.message})`); }
   }
 
+  const images = downloads.filter((d) => IMG_RE.test(d.url)).length;
+  const videos = downloads.filter((d) => VID_RE.test(d.url)).length;
   await writeFile(
     join(RAW, "catalog.json"),
-    JSON.stringify({ fetchedAt: new Date().toISOString(), crawled, downloads: results }, null, 2),
+    JSON.stringify({ fetchedAt: new Date().toISOString(), pagesCrawled: seen.size, products, embeds: [...embeds], downloads }, null, 2),
   );
-  console.log(`\nDone. Raw assets in assets/raw/. Next: build layers (see docs/ASSETS.md).`);
+
+  console.log(`\nDone. ${images} images, ${videos} videos → assets/raw/.`);
+  if (embeds.size) console.log(`Social/video embeds recorded in catalog.json (download with yt-dlp): ${embeds.size}`);
+  console.log(`Products captured: ${products.length}. Next: build the layer library (docs/ASSETS.md).`);
 }
 
 main().catch((e) => {
   console.error("\nFAILED:", e.message);
-  console.error(
-    "If this is a 403 'Host not in allowlist', add her domains to the environment's network egress settings and re-run.",
-  );
+  console.error("If every request 403s: you're on the locked-down web sandbox. Run this on the Mac, or add her domains to the egress allowlist.");
   process.exit(1);
 });
