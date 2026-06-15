@@ -194,13 +194,14 @@ export const PRODUCTS: Product[] = [
     notes: "Dessert in a glass",
   },
   {
+    // Verified via her live listings: 8 oz, frosted whipped top.
     id: "choc-strawberries",
     name: "Chocolate Covered Strawberries",
-    size: "14 oz",
-    price: 24.99,
+    size: "8 oz",
+    price: 19.99,
     category: "dessert",
     scentFamily: "Dessert",
-    looksLike: "Whipped cream with a chocolate-dipped berry",
+    looksLike: "A frosted whipped top with a chocolate-dipped berry",
     smellsLike: "Ripe strawberry dipped in cocoa",
     notes: "Whipped + strawberry embed",
     badges: ["staff-pick"],
@@ -232,14 +233,15 @@ export const PRODUCTS: Product[] = [
     },
   },
   {
+    // Verified via her live listings: 14 oz, strawberry-cream scent.
     id: "candy-explosion",
     name: "Candy Explosion",
-    size: "12 oz",
-    price: 19.5,
+    size: "14 oz",
+    price: 24.99,
     category: "dessert",
     scentFamily: "Dessert",
-    looksLike: "A confetti of candy on cream",
-    smellsLike: "Sweet sugar-rush",
+    looksLike: "A confetti of candy on whipped cream",
+    smellsLike: "Strawberry cream, sweet sugar-rush",
     notes: "Whipped + candy",
     recipe: {
       vesselId: "jar-12",
@@ -314,15 +316,16 @@ export const PRODUCTS: Product[] = [
     image: `${UPLOADS}/2026/01/28710-scaled.webp`,
   },
   {
+    // Verified via her live listings: 12 oz gel candle, juicy berry fragrance.
     id: "berry-intoxicating",
     name: "Berry Intoxicating",
     size: "12 oz",
     price: 29.5,
     category: "boozy",
     scentFamily: "Boozy",
-    looksLike: "Blackberry margarita in a stemmed glass",
-    smellsLike: "Blackberry, lime, a salted rim",
-    notes: "Gel wax, wine glass",
+    looksLike: "Berry-red gel poured in a stemmed glass",
+    smellsLike: "Juicy blackberry & mixed berry",
+    notes: "Gel wax, 12 oz, wine glass",
     badges: ["bestseller"],
     recipe: {
       vesselId: "wine",
@@ -366,6 +369,29 @@ export const PRODUCTS: Product[] = [
       whipId: null,
       drizzleId: null,
       toppingIds: [],
+    },
+  },
+  {
+    // Verified via her live listings: 14 oz "Candy Cane Lane" / Festive
+    // Peppermint Whip — red & white swirl, whipped top + peppermint crumble,
+    // peppermint & vanilla. Price estimated to her 14 oz tier (confirm).
+    id: "festive-peppermint-whip",
+    name: "Festive Peppermint Whip",
+    size: "14 oz",
+    price: 24.99,
+    category: "seasonal",
+    scentFamily: "Dessert",
+    looksLike: "Red & white swirled wax under a whipped top with peppermint crumble",
+    smellsLike: "Cool peppermint folded into vanilla",
+    notes: "Whipped + peppermint crumble · holiday",
+    badges: ["seasonal"],
+    seasonalMonths: [11, 12],
+    recipe: {
+      vesselId: "jar-14",
+      waxColorId: "strawberry",
+      whipId: "whip-vanilla",
+      drizzleId: null,
+      toppingIds: ["crumble"],
     },
   },
   {
