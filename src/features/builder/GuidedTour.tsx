@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
 import { Button } from "@/components/ui/Button";
 import { speak } from "@/lib/speak";
@@ -45,6 +45,11 @@ export function GuidedTour({ open, onClose }: { open: boolean; onClose: () => vo
   const [i, setI] = useState(0);
   const card = CARDS[i];
   const last = i === CARDS.length - 1;
+
+  // Read the opening card aloud when the tour opens (AT users hear step 1 too).
+  useEffect(() => {
+    if (open && readAloud) speak(`${CARDS[0].title}. ${CARDS[0].body}`);
+  }, [open, readAloud]);
 
   function finish() {
     localStorage.setItem(TOUR_KEY, "1");

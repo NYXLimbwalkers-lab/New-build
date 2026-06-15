@@ -67,25 +67,35 @@ export function KioskPage() {
   }
 
   useEffect(() => {
-    if (attract) return;
+    // Don't auto-reset while the attract loop is up OR while a ticket is on
+    // screen (let the customer read their pickup number in peace).
+    if (attract || ticket) return;
     poke();
     return () => window.clearTimeout(timer.current);
-  }, [attract]);
+  }, [attract, ticket]);
 
+  const placingRef = useRef(false);
   async function complete() {
+    if (placingRef.current) return; // guard double-tap
     const items = await db.cart.toArray();
-    const total = items.reduce((s, i) => s + i.unitPrice * i.qty, 0);
-    const result = await getAdapter().placeOrder({
-      items,
-      total,
-      mode: "kiosk",
-      fulfillment: "pickup",
-    });
-    const pickup = result.pickupNumber ?? 0;
-    logEvent("kiosk_order", { total, pickup }, "kiosk");
-    addPoints(total);
-    await db.cart.clear();
-    setTicket({ pickup, total, items: items.reduce((s, i) => s + i.qty, 0) });
+    if (items.length === 0) return; // never mint an empty $0 order / pickup #
+    placingRef.current = true;
+    try {
+      const total = items.reduce((s, i) => s + i.unitPrice * i.qty, 0);
+      const result = await getAdapter().placeOrder({
+        items,
+        total,
+        mode: "kiosk",
+        fulfillment: "pickup",
+      });
+      const pickup = result.pickupNumber ?? 0;
+      logEvent("kiosk_order", { total, pickup }, "kiosk");
+      addPoints(total);
+      await db.cart.clear();
+      setTicket({ pickup, total, items: items.reduce((s, i) => s + i.qty, 0) });
+    } finally {
+      placingRef.current = false;
+    }
   }
 
   return (
@@ -151,7 +161,7 @@ function Ticket({
         <p className="mt-4 font-serif text-lg text-plum">Your pickup number</p>
         <p className="my-2 font-display text-7xl text-espresso">{pickup}</p>
         <p className="text-sm text-muted">
-          {items} item{items > 1 ? "s" : ""} · {formatUSD(total)}
+          {items} item{items === 1 ? "" : "s"} · {formatUSD(total)}
         </p>
 
         <div className="mt-6 flex gap-2">

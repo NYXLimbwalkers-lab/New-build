@@ -100,6 +100,9 @@ function Orders() {
               <span className="rounded-full bg-blush-soft/60 px-2 py-0.5 text-[0.6rem] uppercase tracking-[0.14em] text-plum">
                 {o.mode}
               </span>
+              {o.orderNo && (
+                <span className="text-sm font-medium text-espresso">{o.orderNo}</span>
+              )}
               {o.pickupNumber != null && (
                 <span className="text-sm text-cocoa">Pickup #{o.pickupNumber}</span>
               )}

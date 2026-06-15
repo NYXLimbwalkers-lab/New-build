@@ -46,10 +46,20 @@ export function loadLayerManifest(): Promise<LayerManifest | null> {
 /** Does the library contain real layers for every part of this build? */
 export function manifestCovers(
   m: LayerManifest,
-  parts: { vesselId: string; waxColorId: string; whipId: string | null; drizzleId: string | null; toppingIds: string[] },
+  parts: {
+    vesselId: string;
+    waxColorId: string;
+    extraLayers?: string[];
+    whipId: string | null;
+    drizzleId: string | null;
+    toppingIds: string[];
+  },
 ): boolean {
   if (!m.vessel?.[parts.vesselId]) return false;
-  if (!m.wax?.[parts.waxColorId]) return false;
+  // Every wax layer (base + extras) must have a real photo, or the parfait
+  // would silently lose layers in photo mode.
+  for (const id of [parts.waxColorId, ...(parts.extraLayers ?? [])])
+    if (!m.wax?.[id]) return false;
   if (parts.whipId && !m.whip?.[parts.whipId]) return false;
   if (parts.drizzleId && !m.drizzle?.[parts.drizzleId]) return false;
   for (const t of parts.toppingIds) if (!m.topping?.[t]) return false;

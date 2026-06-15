@@ -104,8 +104,16 @@ export function PhotoLayerRenderer({
     const vessel = manifest.vessel?.[config.vesselId];
     if (vessel) out.push({ entry: { ...vessel, enter: vessel.enter ?? "fade" }, key: `v-${config.vesselId}` });
 
-    const wax = manifest.wax?.[config.waxColorId];
-    if (wax) out.push({ entry: { ...wax, enter: wax.enter ?? "pour" }, hex: WAX_BY_ID[config.waxColorId]?.hex, key: `wax-${config.waxColorId}` });
+    // Every wax layer, bottom→top (a parfait must not collapse to one fill).
+    [config.waxColorId, ...(config.extraLayers ?? [])].forEach((colorId, li) => {
+      const wax = manifest.wax?.[colorId];
+      if (wax)
+        out.push({
+          entry: { ...wax, enter: wax.enter ?? "pour" },
+          hex: WAX_BY_ID[colorId]?.hex,
+          key: `wax-${li}-${colorId}`,
+        });
+    });
 
     if (config.whipId) {
       const whip = manifest.whip?.[config.whipId];

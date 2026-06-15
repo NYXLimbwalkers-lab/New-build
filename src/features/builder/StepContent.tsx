@@ -143,36 +143,38 @@ function WaxStep({ config, update }: StepProps) {
           .map((id, i) => ({ id, i }))
           .reverse()
           .map(({ id, i }) => (
-            <button
+            <div
               key={i}
-              type="button"
-              onClick={() => setSel(i)}
               className={cn(
-                "flex items-center gap-2 rounded-2xl border py-1.5 pl-2 pr-3 text-left text-xs transition-colors",
+                "flex items-center gap-1 rounded-2xl border text-xs transition-colors",
                 cur === i ? "border-gold bg-blush-soft/50" : "hairline bg-porcelain/60",
               )}
             >
-              <span className="h-7 w-7 shrink-0 rounded-full border border-white/60" style={{ background: WAX_BY_ID[id]?.hex }} />
-              <span className="leading-tight">
-                <span className="block text-espresso">{layerName(i)}</span>
-                <span className="block text-[0.6rem] text-muted">
-                  {SCENT_BY_ID[config.layerScents[i] ?? DEFAULT_SCENT]?.name}
+              <button
+                type="button"
+                onClick={() => setSel(i)}
+                aria-pressed={cur === i}
+                className="flex items-center gap-2 py-1.5 pl-2 pr-1 text-left"
+              >
+                <span className="h-7 w-7 shrink-0 rounded-full border border-white/60" style={{ background: WAX_BY_ID[id]?.hex }} />
+                <span className="leading-tight">
+                  <span className="block text-espresso">{layerName(i)}</span>
+                  <span className="block text-[0.6rem] text-muted">
+                    {SCENT_BY_ID[config.layerScents[i] ?? DEFAULT_SCENT]?.name}
+                  </span>
                 </span>
-              </span>
+              </button>
               {i > 0 && (
-                <span
-                  role="button"
+                <button
+                  type="button"
                   aria-label={`Remove ${layerName(i)}`}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    removeLayer(i);
-                  }}
-                  className="ml-0.5 text-muted hover:text-rose"
+                  onClick={() => removeLayer(i)}
+                  className="self-stretch rounded-r-2xl pl-0.5 pr-2.5 text-muted hover:text-rose"
                 >
                   ✕
-                </span>
+                </button>
               )}
-            </button>
+            </div>
           ))}
         {canAdd && (
           <button

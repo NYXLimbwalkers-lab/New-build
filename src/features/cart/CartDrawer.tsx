@@ -18,6 +18,7 @@ import { CandleRenderer } from "@/features/builder/renderer";
 import { BuildRecipe } from "@/features/builder/BuildRecipe";
 import { PRODUCT_BY_ID } from "@/data/products";
 import { ProductMedia } from "@/features/menu/ProductMedia";
+import { toast } from "@/lib/toast";
 import { cn } from "@/lib/cn";
 
 const GIFT_WRAP = 5;
@@ -43,6 +44,7 @@ export function CartDrawer() {
   const [contact, setContact] = useState("");
   const [address, setAddress] = useState("");
   const [placed, setPlaced] = useState(false);
+  const [placing, setPlacing] = useState(false);
   const [orderNo, setOrderNo] = useState("");
   const [pickupNo, setPickupNo] = useState<number | undefined>(undefined);
   const [earnedPts, setEarnedPts] = useState(0);
@@ -70,31 +72,39 @@ export function CartDrawer() {
     (!needsAddress || address.trim().length > 8);
 
   async function checkout() {
-    if (!canCheckout) return;
-    // Single seam: the configured adapter records/syncs the order and takes
-    // payment when one is connected (local made-to-order queue by default).
-    const result = await getAdapter().placeOrder({
-      items: cart.items,
-      total,
-      mode: "storefront",
-      fulfillment,
-      gift: isGift
-        ? { wrap: giftWrap, note: giftNote, recipient, receipt: giftReceipt }
-        : undefined,
-      contact: {
-        name: name.trim(),
-        email: isEmail ? contact.trim() : undefined,
-        phone: isPhone ? contact.trim() : undefined,
-        address: needsAddress ? address.trim() : undefined,
-      },
-    });
-    logEvent("checkout", { total, items: cart.count, gift: isGift, fulfillment }, "storefront");
-    await clearCart();
-    const earned = addPoints(total);
-    setOrderNo(result.orderNo);
-    setPickupNo(result.pickupNumber);
-    setEarnedPts(earned);
-    setPlaced(true);
+    if (!canCheckout || placing || cart.items.length === 0) return;
+    setPlacing(true);
+    try {
+      // Single seam: the configured adapter records/syncs the order and takes
+      // payment when one is connected (local made-to-order queue by default).
+      const result = await getAdapter().placeOrder({
+        items: cart.items,
+        total,
+        mode: "storefront",
+        fulfillment,
+        gift: isGift
+          ? { wrap: giftWrap, note: giftNote, recipient, receipt: giftReceipt }
+          : undefined,
+        contact: {
+          name: name.trim(),
+          email: isEmail ? contact.trim() : undefined,
+          phone: isPhone ? contact.trim() : undefined,
+          address: needsAddress ? address.trim() : undefined,
+        },
+      });
+      logEvent("checkout", { total, items: cart.count, gift: isGift, fulfillment }, "storefront");
+      // Only clear + reward after the order is safely recorded.
+      await clearCart();
+      const earned = addPoints(total);
+      setOrderNo(result.orderNo);
+      setPickupNo(result.pickupNumber);
+      setEarnedPts(earned);
+      setPlaced(true);
+    } catch {
+      toast("Something went wrong placing your request — your bag is safe. Please try again.");
+    } finally {
+      setPlacing(false);
+    }
   }
 
   return (
@@ -369,9 +379,9 @@ export function CartDrawer() {
                     size="lg"
                     className="w-full"
                     onClick={checkout}
-                    disabled={!canCheckout}
+                    disabled={!canCheckout || placing}
                   >
-                    Place made-to-order request
+                    {placing ? "Placing…" : "Place made-to-order request"}
                   </Button>
                   <p className="mt-2 text-center text-[0.65rem] text-muted">
                     {canCheckout

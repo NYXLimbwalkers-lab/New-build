@@ -31,7 +31,12 @@ const STEP_LABEL: Record<StepId, string> = {
 };
 
 export function useCandleBuild(initial?: BuildConfig) {
-  const [config, setConfig] = useState<BuildConfig>(initial ?? defaultBuild());
+  // Reconcile the initial config so builds saved before the per-part-scent
+  // refactor (missing layerScents/whipScentId/toppingScents) are healed before
+  // the first render — otherwise WaxStep would read undefined arrays and throw.
+  const [config, setConfig] = useState<BuildConfig>(() =>
+    reconcile(initial ?? defaultBuild()),
+  );
   const [history, setHistory] = useState<BuildConfig[]>([]);
 
   const update = useCallback((patch: Partial<BuildConfig>) => {

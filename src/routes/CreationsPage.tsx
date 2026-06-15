@@ -2,7 +2,7 @@ import { useLiveQuery } from "dexie-react-hooks";
 import { useNavigate } from "react-router-dom";
 import { motion } from "motion/react";
 import { db } from "@/db/db";
-import { formatUSD } from "@/data/build";
+import { formatUSD, priceBuild, reconcile } from "@/data/build";
 import { addBuildToCart } from "@/features/cart/cart";
 import { useCartUI } from "@/features/cart/CartContext";
 import { CandleRenderer } from "@/features/builder/renderer";
@@ -78,7 +78,10 @@ export function CreationsPage() {
                     size="sm"
                     variant="primary"
                     onClick={async () => {
-                      await addBuildToCart(b.config, b.price);
+                      // Heal legacy configs and re-price at today's rates so a
+                      // reorder always matches a freshly-built equivalent.
+                      const cfg = reconcile(b.config);
+                      await addBuildToCart(cfg, priceBuild(cfg).total);
                       setOpen(true);
                     }}
                   >

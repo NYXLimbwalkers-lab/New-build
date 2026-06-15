@@ -11,7 +11,8 @@ import { Button } from "@/components/ui/Button";
 import { useDocumentTitle } from "@/lib/useTitle";
 import { db } from "@/db/db";
 import type { BuildConfig } from "@/data/types";
-import { describeBuild, formatUSD } from "@/data/build";
+import { formatUSD } from "@/data/build";
+import { BuildRecipe } from "@/features/builder/BuildRecipe";
 import { PARTY_PACKAGES, PKG_BY_ID, DEPOSIT, TRAVEL_FEE } from "@/data/party";
 
 /*
@@ -86,10 +87,12 @@ function HostBooking() {
         <p className="mt-6 text-sm text-cocoa">
           A <span className="price">{formatUSD(DEPOSIT)}</span> deposit holds your date.
         </p>
-        {/* TODO(Phase 2): Square/Stripe deposit invoice. */}
-        <Button className="mt-4" variant="gold" size="lg">
-          Pay deposit to confirm
-        </Button>
+        {/* Payment rails (Square/Stripe) are wired via the commerce adapter at
+            launch; until then we collect the request and send a secure link. */}
+        <p className="mt-2 rounded-2xl border hairline bg-porcelain/60 px-4 py-3 text-sm text-plum">
+          Your request is saved — we'll text or email a secure deposit link to
+          confirm your date. No charge right now.
+        </p>
       </div>
     );
   }
@@ -196,7 +199,6 @@ function GuestBuilder({ sessionId }: { sessionId: string }) {
   );
 }
 
-const recipeLines = describeBuild;
 
 function MakeTakeCard({ config, onClose }: { config: BuildConfig; onClose: () => void }) {
   return (
@@ -209,14 +211,7 @@ function MakeTakeCard({ config, onClose }: { config: BuildConfig; onClose: () =>
         <h3 className="text-center font-display text-2xl text-espresso">
           {config.name.trim() || "Your Creation"}
         </h3>
-        <dl className="mt-4 space-y-1.5 text-sm">
-          {recipeLines(config).map(([k, v]) => (
-            <div key={k} className="flex justify-between gap-3 border-b hairline py-1">
-              <dt className="text-muted">{k}</dt>
-              <dd className="text-right text-cocoa">{v}</dd>
-            </div>
-          ))}
-        </dl>
+        <BuildRecipe config={config} className="mt-4" />
         <div className="mt-6 flex gap-2">
           <Button variant="gold" size="md" className="flex-1" onClick={() => window.print()}>
             Print card

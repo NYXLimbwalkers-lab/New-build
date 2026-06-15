@@ -15,9 +15,10 @@ function orderNumber(): string {
   return `DJ-${1000 + Math.floor(Math.random() * 9000)}`;
 }
 
-/** Monotonic counter shown to the counter on the kiosk (100–999, wraps). */
+/** Monotonic counter shown at the counter (100–999, wraps; never #0). */
 function nextPickup(): number {
-  const n = (Number(localStorage.getItem("delaja_pickup") || "100") + 1) % 1000;
+  let n = (Number(localStorage.getItem("delaja_pickup") || "99") + 1) % 1000;
+  if (n < 100) n = 100; // keep it a friendly 3-digit number, never #0
   localStorage.setItem("delaja_pickup", String(n));
   return n;
 }
@@ -30,8 +31,10 @@ export const localAdapter: CommerceAdapter = {
       draft.fulfillment === "pickup" || draft.mode === "kiosk"
         ? nextPickup()
         : undefined;
+    const orderNo = orderNumber();
     await db.orders.add({
       id: uid(),
+      orderNo,
       items: draft.items,
       total: draft.total,
       mode: draft.mode,
@@ -42,6 +45,6 @@ export const localAdapter: CommerceAdapter = {
       createdAt: Date.now(),
       synced: false,
     });
-    return { orderNo: orderNumber(), pickupNumber, synced: false };
+    return { orderNo, pickupNumber, synced: false };
   },
 };

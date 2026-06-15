@@ -1,5 +1,6 @@
 import Dexie, { type EntityTable } from "dexie";
 import type { BuildConfig, SavedBuild } from "@/data/types";
+import { reconcile } from "@/data/build";
 
 /*
   Local-first storage (Dexie / IndexedDB). Holds saved builds now; the cart,
@@ -37,6 +38,8 @@ export interface ContactInfo {
 // TODO(Phase 3): queued offline kiosk orders that sync when back online.
 export interface QueuedOrder {
   id: string;
+  /** Human-facing order number (e.g. "DJ-1042"), shown to customer + owner. */
+  orderNo?: string;
   items: CartItem[];
   total: number;
   mode: "storefront" | "kiosk" | "party";
@@ -170,6 +173,39 @@ db.version(6).stores({
   overrides: "id",
   leads: "id, email, kind, at",
 });
+
+/*
+  v7: heal builds/cart saved BEFORE the per-part-scent refactor by running each
+  stored config through reconcile() once, so the new fields (layerScents,
+  whipScentId, drizzleScentId, toppingScents) are materialized and every
+  downstream consumer is safe even on legacy data.
+*/
+db.version(7)
+  .stores({
+    builds: "id, createdAt, mode",
+    cart: "id, addedAt",
+    orders: "id, createdAt, synced",
+    events: "id, at, type",
+    favorites: "id, addedAt",
+    userReviews: "id, productId, at",
+    parties: "id, createdAt",
+    overrides: "id",
+    leads: "id, email, kind, at",
+  })
+  .upgrade(async (tx) => {
+    await tx
+      .table("builds")
+      .toCollection()
+      .modify((b: SavedBuild) => {
+        if (b.config) b.config = reconcile(b.config);
+      });
+    await tx
+      .table("cart")
+      .toCollection()
+      .modify((c: CartItem) => {
+        if (c.config) c.config = reconcile(c.config);
+      });
+  });
 
 export { db };
 

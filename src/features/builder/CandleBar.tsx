@@ -98,6 +98,11 @@ export function CandleBar({
     if (readAloud) speak(`Step ${current + 1}. ${STEP_LABEL[stepId]}.`);
   }, [stepId, mode, readAloud, current]);
 
+  // Funnel: the reveal moment (owner analytics reads reveals → add-to-cart %).
+  useEffect(() => {
+    if (reveal) logEvent("builder_reveal", { price: price.total }, mode);
+  }, [reveal, mode, price.total]);
+
   async function addToCart() {
     await saveBuild(config, price.total, mode);
     await addBuildToCart(config, price.total, mode);
