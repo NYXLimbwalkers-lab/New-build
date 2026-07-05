@@ -12,6 +12,20 @@ export const VIEW = { w: 600, h: 740 };
 /** Where cream/toppings sit, and where the wick roots. */
 export const MOUTH = { cx: 300, cy: 350 };
 
+/** Mix a hex color toward white / black — wax surface pools & sheens. */
+function lighten(hex: string, t: number) {
+  const n = parseInt(hex.slice(1), 16);
+  const ch = (v: number) => Math.round(v + (255 - v) * t);
+  const [r, g, b] = [(n >> 16) & 255, (n >> 8) & 255, n & 255].map(ch);
+  return `#${((r << 16) | (g << 8) | b).toString(16).padStart(6, "0")}`;
+}
+function darken(hex: string, t: number) {
+  const n = parseInt(hex.slice(1), 16);
+  const ch = (v: number) => Math.round(v * (1 - t));
+  const [r, g, b] = [(n >> 16) & 255, (n >> 8) & 255, n & 255].map(ch);
+  return `#${((r << 16) | (g << 8) | b).toString(16).padStart(6, "0")}`;
+}
+
 export function GlowDefs() {
   return (
     <defs>
@@ -39,9 +53,34 @@ export function GlowDefs() {
         <stop offset="100%" stopColor="#ffffff" stopOpacity="0" />
       </radialGradient>
       <radialGradient id="ccreamShade" cx="50%" cy="18%" r="95%">
-        <stop offset="58%" stopColor="#3A2C2A" stopOpacity="0" />
-        <stop offset="100%" stopColor="#3A2C2A" stopOpacity=".13" />
+        <stop offset="58%" stopColor="#6B4A3F" stopOpacity="0" />
+        <stop offset="100%" stopColor="#6B4A3F" stopOpacity=".13" />
       </radialGradient>
+      <linearGradient id="cbandTone" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stopColor="#fff" stopOpacity=".28" />
+        <stop offset=".35" stopColor="#fff" stopOpacity=".04" />
+        <stop offset=".85" stopColor="#3A2C2A" stopOpacity=".05" />
+        <stop offset="1" stopColor="#3A2C2A" stopOpacity=".14" />
+      </linearGradient>
+      <linearGradient id="ccyl" x1="0" y1="0" x2="1" y2="0">
+        <stop offset="0" stopColor="#3A2C2A" stopOpacity=".22" />
+        <stop offset=".12" stopColor="#fff" stopOpacity=".22" />
+        <stop offset=".32" stopColor="#fff" stopOpacity="0" />
+        <stop offset=".76" stopColor="#3A2C2A" stopOpacity="0" />
+        <stop offset="1" stopColor="#3A2C2A" stopOpacity=".26" />
+      </linearGradient>
+      <linearGradient id="cflameOut" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stopColor="#F6C158" />
+        <stop offset="1" stopColor="#EE8F35" />
+      </linearGradient>
+      <radialGradient id="cflameCore" cx="50%" cy="72%" r="60%">
+        <stop offset="0" stopColor="#fff" />
+        <stop offset=".55" stopColor="#F8E6B0" />
+        <stop offset="1" stopColor="#F8E6B0" stopOpacity="0" />
+      </radialGradient>
+      <filter id="cflameSoft" x="-60%" y="-60%" width="220%" height="220%">
+        <feGaussianBlur stdDeviation="1.4" />
+      </filter>
       <radialGradient id="cglow" cx="50%" cy="50%" r="50%">
         <stop offset="0" stopColor="#F8D89A" stopOpacity=".8" />
         <stop offset="55%" stopColor="#F0C0A0" stopOpacity=".25" />
@@ -71,40 +110,62 @@ export function SurfaceShadow() {
 const JAR_GLASS = "M171 350 L164 614 Q164 648 198 648 L402 648 Q436 648 436 614 L429 350 Z";
 const JAR_WAX = "M186 392 L180 612 Q180 632 200 632 L400 632 Q420 632 420 612 L414 392 Z";
 
-/** Stacked wax layers (parfait look), clipped to a vessel's inner region. */
-function WaxBands({ layers, clipId = "cwaxclip", top = 392, bottom = 632 }: { layers: string[]; clipId?: string; top?: number; bottom?: number }) {
+/**
+ * Stacked wax layers (parfait look) with real depth: per-band tonal gradient,
+ * cylindrical side shading, wavy hand-poured seams, and an elliptical SURFACE
+ * pool at the fill line — wax, not painted rectangles. (Design verified in the
+ * offline rig, scripts/preview-candle.mjs.)
+ */
+function WaxBands({ layers, clipId = "cwaxclip", top = 392, bottom = 632, topRx = 112 }: { layers: string[]; clipId?: string; top?: number; bottom?: number; topRx?: number }) {
   const bandH = (bottom - top) / layers.length;
+  const topHex = layers[layers.length - 1];
   return (
     <g clipPath={`url(#${clipId})`}>
-      {layers.map((hex, i) => (
-        <rect key={i} x="120" y={bottom - bandH * (i + 1)} width="360" height={bandH + 1} fill={hex} />
-      ))}
+      {layers.map((hex, i) => {
+        const y = bottom - bandH * (i + 1);
+        return (
+          <g key={i}>
+            <rect x="120" y={y} width="360" height={bandH + 2} fill={hex} />
+            <rect x="120" y={y} width="360" height={bandH + 2} fill="url(#cbandTone)" />
+          </g>
+        );
+      })}
       {layers.slice(1).map((_, idx) => {
         const y = bottom - bandH * (idx + 1);
         return (
           <g key={`sep${idx}`}>
-            <rect x="120" y={y - 2} width="360" height="3" fill="#3A2C2A" opacity=".10" />
-            <rect x="120" y={y - 4} width="360" height="2" fill="#fff" opacity=".25" />
+            <path d={`M120 ${y} q60 5 150 1 t210 -2 v6 q-120 4 -210 2 t-150 -1 z`} fill="#3A2C2A" opacity=".08" />
+            <path d={`M120 ${y - 2} q60 5 150 1 t210 -2`} fill="none" stroke="#fff" strokeOpacity=".3" strokeWidth="1.6" />
           </g>
         );
       })}
-      <rect x="120" y={top} width="360" height="26" fill="#fff" opacity=".22" />
+      <rect x="120" y={top} width="360" height={bottom - top} fill="url(#ccyl)" />
+      {/* surface pool + meniscus + sheen */}
+      <ellipse cx="300" cy={top + 9} rx={topRx + 8} ry="19" fill={darken(topHex, 0.14)} />
+      <ellipse cx="300" cy={top + 4} rx={topRx + 2} ry="16" fill={lighten(topHex, 0.38)} />
+      <ellipse cx="270" cy={top + 1} rx={topRx * 0.42} ry="7" fill={lighten(topHex, 0.62)} opacity=".9" />
     </g>
   );
 }
 
-/** Opaque metal tin — wax isn't visible through it; mouth shows the top color. */
+/** Opaque metal tin — branded label band; the mouth shows a true wax surface. */
 export function TinVessel({ topColor }: { topColor: string }) {
   return (
     <g>
       <g filter="url(#csoft)">
-        <path d="M174 356 L174 632 Q174 648 190 648 L410 648 Q426 648 426 632 L426 356 Z" fill="#CFC7BE" />
+        <path d="M174 356 L174 632 Q174 648 190 648 L410 648 Q426 648 426 632 L426 356 Z" fill="#D8CFC4" />
       </g>
       <rect x="174" y="356" width="252" height="290" fill="url(#cmetal)" />
-      <rect x="174" y="470" width="252" height="78" fill="#fff" opacity=".14" />
-      <rect x="186" y="362" width="14" height="280" fill="#fff" opacity=".35" />
+      <rect x="186" y="362" width="14" height="280" fill="#fff" opacity=".4" />
+      <rect x="398" y="368" width="7" height="268" fill="#3A2C2A" opacity=".08" />
+      <rect x="174" y="452" width="252" height="96" rx="6" fill="#FBF6EE" opacity=".55" />
+      <rect x="174" y="452" width="252" height="96" rx="6" fill="none" stroke="#C9A96A" strokeOpacity=".5" strokeWidth="1.6" />
+      <text x="300" y="496" textAnchor="middle" fontFamily="'Playfair Display', Georgia, serif" fontSize="21" letterSpacing="4" fill="#8a6f52">DÉLA JÁ</text>
+      <text x="300" y="522" textAnchor="middle" fontFamily="'Playfair Display', Georgia, serif" fontSize="11" letterSpacing="3" fill="#a89376">HAND-POURED</text>
       <ellipse cx="300" cy="356" rx="128" ry="18" fill="#BDB4AA" />
-      <ellipse cx="300" cy="352" rx="120" ry="14" fill={topColor} fillOpacity=".55" />
+      <ellipse cx="300" cy="354" rx="119" ry="14" fill={darken(topColor, 0.06)} />
+      <ellipse cx="300" cy="352.5" rx="112" ry="11.5" fill={lighten(topColor, 0.26)} />
+      <ellipse cx="272" cy="351" rx="46" ry="5" fill={lighten(topColor, 0.5)} opacity=".8" />
       <ellipse cx="300" cy="356" rx="128" ry="18" fill="none" stroke="#A89E92" strokeWidth="2" />
     </g>
   );
@@ -126,7 +187,7 @@ export function DessertGlass({ layers }: { layers: string[] }) {
         transition={SPRING.pour}
         style={{ transformOrigin: "300px 496px" }}
       >
-        <WaxBands layers={layers} clipId="cdclip" top={372} bottom={496} />
+        <WaxBands layers={layers} clipId="cdclip" top={372} bottom={496} topRx={106} />
         <path d={DINNER} fill="url(#cdepth)" />
       </motion.g>
       <path d={DBOWL} fill="url(#cglass)" />
@@ -198,26 +259,30 @@ export function WineGlass({ waxHex }: { waxHex: string }) {
   );
 }
 
-/* ── Piped soft-serve cream: scalloped silhouette + swirl ridges ──────── */
+/* ── Piped soft-serve cream: hand-piped wobble, scallops, soft-serve curl ── */
 const CTIERS = [
-  { y: 348, hw: 118 }, { y: 322, hw: 116 }, { y: 294, hw: 106 }, { y: 266, hw: 92 },
-  { y: 238, hw: 77 }, { y: 210, hw: 60 }, { y: 184, hw: 44 }, { y: 160, hw: 28 }, { y: 140, hw: 13 },
+  { y: 348, hw: 118, dx: 0 }, { y: 321, hw: 115, dx: -5 }, { y: 293, hw: 105, dx: 5 },
+  { y: 265, hw: 91, dx: -6 }, { y: 237, hw: 76, dx: 5 }, { y: 210, hw: 59, dx: -4 },
+  { y: 185, hw: 43, dx: 4 }, { y: 162, hw: 27, dx: -3 }, { y: 143, hw: 12, dx: 2 },
 ];
 
 const CREAM_D = (() => {
   const cx = 300;
-  let d = `M${cx - CTIERS[0].hw} ${CTIERS[0].y}`;
+  const L = (t: (typeof CTIERS)[number]) => cx + t.dx - t.hw;
+  const R = (t: (typeof CTIERS)[number]) => cx + t.dx + t.hw;
+  let d = `M${L(CTIERS[0])} ${CTIERS[0].y}`;
   for (let i = 0; i < CTIERS.length - 1; i++) {
     const a = CTIERS[i], b = CTIERS[i + 1];
-    const bulge = Math.max(a.hw, b.hw) + 15;
-    d += ` Q${cx - bulge} ${(a.y + b.y) / 2} ${cx - b.hw} ${b.y}`;
+    const bulge = Math.max(a.hw, b.hw) + 19;
+    d += ` Q${cx + (a.dx + b.dx) / 2 - bulge} ${(a.y + b.y) / 2} ${L(b)} ${b.y}`;
   }
+  // soft-serve curl at the peak instead of a symmetric dome
   const top = CTIERS[CTIERS.length - 1];
-  d += ` Q${cx} ${top.y - 16} ${cx + top.hw} ${top.y}`;
+  d += ` C${cx + top.dx - 6} ${top.y - 22} ${cx + top.dx + 14} ${top.y - 18} ${R(top)} ${top.y}`;
   for (let i = CTIERS.length - 1; i > 0; i--) {
     const a = CTIERS[i], b = CTIERS[i - 1];
-    const bulge = Math.max(a.hw, b.hw) + 15;
-    d += ` Q${cx + bulge} ${(a.y + b.y) / 2} ${cx + b.hw} ${b.y}`;
+    const bulge = Math.max(a.hw, b.hw) + 19;
+    d += ` Q${cx + (a.dx + b.dx) / 2 + bulge} ${(a.y + b.y) / 2} ${R(b)} ${b.y}`;
   }
   return d + " Z";
 })();
@@ -236,16 +301,17 @@ export function CreamSwirl({ hex }: { hex: string }) {
         <path d={CREAM_D} fill={hex} />
         <path d={CREAM_D} fill="url(#ccreamShade)" />
       </g>
-      {/* volume: highlight upper-left, soft shadow right */}
-      <ellipse cx={cx - 30} cy="250" rx="86" ry="120" fill="url(#ccreamHi)" opacity=".7" />
-      <ellipse cx={cx + 58} cy="262" rx="56" ry="116" fill="#3A2C2A" opacity=".05" />
-      {/* swirl ridges at every tier */}
-      {CTIERS.slice(0, -1).map((t, i) => {
-        const w = t.hw * 0.9;
+      {/* volume: highlight upper-left, soft warm shadow lower-right */}
+      <ellipse cx={cx - 34} cy="248" rx="84" ry="118" fill="url(#ccreamHi)" opacity=".65" />
+      <ellipse cx={cx + 56} cy="266" rx="54" ry="112" fill="#6B4A3F" opacity=".05" />
+      {/* piped folds tucked UNDER each tier lip — frosting, not ruled stripes */}
+      {CTIERS.slice(0, -2).map((t, i) => {
+        const w = t.hw * 0.86;
+        const sag = 12 - i * 0.6;
         return (
           <g key={i}>
-            <path d={`M${cx - w} ${t.y} Q${cx} ${t.y + 13} ${cx + w} ${t.y}`} fill="none" stroke="#3A2C2A" strokeOpacity=".12" strokeWidth="6" strokeLinecap="round" />
-            <path d={`M${cx - w} ${t.y - 7} Q${cx} ${t.y + 4} ${cx + w} ${t.y - 7}`} fill="none" stroke="#fff" strokeOpacity=".55" strokeWidth="3.2" strokeLinecap="round" />
+            <path d={`M${cx + t.dx - w} ${t.y - 1} Q${cx + t.dx} ${t.y + sag} ${cx + t.dx + w} ${t.y - 1}`} fill="none" stroke="#6B4A3F" strokeOpacity=".10" strokeWidth={6.5 - i * 0.35} strokeLinecap="round" />
+            <path d={`M${cx + t.dx - w * 0.92} ${t.y - 7} Q${cx + t.dx} ${t.y + sag - 9} ${cx + t.dx + w * 0.92} ${t.y - 7}`} fill="none" stroke="#fff" strokeOpacity=".5" strokeWidth="2.6" strokeLinecap="round" />
           </g>
         );
       })}
@@ -253,32 +319,40 @@ export function CreamSwirl({ hex }: { hex: string }) {
   );
 }
 
-/* ── Drizzle: a fine zigzag lattice of glossy sauce (parametric color) ─── */
-function zigPath(cx: number, y: number, halfW: number, n: number, amp: number, curve: number) {
-  let p = `M${cx - halfW} ${y}`;
+/* ── Drizzle that BELONGS to the cream: the zigzag baseline follows the dome
+   curvature (ends dip down the flanks) and runs flow down the sides, ending
+   in a rounded bead — sauce actually poured on top, not wire laid over it. ── */
+function domeZig(cx: number, yc: number, halfW: number, n: number, amp: number, drop: number) {
+  let p = `M${cx - halfW} ${yc + drop}`;
   const step = (halfW * 2) / n;
   for (let i = 0; i < n; i++) {
-    const x0 = cx - halfW + step * i;
-    const x1 = x0 + step;
-    const cym = y - (i % 2 === 0 ? amp : -amp) - curve;
-    p += ` Q${(x0 + x1) / 2} ${cym} ${x1} ${y}`;
+    const t0 = i / n, t1 = (i + 1) / n;
+    const x1 = cx - halfW + step * (i + 1);
+    const base1 = yc + drop * Math.pow(2 * t1 - 1, 2);
+    const xm = cx - halfW + step * (i + 0.5);
+    const basem = yc + drop * Math.pow(2 * ((t0 + t1) / 2) - 1, 2);
+    p += ` Q${xm} ${basem + (i % 2 === 0 ? -amp : amp)} ${x1} ${base1}`;
   }
   return p;
 }
 
+const DRIZZLE_ZIGS = [domeZig(300, 222, 96, 8, 14, 26), domeZig(300, 250, 106, 9, 12, 28)];
+const DRIZZLE_RUNS = [
+  { d: "M204 248 q-9 22 -2 42 q5 14 -2 26", ex: 200, ey: 318 },
+  { d: "M396 250 q10 22 3 44 q-5 12 1 22", ex: 400, ey: 320 },
+  { d: "M332 262 q6 13 1 24", ex: 333, ey: 288 },
+];
+
 export function Drizzle({ hex }: { hex: string }) {
-  const a = zigPath(300, 232, 96, 7, 26, 0);
-  const b = zigPath(300, 248, 80, 6, 20, -10);
-  const drips = ["M214 250 q-7 22 -2 42", "M388 248 q8 20 2 42"];
-  const paths = [a, b];
   return (
     <g fill="none" strokeLinecap="round" strokeLinejoin="round">
-      {paths.map((d, i) => (
+      {DRIZZLE_ZIGS.map((d, i) => (
         <g key={i}>
+          <path d={d} stroke="#3A2C2A" strokeOpacity=".16" strokeWidth="6" transform="translate(0 2.4)" />
           <motion.path
             d={d}
             stroke={hex}
-            strokeWidth="4"
+            strokeWidth="5"
             initial={{ pathLength: 0, opacity: 0 }}
             animate={{ pathLength: 1, opacity: 1 }}
             transition={{ ...SPRING.drizzle, delay: i * 0.12 }}
@@ -286,25 +360,36 @@ export function Drizzle({ hex }: { hex: string }) {
           <motion.path
             d={d}
             stroke="#fff"
-            strokeOpacity=".35"
-            strokeWidth="1.3"
-            transform="translate(0 -1.2)"
+            strokeOpacity=".42"
+            strokeWidth="1.5"
+            transform="translate(-0.6 -1.4)"
             initial={{ pathLength: 0, opacity: 0 }}
             animate={{ pathLength: 1, opacity: 1 }}
             transition={{ ...SPRING.drizzle, delay: i * 0.12 }}
           />
         </g>
       ))}
-      {drips.map((d, i) => (
-        <motion.path
-          key={`d${i}`}
-          d={d}
-          stroke={hex}
-          strokeWidth="4"
-          initial={{ pathLength: 0, opacity: 0 }}
-          animate={{ pathLength: 1, opacity: 1 }}
-          transition={{ ...SPRING.drizzle, delay: 0.3 }}
-        />
+      {DRIZZLE_RUNS.map((r, i) => (
+        <g key={`r${i}`}>
+          <motion.path
+            d={r.d}
+            stroke={hex}
+            strokeWidth="5.2"
+            initial={{ pathLength: 0, opacity: 0 }}
+            animate={{ pathLength: 1, opacity: 1 }}
+            transition={{ ...SPRING.drizzle, delay: 0.26 + i * 0.08 }}
+          />
+          <motion.circle
+            cx={r.ex}
+            cy={r.ey}
+            r="4.6"
+            fill={hex}
+            stroke="none"
+            initial={{ opacity: 0, scale: 0 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ ...SPRING.drop, delay: 0.5 + i * 0.08 }}
+          />
+        </g>
       ))}
     </g>
   );
@@ -449,20 +534,22 @@ export function Flame() {
   return (
     <g>
       <motion.circle
-        cx="300" cy="130" r="86" fill="url(#cglow)"
+        cx="300" cy="118" r="78" fill="url(#cglow)"
         initial={{ opacity: 0, scale: 0.6 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ duration: 0.8, ease: "easeOut" }}
       />
-      <rect x="297" y="120" width="6" height="40" rx="3" fill="#3A2C2A" />
+      <rect x="297.4" y="118" width="5.2" height="40" rx="2.6" fill="#2E211C" />
       <motion.g
         style={{ transformOrigin: "300px 124px" }}
         animate={{ scaleY: [1, 1.12, 0.96, 1.06, 1], scaleX: [1, 0.96, 1.04, 0.98, 1] }}
         transition={{ duration: 1.6, repeat: Infinity, ease: "easeInOut" }}
       >
-        <path d="M300 40 C326 70 326 102 300 128 C274 102 274 70 300 40 Z" fill="#F0B24E" />
-        <path d="M300 62 C316 82 316 104 300 126 C284 104 284 82 300 62 Z" fill="#F8E6B0" />
-        <ellipse cx="300" cy="118" rx="6" ry="10" fill="#9ec5ff" fillOpacity=".75" />
+        <g filter="url(#cflameSoft)">
+          <path d="M300 42 C325 72 324 102 300 126 C276 102 275 72 300 42 Z" fill="url(#cflameOut)" />
+        </g>
+        <path d="M300 64 C315 84 314 104 300 122 C286 104 285 84 300 64 Z" fill="url(#cflameCore)" />
+        <ellipse cx="300" cy="119" rx="4.6" ry="7" fill="#8FB6F2" fillOpacity=".55" />
       </motion.g>
     </g>
   );
