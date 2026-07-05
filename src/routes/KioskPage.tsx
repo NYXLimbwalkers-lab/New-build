@@ -148,7 +148,6 @@ function Ticket({
   items: number;
   onReset: () => void;
 }) {
-  const [pay, setPay] = useState<"counter" | "screen">("counter");
   return (
     <motion.div
       className="fixed inset-0 z-50 flex items-center justify-center bg-canvas p-6"
@@ -164,31 +163,15 @@ function Ticket({
           {items} item{items === 1 ? "" : "s"} · {formatUSD(total)}
         </p>
 
-        <div className="mt-6 flex gap-2">
-          {(["counter", "screen"] as const).map((p) => (
-            <button
-              key={p}
-              onClick={() => setPay(p)}
-              className={
-                "flex-1 rounded-2xl border py-3 text-xs uppercase tracking-[0.14em] " +
-                (pay === p ? "border-gold bg-blush-soft/50 text-espresso" : "hairline text-muted")
-              }
-            >
-              {p === "counter" ? "Pay at counter" : "Pay on screen"}
-            </button>
-          ))}
-        </div>
-        {pay === "screen" && (
-          <p className="mt-3 text-xs text-muted">
-            {/* TODO(Phase 2): Square Terminal payment intent here. */}
-            On-screen payment connects to the Square terminal at launch.
-          </p>
-        )}
+        {/* On-screen payment (Square Terminal) plugs in via the commerce
+            adapter at launch — until then, only the option that WORKS. */}
+        <p className="mt-6 rounded-2xl border hairline bg-blush-soft/40 px-4 py-3 text-sm text-cocoa">
+          Bring this number to the counter to pay — we'll start pouring.
+        </p>
 
-        <Button className="mt-7" variant="gold" size="lg" onClick={onReset}>
+        <Button className="mt-6" variant="gold" size="lg" onClick={onReset}>
           Done
         </Button>
-        <p className="mt-3 text-xs text-muted">Bring this number to the counter.</p>
       </div>
     </motion.div>
   );

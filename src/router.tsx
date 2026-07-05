@@ -1,6 +1,9 @@
 import { lazy, Suspense, type ReactNode } from "react";
 import { createBrowserRouter, Link } from "react-router-dom";
 import { RootLayout } from "./shell/RootLayout";
+// The landing route is EAGER — a cold visit paints the hero immediately
+// instead of waterfalling shell → chunk fetch → hero.
+import { StorefrontHome } from "./routes/StorefrontHome";
 
 /*
   One codebase, three modes via routes/flags. Pages are code-split (lazy) so the
@@ -12,7 +15,6 @@ const lz = <T extends { [k: string]: React.ComponentType }>(
   name: keyof T,
 ) => lazy(() => loader().then((m) => ({ default: m[name] })));
 
-const StorefrontHome = lz(() => import("./routes/StorefrontHome"), "StorefrontHome");
 const BuilderPage = lz(() => import("./routes/BuilderPage"), "BuilderPage");
 const CreationsPage = lz(() => import("./routes/CreationsPage"), "CreationsPage");
 const AdminPage = lz(() => import("./routes/AdminPage"), "AdminPage");
@@ -56,7 +58,7 @@ export const router = createBrowserRouter(
       path: "/",
       element: <RootLayout />,
       children: [
-        { index: true, element: S(<StorefrontHome />) },
+        { index: true, element: <StorefrontHome /> },
         { path: "build", element: S(<BuilderPage />) },
         { path: "creations", element: S(<CreationsPage />) },
         { path: "admin", element: S(<AdminPage />) },

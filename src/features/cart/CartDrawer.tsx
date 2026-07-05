@@ -156,7 +156,7 @@ export function CartDrawer() {
                   </p>
                 )}
                 <p className="mt-3 font-serif text-lg text-plum">
-                  Your made-to-order request is in. She'll hand-pour it and reach out
+                  Your made-to-order request is in. We'll hand-pour it and reach out
                   to confirm pickup or shipping.
                 </p>
                 {earnedPts > 0 && (
@@ -318,7 +318,7 @@ export function CartDrawer() {
 
                   {/* contact — how she confirms your made-to-order request */}
                   <div className="mt-4 rounded-2xl border hairline bg-porcelain/50 p-4">
-                    <p className="text-sm text-cocoa">Where should she reach you?</p>
+                    <p className="text-sm text-cocoa">Where should we reach you?</p>
                     <p className="mt-0.5 text-xs text-muted">
                       So she can confirm your candle and let you know it's ready.
                     </p>

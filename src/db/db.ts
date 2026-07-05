@@ -107,6 +107,8 @@ export interface ProductOverride {
 export interface PartySession {
   id: string;
   hostName: string;
+  /** Email or phone — how the owner confirms the date & sends the deposit link. */
+  contact?: string;
   date: string;
   location: string;
   guests: number;

@@ -63,8 +63,12 @@ export function CandleBar({
   const [[page, dir], setPage] = useState<[number, number]>([0, 0]);
   const [reveal, setReveal] = useState(false);
   const [favOpen, setFavOpen] = useState(false);
-  const [tourOpen, setTourOpen] = useState(() => shouldShowTour());
-  const [hint, setHint] = useState(() => localStorage.getItem("delaja-builder-hint") !== "1");
+  // Kiosk is a shared screen: every customer is a first-timer, so the hint
+  // returns on each attract-loop reset (remount) instead of once-per-device.
+  const [tourOpen, setTourOpen] = useState(() => mode !== "kiosk" && shouldShowTour());
+  const [hint, setHint] = useState(
+    () => mode === "kiosk" || localStorage.getItem("delaja-builder-hint") !== "1",
+  );
 
   function dismissHint() {
     setHint(false);
@@ -251,7 +255,7 @@ export function CandleBar({
         </div>
       </div>
 
-      {/* ── MOBILE sticky CTA bar (always reachable) ── */}
+      {/* ── MOBILE sticky CTA bar (always reachable, always oriented) ── */}
       <div className="fixed inset-x-0 bottom-0 z-30 lg:hidden">
         <div className="glass mx-3 mb-3 flex items-center gap-3 rounded-full border hairline px-4 py-2.5 shadow-[var(--shadow-lift)]">
           <button
@@ -262,8 +266,11 @@ export function CandleBar({
           >
             ←
           </button>
-          <span className="price flex-1 text-center text-lg text-espresso">
-            {formatUSD(price.total)}
+          <span className="flex flex-1 flex-col items-center leading-tight">
+            <span className="text-[0.58rem] uppercase tracking-[0.16em] text-muted">
+              Step {current + 1} of {steps.length} · {STEP_LABEL[stepId]}
+            </span>
+            <span className="price text-lg text-espresso">{formatUSD(price.total)}</span>
           </span>
           {NextButton}
         </div>

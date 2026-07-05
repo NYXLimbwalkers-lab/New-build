@@ -18,6 +18,13 @@ export interface Review {
   verified: boolean;
 }
 
+/*
+  Seed reviews are OFF in production builds — showing invented names with
+  "Verified" badges (and feeding them into schema.org aggregateRating) is a
+  trust & SEO liability. Enable for demos with VITE_SEED_REVIEWS=1.
+*/
+const SEED_ON = import.meta.env.DEV || import.meta.env.VITE_SEED_REVIEWS === "1";
+
 export const REVIEWS: Review[] = [
   { id: "r1", productId: "waffles-ice-cream", name: "Brittany M.", rating: 5, title: "Smells like a real waffle house", date: "2026-04-12", verified: true, body: "I genuinely did a double take — it looks like a little plate of waffles. The scent throw is incredible even unlit." },
   { id: "r2", productId: "waffles-ice-cream", name: "Dana R.", rating: 4, title: "So cute, a little sweet", date: "2026-03-02", verified: true, body: "Adorable and well made. Sweeter than I expected but my kids are obsessed with how it looks." },
@@ -35,7 +42,7 @@ export const REVIEWS: Review[] = [
 ];
 
 const byProduct = new Map<string, Review[]>();
-for (const r of REVIEWS) {
+for (const r of SEED_ON ? REVIEWS : []) {
   const arr = byProduct.get(r.productId) ?? [];
   arr.push(r);
   byProduct.set(r.productId, arr);

@@ -239,6 +239,7 @@ function WaxStep({ config, update }: StepProps) {
           {STRENGTHS.map((s) => (
             <Chip key={s} active={config.strength === s} onClick={() => update({ strength: s })}>
               {s}
+              {s === "strong" && <span className="ml-1 text-[0.65rem] opacity-70">+$1.50</span>}
             </Chip>
           ))}
         </div>

@@ -40,6 +40,7 @@ export function PartyPage() {
 /* ── Host: book a party + get a QR ────────────────────────────────────── */
 function HostBooking() {
   const [hostName, setHostName] = useState("");
+  const [contact, setContact] = useState("");
   const [date, setDate] = useState("");
   const [location, setLocation] = useState("");
   const [packageId, setPackageId] = useState("classic");
@@ -50,11 +51,20 @@ function HostBooking() {
   const subtotal = guests * pkg.perPerson;
   const total = subtotal + TRAVEL_FEE;
 
+  // Can't confirm a party we can't reach: name + future date + email-or-phone.
+  const contactOk =
+    /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(contact.trim()) ||
+    contact.replace(/\D/g, "").length >= 10;
+  const dateOk = !!date && new Date(date + "T23:59") >= new Date();
+  const canBook = hostName.trim().length > 1 && contactOk && dateOk;
+
   async function book() {
+    if (!canBook) return;
     const id = (crypto.randomUUID?.() ?? `${Date.now()}`).slice(0, 8);
     await db.parties.add({
       id,
       hostName: hostName.trim() || "Host",
+      contact: contact.trim(),
       date,
       location: location.trim(),
       guests,
@@ -135,8 +145,9 @@ function HostBooking() {
 
       {/* details */}
       <div className="mt-6 grid gap-3 sm:grid-cols-2">
-        <input value={hostName} onChange={(e) => setHostName(e.target.value)} placeholder="Your name" className="rounded-2xl border hairline bg-porcelain/70 px-4 py-3 text-sm outline-none focus:border-gold" />
-        <input type="date" value={date} onChange={(e) => setDate(e.target.value)} className="rounded-2xl border hairline bg-porcelain/70 px-4 py-3 text-sm outline-none focus:border-gold" />
+        <input value={hostName} onChange={(e) => setHostName(e.target.value)} placeholder="Your name" autoComplete="name" className="rounded-2xl border hairline bg-porcelain/70 px-4 py-3 text-sm outline-none focus:border-gold" />
+        <input value={contact} onChange={(e) => setContact(e.target.value)} placeholder="Email or phone (to confirm your date)" inputMode="email" className="rounded-2xl border hairline bg-porcelain/70 px-4 py-3 text-sm outline-none focus:border-gold" />
+        <input type="date" value={date} onChange={(e) => setDate(e.target.value)} className="rounded-2xl border hairline bg-porcelain/70 px-4 py-3 text-sm outline-none focus:border-gold sm:col-span-2" />
         <input value={location} onChange={(e) => setLocation(e.target.value)} placeholder="Location / address" className="rounded-2xl border hairline bg-porcelain/70 px-4 py-3 text-sm outline-none focus:border-gold sm:col-span-2" />
         <label className="flex items-center gap-3 text-sm text-cocoa sm:col-span-2">
           <span className="label-caps">Guests</span>
@@ -161,9 +172,14 @@ function HostBooking() {
         <Row k="Due now (deposit)" v={formatUSD(DEPOSIT)} />
       </div>
 
-      <Button className="mt-6 w-full" variant="gold" size="lg" onClick={book}>
+      <Button className="mt-6 w-full" variant="gold" size="lg" onClick={book} disabled={!canBook}>
         Book &amp; get the guest QR code
       </Button>
+      {!canBook && (
+        <p className="mt-2 text-center text-xs text-muted">
+          Add your name, an email or phone, and a future date to book.
+        </p>
+      )}
     </div>
   );
 }

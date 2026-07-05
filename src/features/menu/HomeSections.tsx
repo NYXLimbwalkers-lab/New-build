@@ -23,10 +23,10 @@ export function BrandStory() {
           <span className="italic text-rose"> by hand</span> — the day it's ordered.
         </h2>
         <p className="mx-auto mt-5 max-w-xl font-serif text-xl leading-relaxed text-plum">
-          We're a veteran-founded, mom-owned little batch shop in Great Falls,
+          We're a veteran-founded, mom-owned small-batch shop in Great Falls,
           South Carolina. No warehouse, no shortcuts — just real soy wax, lead-free
           cotton wicks, and the kind of attention you only get when someone makes
-          your candle like it's going on her own shelf.
+          your candle like it's going on our own shelf.
         </p>
         <div className="mt-8 flex flex-wrap items-center justify-center gap-x-8 gap-y-3 label-caps">
           <span>Veteran-founded</span>
