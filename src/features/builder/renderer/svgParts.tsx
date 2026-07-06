@@ -1142,20 +1142,65 @@ export function Flame({ dy = 0, wickLen = 40 }: { dy?: number; wickLen?: number 
   );
 }
 
-/* ── Name label on the vessel ─────────────────────────────────────────── */
+/* ── Name label on the vessel — auto-sizes to the words, wraps to 2 lines,
+   and steps the type down before ever truncating. ─────────────────────── */
 export function NameLabel({ name }: { name: string }) {
-  const text = name.trim().length > 18 ? name.trim().slice(0, 17) + "…" : name.trim();
+  const raw = name.trim();
+  if (!raw) return null;
+  // Greedy word-wrap into up to 2 lines (~16 chars target per line).
+  const words = raw.split(/\s+/);
+  const lines: string[] = [];
+  let cur = "";
+  let truncated = false;
+  for (const w of words) {
+    const t = cur ? `${cur} ${w}` : w;
+    if (t.length <= 16 || !cur) cur = t;
+    else if (lines.length === 0) {
+      lines.push(cur);
+      cur = w;
+    } else {
+      truncated = true;
+      break;
+    }
+  }
+  if (cur) lines.push(cur);
+  if (lines.length > 2) {
+    lines.length = 2;
+    truncated = true;
+  }
+  if (truncated) {
+    lines[lines.length - 1] = lines[lines.length - 1].slice(0, 15).trimEnd() + "…";
+  }
+  const longest = Math.max(...lines.map((l) => l.length));
+  // Type steps down as lines get longer; the plate then hugs the text.
+  const fs = longest <= 12 ? 24 : longest <= 16 ? 21 : 18;
+  const lineH = fs + 7;
+  const w = Math.min(340, Math.max(132, longest * fs * 0.58 + 40));
+  const h = lines.length * lineH + 20;
+  const x = 300 - w / 2;
+  const y = 524 - h / 2;
   return (
     <motion.g
       initial={{ opacity: 0, scale: 0.92 }}
       animate={{ opacity: 1, scale: 1 }}
       transition={SPRING.gentle}
-      style={{ transformOrigin: "300px 520px" }}
+      style={{ transformOrigin: "300px 524px" }}
     >
-      <rect x="206" y="496" width="188" height="56" rx="10" fill="#FFFAF7" fillOpacity=".93" stroke="#C8A15A" strokeWidth="1.5" />
-      <text x="300" y="526" textAnchor="middle" dominantBaseline="middle" fontFamily="'Playfair Display', Georgia, serif" fontSize="24" fill="#3A2C2A">
-        {text}
-      </text>
+      <rect x={x} y={y} width={w} height={h} rx="10" fill="#FFFAF7" fillOpacity=".93" stroke="#C8A15A" strokeWidth="1.5" />
+      {lines.map((l, i) => (
+        <text
+          key={i}
+          x="300"
+          y={y + 10 + lineH * i + lineH / 2}
+          textAnchor="middle"
+          dominantBaseline="middle"
+          fontFamily="'Playfair Display', Georgia, serif"
+          fontSize={fs}
+          fill="#3A2C2A"
+        >
+          {l}
+        </text>
+      ))}
     </motion.g>
   );
 }
