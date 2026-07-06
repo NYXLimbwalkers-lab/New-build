@@ -32,12 +32,6 @@ import { GuidedTour, shouldShowTour } from "./GuidedTour";
 import { SPRING, swipePower, SWIPE_CONFIDENCE } from "@/lib/motionPresets";
 import { cn } from "@/lib/cn";
 
-const variants = {
-  enter: (dir: number) => ({ x: dir > 0 ? 56 : -56, opacity: 0 }),
-  center: { x: 0, opacity: 1 },
-  exit: (dir: number) => ({ x: dir < 0 ? 56 : -56, opacity: 0 }),
-};
-
 /* Tap-a-part-to-edit: hotspots over the candle that jump to that step (Nike). */
 const HOTSPOTS: Partial<Record<StepId, { top: string; left: string; label: string }>> = {
   toppings: { top: "20%", left: "37%", label: "Toppings" },
@@ -218,30 +212,30 @@ export function CandleBar({
             Step {current + 1} of {steps.length}: {STEP_LABEL[stepId]}
           </p>
 
-          {/* lighter panel — no heavy border box */}
+          {/* lighter panel — no heavy border box.
+              NOTE: no AnimatePresence here on purpose. mode="wait" depended on
+              the outgoing section's exit callback, which never fired under
+              React 19 + Motion 12 — the panel froze on step 1 forever (the
+              "can't change toppings" bug). A keyed remount with an enter-only
+              slide is instant and unbreakable. */}
           <div className="relative mt-3 min-h-[20rem] overflow-hidden">
-            <AnimatePresence mode="wait" custom={dir} initial={false}>
-              <motion.section
-                key={stepId}
-                custom={dir}
-                variants={variants}
-                initial="enter"
-                animate="center"
-                exit="exit"
-                transition={SPRING.page}
-                drag="x"
-                dragConstraints={{ left: 0, right: 0 }}
-                dragElastic={{ left: atLast ? 0.1 : 0.6, right: atFirst ? 0.1 : 0.6 }}
-                onDrag={(_, info) => dragX.set(info.offset.x)}
-                onDragEnd={onDragEnd}
-                className="touch-pan-y"
-                role="group"
-                aria-roledescription="slide"
-                aria-label={`Step ${current + 1} of ${steps.length}`}
-              >
-                <StepContent step={stepId} config={config} update={update} />
-              </motion.section>
-            </AnimatePresence>
+            <motion.section
+              key={stepId}
+              initial={{ x: dir > 0 ? 56 : dir < 0 ? -56 : 0, opacity: 0 }}
+              animate={{ x: 0, opacity: 1 }}
+              transition={SPRING.page}
+              drag="x"
+              dragConstraints={{ left: 0, right: 0 }}
+              dragElastic={{ left: atLast ? 0.1 : 0.6, right: atFirst ? 0.1 : 0.6 }}
+              onDrag={(_, info) => dragX.set(info.offset.x)}
+              onDragEnd={onDragEnd}
+              className="touch-pan-y"
+              role="group"
+              aria-roledescription="slide"
+              aria-label={`Step ${current + 1} of ${steps.length}`}
+            >
+              <StepContent step={stepId} config={config} update={update} />
+            </motion.section>
           </div>
 
           {/* desktop inline nav */}
