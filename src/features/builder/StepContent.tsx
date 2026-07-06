@@ -523,7 +523,7 @@ function ToppingsStep({ config, update }: StepProps) {
 function FinishStep({ config, update }: StepProps) {
   return (
     <div>
-      <StepHeading title="The finishing touch" hint="Name it, choose a wick, wrap it up." />
+      <StepHeading title="The finishing touch" hint="Name it, gift-wrap it, make it yours." />
 
       <label className="mb-5 block">
         <span className="label-caps">Name your candle</span>
@@ -539,14 +539,11 @@ function FinishStep({ config, update }: StepProps) {
 
       <div className="mb-5">
         <span className="label-caps">Wick</span>
-        <div className="mt-2 flex gap-2">
-          <Chip active={config.wick === "cotton"} onClick={() => update({ wick: "cotton" })}>
-            Cotton · silent
-          </Chip>
-          <Chip active={config.wick === "wood"} onClick={() => update({ wick: "wood" })}>
-            Wood · crackle +$1.50
-          </Chip>
-        </div>
+        <p className="mt-1.5 text-sm text-muted">
+          {config.wick === "zinc"
+            ? "Zinc wick — stands strong in gel pours."
+            : "Clean-burning cotton wick, hand-trimmed."}
+        </p>
       </div>
 
       <button

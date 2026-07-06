@@ -76,10 +76,13 @@ agent fan-outs; reuse the saved review findings (tasks/wuysbc5j8.output)._
   product page's own gallery, body butters split into her 3 real SKUs,
   4 new products added (Little Luxuries Tins, Bewitched Bloom, Enchanted
   Tea, Pawsome Melts). Heart-tin $12 CONFIRMED.
-- Still TODO(confirm) with the owner: topping add-on prices, festive-
-  peppermint price (not on the live shop — seasonal), Little Luxuries tin
-  size, Enchanted Tea size. "Lavender Lullabies" (from HANDOFF) is NOT on
-  her live shop — ask if renamed/retired.
+- OWNER ANSWERS (2026-07-06): Candle Bar base prices APPROVED; topping
+  range $1.50–3 APPROVED; wicks = cotton only (zinc for gel) — wood-wick
+  option REMOVED; Little Luxuries 7 oz; Whipped Kisses 14 oz; Pink Sugar
+  4 oz jelly jar; Enchanted Tea 12 oz; body butters $14 (4 oz) / $24
+  (8 oz); payments = SQUARE (confirmed from her dashboard).
+- Still open: festive-peppermint price (seasonal, not on shop);
+  "Lavender Lullabies" status; NEXT BIG ROCK: Square commerce adapter.
 - Reveal ceremony shipped (two-beat light-it + synthesized sound+haptics).
 - SelectTile roving tabindex (arrow keys); kiosk/party full pass with the
   new art; hero composites (manifest.heroes); commerce adapter (needs her

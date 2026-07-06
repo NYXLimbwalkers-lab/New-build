@@ -113,7 +113,8 @@ export interface Topping {
   weight: number;
 }
 
-export type WickType = "cotton" | "wood";
+/** Owner: cotton wicks only — zinc solely for gel "drink" candles. */
+export type WickType = "cotton" | "zinc";
 export type ScentStrength = "light" | "medium" | "strong";
 
 /* ── A complete build ─────────────────────────────────────────────────── */

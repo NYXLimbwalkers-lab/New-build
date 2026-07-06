@@ -91,10 +91,6 @@ export function priceBuild(config: BuildConfig): PriceBreakdown {
     addons.push({ label: "Extra-strong scent", amount: FINISHING_PRICES.strongScent });
   }
 
-  if (config.wick === "wood") {
-    addons.push({ label: "Wood crackle wick", amount: FINISHING_PRICES.woodWick });
-  }
-
   if (config.giftBox) {
     addons.push({ label: "Gift box", amount: FINISHING_PRICES.giftBox });
   }
@@ -152,7 +148,7 @@ export function describeBuild(c: BuildConfig): [string, string][] {
   }
   lines.push(["Strength", c.strength]);
   if (isMeltBuild(c)) lines.push(["Wick", "None — flameless wax melt"]);
-  else lines.push(["Wick", c.wick === "wood" ? "Wood (crackle)" : "Cotton (silent)"]);
+  else lines.push(["Wick", c.wick === "zinc" ? "Zinc (for gel)" : "Cotton"]);
   if (c.giftBox) lines.push(["Gift box", "Yes"]);
   return lines;
 }
@@ -269,6 +265,10 @@ export function reconcile(config: BuildConfig): BuildConfig {
   // Heal builds saved before the top-style feature.
   if (!next.topStyle) next.topStyle = "pile";
 
+  // Wick is not a choice (owner's rule): zinc holds up in gel pours,
+  // cotton everywhere else. Heals legacy "wood" builds too.
+  next.wick = isDrinkBuild(next) ? "zinc" : "cotton";
+
   // Topping scents — one per present topping, drop the rest.
   const ts: Record<string, string> = {};
   for (const t of next.toppingIds) ts[t] = next.toppingScents?.[t] ?? DEFAULT_SCENT;
@@ -291,7 +291,6 @@ export function reconcile(config: BuildConfig): BuildConfig {
     next.whipScentId = null;
     next.drizzleId = null;
     next.drizzleScentId = null;
-    next.wick = "cotton"; // no wick upsell on a flameless melt
     next.extraLayers = [];
     next.layerScents = [next.layerScents[0] ?? DEFAULT_SCENT];
   }

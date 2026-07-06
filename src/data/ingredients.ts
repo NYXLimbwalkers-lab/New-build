@@ -99,7 +99,6 @@ export const TOPPINGS: Topping[] = [
 
 /* Finishing add-on prices (also referenced by the Phase 2 upsell prompts). */
 export const FINISHING_PRICES = {
-  woodWick: 1.5,
   giftBox: 5,
   scentBlend: 2, // each extra distinct fragrance used across the candle
   strongScent: 1.5,
