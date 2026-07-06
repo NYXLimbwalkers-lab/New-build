@@ -93,6 +93,12 @@ export function CartDrawer() {
         },
       });
       logEvent("checkout", { total, items: cart.count, gift: isGift, fulfillment }, "storefront");
+      // Hosted checkout (Square): the order is recorded — send the guest to
+      // the payment page. Bag clears on the paid return visit, not before.
+      if (result.paymentUrl) {
+        window.location.assign(result.paymentUrl);
+        return;
+      }
       // Only clear + reward after the order is safely recorded.
       await clearCart();
       const earned = addPoints(total);
