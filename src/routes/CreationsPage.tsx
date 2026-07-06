@@ -33,7 +33,7 @@ export function CreationsPage() {
         <p className="label-caps">Saved on this device</p>
         <h1 className="font-display text-4xl text-espresso sm:text-5xl">My Creations</h1>
         <p className="mt-3 inline-block rounded-full border border-gold/40 bg-blush-soft/40 px-4 py-1.5 text-sm text-cocoa">
-          ✦ Candle Club: <span className="text-gold">{points} points</span>
+          ✦ Candle Club: <span className="text-gold-ink">{points} points</span>
         </p>
       </div>
 

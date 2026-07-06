@@ -161,7 +161,7 @@ export function CartDrawer() {
                 </p>
                 {earnedPts > 0 && (
                   <p className="mt-3 text-sm text-cocoa">
-                    You earned <span className="text-gold">{earnedPts} Candle Club points</span> ✦
+                    You earned <span className="text-gold-ink">{earnedPts} Candle Club points</span> ✦
                   </p>
                 )}
                 <Button className="mt-6" variant="outline" onClick={() => setOpen(false)}>

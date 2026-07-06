@@ -105,23 +105,25 @@ export function PhotoLayerRenderer({
     if (vessel) out.push({ entry: { ...vessel, enter: vessel.enter ?? "fade" }, key: `v-${config.vesselId}` });
 
     // Every wax layer, bottom→top (a parfait must not collapse to one fill).
+    // Keys are SLOT-based (not color-based) so a color swap recolors the
+    // mounted layer in place instead of replaying the whole pour animation.
     [config.waxColorId, ...(config.extraLayers ?? [])].forEach((colorId, li) => {
       const wax = manifest.wax?.[colorId];
       if (wax)
         out.push({
           entry: { ...wax, enter: wax.enter ?? "pour" },
           hex: WAX_BY_ID[colorId]?.hex,
-          key: `wax-${li}-${colorId}`,
+          key: `wax-${li}`,
         });
     });
 
     if (config.whipId) {
       const whip = manifest.whip?.[config.whipId];
-      if (whip) out.push({ entry: { ...whip, enter: whip.enter ?? "pipe" }, hex: WHIP_BY_ID[config.whipId]?.hex, key: `whip-${config.whipId}` });
+      if (whip) out.push({ entry: { ...whip, enter: whip.enter ?? "pipe" }, hex: WHIP_BY_ID[config.whipId]?.hex, key: "whip" });
     }
     if (config.drizzleId) {
       const dz = manifest.drizzle?.[config.drizzleId];
-      if (dz) out.push({ entry: { ...dz, enter: dz.enter ?? "drizzle" }, hex: DRIZZLE_BY_ID[config.drizzleId]?.hex, key: `dz-${config.drizzleId}` });
+      if (dz) out.push({ entry: { ...dz, enter: dz.enter ?? "drizzle" }, hex: DRIZZLE_BY_ID[config.drizzleId]?.hex, key: "dz" });
     }
     for (const id of config.toppingIds) {
       const t = manifest.topping?.[id];

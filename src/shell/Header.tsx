@@ -52,7 +52,7 @@ export function Header() {
           >
             DéLa Já
           </span>
-          <span className="label-caps !text-[0.55rem] !tracking-[0.34em] text-gold">
+          <span className="label-caps !text-[0.55rem] !tracking-[0.34em] text-gold-ink">
             The Candle Patisserie
           </span>
         </Link>

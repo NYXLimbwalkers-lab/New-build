@@ -64,14 +64,17 @@ export type IngredientKind =
 export interface Vessel {
   id: string;
   name: string;
-  /** "wine" + gel-only path; "jar"/"tin"/"dessert" take soy wax. */
-  shape: "jar" | "wine" | "tin" | "dessert";
+  /** "wine" is the gel-only path; "heart" is the flameless wax-melt tin. */
+  shape: "jar" | "wine" | "tin" | "dessert" | "heart";
   /** Whether this vessel uses gel wax (the "drink" path). */
   gel: boolean;
   price: number; // base price for a build in this vessel
   /** Soft cap on number of toppings this vessel can hold elegantly. */
   toppingCap: number;
 }
+
+/** How the whipped top is formed — all styles pipe from the same whip colors. */
+export type TopStyle = "pile" | "swirl" | "scoop" | "rose";
 
 export interface WaxColor {
   id: string;
@@ -129,6 +132,9 @@ export interface BuildConfig {
   whipId: string | null;
   /** Scent of the whipped topping (null when there's no whip). */
   whipScentId: string | null;
+  /** Shape of the whipped top: piped pile, soft-serve swirl, ice-cream scoop,
+   *  or sculpted rose. Only meaningful when whipId is set. */
+  topStyle: TopStyle;
   drizzleId: string | null;
   /** Scent of the drizzle (null when there's no drizzle). */
   drizzleScentId: string | null;

@@ -12,7 +12,7 @@ import { useCartUI } from "@/features/cart/CartContext";
 import { useMode } from "@/lib/mode";
 import { useA11y } from "@/lib/a11y";
 import { speak } from "@/lib/speak";
-import { formatUSD, isDrinkBuild, usedScents } from "@/data/build";
+import { describeBuildSentence, formatUSD, isDrinkBuild, usedScents } from "@/data/build";
 import {
   SCENT_BY_ID,
   VESSEL_BY_ID,
@@ -51,8 +51,10 @@ export function CandleBar({
   const mode = useMode();
   const { setOpen } = useCartUI();
   const { readAloud } = useA11y();
-  const { config, update, undo, surprise, loadFrom, steps, price, canUndo } =
-    useCandleBuild(initial);
+  const {
+    config, update, undo, surprise, loadFrom, steps, price, canUndo,
+    activeLayer, setActiveLayer,
+  } = useCandleBuild(initial);
   const [[page, dir], setPage] = useState<[number, number]>([0, 0]);
   const [reveal, setReveal] = useState(false);
   const [favOpen, setFavOpen] = useState(false);
@@ -210,6 +212,10 @@ export function CandleBar({
           <p className="sr-only" aria-live="polite">
             Step {current + 1} of {steps.length}: {STEP_LABEL[stepId]}
           </p>
+          {/* the candle itself, spoken: every edit announces the new build */}
+          <p className="sr-only" aria-live="polite">
+            {describeBuildSentence(config)}
+          </p>
 
           {/* lighter panel — no heavy border box.
               NOTE: no AnimatePresence here on purpose. mode="wait" depended on
@@ -233,7 +239,13 @@ export function CandleBar({
               aria-roledescription="slide"
               aria-label={`Step ${current + 1} of ${steps.length}`}
             >
-              <StepContent step={stepId} config={config} update={update} />
+              <StepContent
+                step={stepId}
+                config={config}
+                update={update}
+                activeLayer={activeLayer}
+                setActiveLayer={setActiveLayer}
+              />
             </motion.section>
           </div>
 

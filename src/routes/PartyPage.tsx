@@ -220,7 +220,7 @@ function MakeTakeCard({ config, onClose }: { config: BuildConfig; onClose: () =>
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-espresso/30 p-4 backdrop-blur-sm">
       <div className="glass w-full max-w-md rounded-3xl p-6">
-        <p className="text-center label-caps !tracking-[0.3em] text-gold">Make &amp; Take recipe</p>
+        <p className="text-center label-caps !tracking-[0.3em] text-gold-ink">Make &amp; Take recipe</p>
         <div className="mx-auto my-2 max-w-[180px]">
           <CandleRenderer config={config} />
         </div>

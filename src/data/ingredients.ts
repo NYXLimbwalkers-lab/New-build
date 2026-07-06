@@ -20,6 +20,9 @@ export const VESSELS: Vessel[] = [
   { id: "tin", name: "Tin · 7 oz", shape: "tin", gel: false, price: 18, toppingCap: 3 },
   { id: "dessert-glass", name: "Dessert Glass", shape: "dessert", gel: false, price: 23, toppingCap: 5 },
   { id: "wine", name: "Stemmed Wine Glass", shape: "wine", gel: true, price: 29.5, toppingCap: 0 },
+  // Her wax-melt line: flameless gold heart tin, embeds on the creamy fill.
+  // TODO(confirm): price matches the seeded 4 oz melt ($12) — verify with owner.
+  { id: "heart-tin", name: "Heart Tin · Wax Melt", shape: "heart", gel: false, price: 12, toppingCap: 3 },
 ];
 
 export const WAX_COLORS: WaxColor[] = [
@@ -79,8 +82,20 @@ export const TOPPINGS: Topping[] = [
   { id: "pecan", name: "Pecans", hex: "#8A5A33", price: 2.5, weight: 1 },
   { id: "crumble", name: "Crumble", hex: "#C89B62", price: 2, weight: 1 },
   { id: "candy", name: "Candy", hex: "#5BB5C4", price: 2, weight: 1 },
-  { id: "marshmallow", name: "Marshmallow", hex: "#FBF6EE", price: 2, weight: 2 },
+  { id: "marshmallow", name: "Toasted Marshmallow", hex: "#FBF6EE", price: 2, weight: 2 },
   { id: "cherry", name: "Cherry on Top", hex: "#C42C3E", price: 2, weight: 1 },
+  // From her real products (banana pudding, honey butter, toasted mellow,
+  // apple crisp, festive line). TODO(confirm): topping add-on prices are
+  // seeded to match the existing $1.5–3 tier — verify with the owner.
+  { id: "chocolate", name: "Chocolate Chunk", hex: "#5A3825", price: 2, weight: 1 },
+  { id: "honey", name: "Honey Dollop", hex: "#D9A441", price: 2, weight: 1 },
+  { id: "honeycomb", name: "Honeycomb", hex: "#C88A33", price: 2.5, weight: 2 },
+  { id: "banana", name: "Banana Slice", hex: "#EFDC8C", price: 2, weight: 1 },
+  { id: "wafer", name: "Vanilla Wafer", hex: "#C9862F", price: 2, weight: 1 },
+  { id: "graham", name: "Graham Slab", hex: "#CE6636", price: 2, weight: 2 },
+  { id: "peppermint", name: "Peppermint Bark", hex: "#C42C3E", price: 2, weight: 1 },
+  { id: "cinnamon-roll", name: "Cinnamon Roll", hex: "#A5692F", price: 3, weight: 2 },
+  { id: "apple", name: "Apple Slice", hex: "#D5473F", price: 2, weight: 1 },
 ];
 
 /* Finishing add-on prices (also referenced by the Phase 2 upsell prompts). */

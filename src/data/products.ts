@@ -47,7 +47,7 @@ export const PRODUCTS: Product[] = [
       waxColorId: "cream",
       whipId: "whip-vanilla",
       drizzleId: null,
-      toppingIds: ["marshmallow"],
+      toppingIds: ["marshmallow", "graham", "crumble"],
     },
   },
   {
@@ -102,7 +102,7 @@ export const PRODUCTS: Product[] = [
       waxColorId: "honey",
       whipId: "whip-butter",
       drizzleId: "honey",
-      toppingIds: [],
+      toppingIds: ["honeycomb", "honey"],
     },
   },
   {
@@ -160,6 +160,7 @@ export const PRODUCTS: Product[] = [
       vesselId: "jar-14",
       waxColorId: "cream",
       whipId: "whip-vanilla",
+      topStyle: "scoop",
       drizzleId: "berry",
       toppingIds: ["blueberry", "waffle"],
     },
@@ -208,10 +209,10 @@ export const PRODUCTS: Product[] = [
     image: `${UPLOADS}/2026/01/29519-1-scaled.jpg`,
     recipe: {
       vesselId: "jar-14",
-      waxColorId: "cream",
+      waxColorId: "cocoa",
       whipId: "whip-vanilla",
       drizzleId: "chocolate",
-      toppingIds: ["strawberry"],
+      toppingIds: ["strawberry", "chocolate"],
     },
   },
   {
@@ -228,6 +229,7 @@ export const PRODUCTS: Product[] = [
       vesselId: "jar-12",
       waxColorId: "strawberry",
       whipId: "whip-strawberry",
+      topStyle: "swirl",
       drizzleId: "berry",
       toppingIds: ["strawberry"],
     },
@@ -302,6 +304,14 @@ export const PRODUCTS: Product[] = [
     smellsLike: "White tea and soft rose petals",
     notes: "Sculpted rose wax",
     badges: ["staff-pick"],
+    recipe: {
+      vesselId: "jar-14",
+      waxColorId: "ivory",
+      whipId: "whip-strawberry",
+      topStyle: "rose",
+      drizzleId: null,
+      toppingIds: [],
+    },
   },
   {
     id: "driftwood-midnight",
@@ -391,7 +401,7 @@ export const PRODUCTS: Product[] = [
       waxColorId: "strawberry",
       whipId: "whip-vanilla",
       drizzleId: null,
-      toppingIds: ["crumble"],
+      toppingIds: ["peppermint", "crumble"],
     },
   },
   {
@@ -405,6 +415,13 @@ export const PRODUCTS: Product[] = [
     smellsLike: "Banana, vanilla wafer, cream",
     notes: "Scoopable wax melt",
     image: `${UPLOADS}/2026/03/37271-scaled.webp`,
+    recipe: {
+      vesselId: "heart-tin",
+      waxColorId: "cream",
+      whipId: null,
+      drizzleId: null,
+      toppingIds: ["banana", "wafer", "crumble"],
+    },
   },
   {
     id: "body-butters",

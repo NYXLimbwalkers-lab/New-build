@@ -16,7 +16,7 @@
     "dexie": "^4.0.10",
     "dexie-react-hooks": "^1.1.7",
     "lenis": "^1.1.18",
-    "motion": "^12.0.0",
+    "motion": "^12.42.2",
     "qrcode": "^1.5.4",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",

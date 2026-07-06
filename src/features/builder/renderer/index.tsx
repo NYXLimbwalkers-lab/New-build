@@ -33,7 +33,11 @@ export function CandleRenderer(props: RendererProps) {
     };
   }, []);
 
-  if (manifest && manifestCovers(manifest, props.config)) {
+  // The photo library only depicts the classic piped-pile top on candle
+  // vessels — swirl/scoop/rose tops and heart-tin melts render via vector art.
+  const photoCapable =
+    (props.config.topStyle ?? "pile") === "pile" && props.config.vesselId !== "heart-tin";
+  if (manifest && photoCapable && manifestCovers(manifest, props.config)) {
     return <PhotoLayerRenderer {...props} manifest={manifest} />;
   }
   return <SvgLayerRenderer {...props} />;

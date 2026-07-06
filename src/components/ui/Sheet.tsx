@@ -5,8 +5,11 @@ import {
   useTransform,
   type PanInfo,
 } from "motion/react";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { cn } from "@/lib/cn";
+
+const FOCUSABLE =
+  'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
 
 interface SheetProps {
   open: boolean;
@@ -37,16 +40,43 @@ export function Sheet({
   const y = useMotionValue(0);
   // Backdrop dims as the sheet is dragged away — driven off y, no re-renders.
   const backdropOpacity = useTransform(y, [0, 400], [1, 0]);
+  const panelRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (!open) return;
     y.set(0);
-    const onKey = (e: KeyboardEvent) => e.key === "Escape" && onClose();
+    // Focus trap: focus moves INTO the dialog on open, Tab cycles within it,
+    // Escape closes, and focus RETURNS to the opener on close — a keyboard or
+    // switch user must never be stranded behind an open sheet.
+    const opener = document.activeElement as HTMLElement | null;
+    const focusFirst = () => {
+      const first = panelRef.current?.querySelector<HTMLElement>(FOCUSABLE);
+      (first ?? panelRef.current)?.focus();
+    };
+    const t = setTimeout(focusFirst, 60); // after the enter transition mounts
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+      if (e.key === "Tab" && panelRef.current) {
+        const items = [...panelRef.current.querySelectorAll<HTMLElement>(FOCUSABLE)];
+        if (items.length === 0) return;
+        const first = items[0], last = items[items.length - 1];
+        const active = document.activeElement;
+        if (e.shiftKey && (active === first || !panelRef.current.contains(active))) {
+          e.preventDefault();
+          last.focus();
+        } else if (!e.shiftKey && active === last) {
+          e.preventDefault();
+          first.focus();
+        }
+      }
+    };
     window.addEventListener("keydown", onKey);
     document.body.style.overflow = "hidden";
     return () => {
+      clearTimeout(t);
       window.removeEventListener("keydown", onKey);
       document.body.style.overflow = "";
+      opener?.focus?.();
     };
   }, [open, onClose, y]);
 
@@ -76,8 +106,10 @@ export function Sheet({
             onClick={onClose}
           />
           <motion.div
+            ref={panelRef}
+            tabIndex={-1}
             className={cn(
-              "glass relative z-10 w-full overflow-hidden",
+              "glass relative z-10 w-full overflow-hidden outline-none",
               isBottom
                 ? "mt-auto max-h-[90vh] rounded-t-3xl sm:mx-auto sm:max-w-2xl"
                 : "m-auto max-h-[88vh] max-w-2xl rounded-3xl mx-4",

@@ -1,4 +1,4 @@
-import { motion } from "motion/react";
+import { motion, useReducedMotion } from "motion/react";
 import { SPRING } from "@/lib/motionPresets";
 
 /*
@@ -378,13 +378,10 @@ export function HeartTin({ topColor }: { topColor: string }) {
       />,
     );
   }
+  // No motion entrance on the vessel itself (matches JarVessel; also avoids a
+  // Motion-12 quirk where g-level enter animations can freeze mid-flight).
   return (
-    <motion.g
-      initial={{ opacity: 0, scale: 0.94 }}
-      animate={{ opacity: 1, scale: 1 }}
-      transition={SPRING.gentle}
-      style={{ transformOrigin: "300px 440px" }}
-    >
+    <g>
       <g transform="translate(300 452) scale(1.34) translate(-300 -442)">
         <g filter="url(#csoft)">
           <path d={heart(10)} fill="#B8903A" />
@@ -425,7 +422,7 @@ export function HeartTin({ topColor }: { topColor: string }) {
         <path d={heart(0)} fill="none" stroke="#96712B" strokeWidth="2.4" opacity=".7" />
         <path d="M232 352 Q262 338 296 350" fill="none" stroke="#F6E3A0" strokeWidth="3" opacity=".7" strokeLinecap="round" />
       </g>
-    </motion.g>
+    </g>
   );
 }
 
@@ -792,15 +789,28 @@ export function Drizzle({ hex }: { hex: string }) {
 /* ── Toppings: scatter (sprinkles/crumble/candy) vs placed ────────────── */
 const SCATTER = new Set(["sprinkles", "crumble", "candy"]);
 const CANDY = ["#E8A0C0", "#9ACBE0", "#F6E4B8", "#C4E0B0", "#E0A0A0", "#D9A0E0"];
-/** Placed spots on the cream dome — or on the wax surface when no whip. */
-const SPOTS_CREAM = [
-  { x: 234, y: 262 }, { x: 366, y: 266 }, { x: 300, y: 232 },
-  { x: 198, y: 306 }, { x: 402, y: 308 }, { x: 300, y: 300 },
-];
-const SPOTS_WAX = [
-  { x: 252, y: 338 }, { x: 348, y: 342 }, { x: 300, y: 332 },
-  { x: 214, y: 346 }, { x: 386, y: 346 }, { x: 300, y: 348 },
-];
+/** Where placed toppings sit: on the cream dome, on the bare wax surface at
+ *  the mouth, or across the heart tin's creamy fill (melts, top-down view). */
+export type ToppingSurface = "cream" | "wax" | "heart";
+const SPOTS: Record<ToppingSurface, { x: number; y: number }[]> = {
+  cream: [
+    { x: 234, y: 262 }, { x: 366, y: 266 }, { x: 300, y: 232 },
+    { x: 198, y: 306 }, { x: 402, y: 308 }, { x: 300, y: 300 },
+  ],
+  wax: [
+    { x: 252, y: 338 }, { x: 348, y: 342 }, { x: 300, y: 332 },
+    { x: 214, y: 346 }, { x: 386, y: 346 }, { x: 300, y: 348 },
+  ],
+  heart: [
+    { x: 256, y: 414 }, { x: 346, y: 430 }, { x: 300, y: 476 },
+    { x: 250, y: 472 }, { x: 352, y: 476 }, { x: 300, y: 404 },
+  ],
+};
+const SCATTER_AREA: Record<ToppingSurface, { cy: number; rx: number; ry: number }> = {
+  cream: { cy: 282, rx: 106, ry: 52 },
+  wax: { cy: 344, rx: 106, ry: 9 },
+  heart: { cy: 446, rx: 78, ry: 42 },
+};
 
 function placedShape(id: string, hex: string): React.ReactNode {
   switch (id) {
@@ -1027,15 +1037,16 @@ function placedShape(id: string, hex: string): React.ReactNode {
   }
 }
 
-function ScatterTopping({ kind, seedIdx, onCream = true }: { kind: string; seedIdx: number; onCream?: boolean }) {
+function ScatterTopping({ kind, seedIdx, surface = "cream" }: { kind: string; seedIdx: number; surface?: ToppingSurface }) {
   const r = rng(7 + seedIdx * 31);
   const n = kind === "sprinkles" ? 18 : kind === "crumble" ? 16 : 9;
+  const area = SCATTER_AREA[surface];
   const items: React.ReactNode[] = [];
   for (let i = 0; i < n; i++) {
     const a = r() * Math.PI * 2;
     const rad = Math.sqrt(r());
-    const x = 300 + Math.cos(a) * rad * 106;
-    const y = (onCream ? 282 : 344) + Math.sin(a) * rad * (onCream ? 52 : 9);
+    const x = 300 + Math.cos(a) * rad * area.rx;
+    const y = area.cy + Math.sin(a) * rad * area.ry;
     const rot = Math.floor(r() * 180);
     if (kind === "sprinkles") {
       const c = CANDY[Math.floor(r() * CANDY.length)];
@@ -1064,14 +1075,14 @@ function ScatterTopping({ kind, seedIdx, onCream = true }: { kind: string; seedI
   );
 }
 
-export function ToppingCluster({ ids, onCream = true }: { ids: { id: string; hex: string }[]; onCream?: boolean }) {
-  const spots = onCream ? SPOTS_CREAM : SPOTS_WAX;
+export function ToppingCluster({ ids, surface = "cream" }: { ids: { id: string; hex: string }[]; surface?: ToppingSurface }) {
+  const spots = SPOTS[surface];
   let placedI = 0;
   return (
     <g>
       {ids.map((t, i) => {
         if (SCATTER.has(t.id)) {
-          return <ScatterTopping key={`${t.id}-${i}`} kind={t.id} seedIdx={i} onCream={onCream} />;
+          return <ScatterTopping key={`${t.id}-${i}`} kind={t.id} seedIdx={i} surface={surface} />;
         }
         const p = spots[placedI++ % spots.length];
         return (
@@ -1092,6 +1103,10 @@ export function ToppingCluster({ ids, onCream = true }: { ids: { id: string; hex
 
 /* ── Flame + braided wick + glow (reveal) ─────────────────────────────── */
 export function Flame({ dy = 0, wickLen = 40 }: { dy?: number; wickLen?: number }) {
+  // Perf: the flicker loop runs ALL DAY on the kiosk. No feGaussianBlur inside
+  // the animated group (that forces a filter re-raster every frame) — the soft
+  // edge is faked with a scaled low-opacity copy. Reduced motion: no flicker.
+  const reduce = useReducedMotion();
   return (
     <g transform={dy ? `translate(0 ${dy})` : undefined}>
       <motion.circle
@@ -1104,13 +1119,22 @@ export function Flame({ dy = 0, wickLen = 40 }: { dy?: number; wickLen?: number 
       <path d="M300 124 l-2 5 l2 5 l-2 5 l2 5 l-2 5 l2 5" stroke="#C9B893" strokeWidth="1.2" fill="none" />
       <rect x="297.2" y="118" width="5.6" height="9" rx="2.8" fill="#4A3A2E" />
       <motion.g
-        style={{ transformOrigin: "300px 124px" }}
-        animate={{ scaleY: [1, 1.12, 0.96, 1.06, 1], scaleX: [1, 0.96, 1.04, 0.98, 1] }}
-        transition={{ duration: 1.6, repeat: Infinity, ease: "easeInOut" }}
+        style={{ transformOrigin: "300px 124px", willChange: "transform" }}
+        animate={
+          reduce
+            ? undefined
+            : { scaleY: [1, 1.12, 0.96, 1.06, 1], scaleX: [1, 0.96, 1.04, 0.98, 1] }
+        }
+        transition={reduce ? undefined : { duration: 1.6, repeat: Infinity, ease: "easeInOut" }}
       >
-        <g filter="url(#cflameSoft)">
-          <path d="M300 42 C325 72 324 102 300 126 C276 102 275 72 300 42 Z" fill="url(#cflameOut)" />
-        </g>
+        {/* faked blur: enlarged translucent copy instead of a live filter */}
+        <path
+          d="M300 42 C325 72 324 102 300 126 C276 102 275 72 300 42 Z"
+          fill="url(#cflameOut)"
+          opacity=".35"
+          transform="translate(300 84) scale(1.18) translate(-300 -84)"
+        />
+        <path d="M300 42 C325 72 324 102 300 126 C276 102 275 72 300 42 Z" fill="url(#cflameOut)" />
         <path d="M300 64 C315 84 314 104 300 122 C286 104 285 84 300 64 Z" fill="url(#cflameCore)" />
         <ellipse cx="300" cy="119" rx="4.6" ry="7" fill="#8FB6F2" fillOpacity=".55" />
       </motion.g>

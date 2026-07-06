@@ -1,6 +1,5 @@
 import { motion } from "motion/react";
-import { useState } from "react";
-import type { BuildConfig, ScentStrength } from "@/data/types";
+import type { BuildConfig, ScentStrength, TopStyle } from "@/data/types";
 import {
   DRIZZLES,
   DRIZZLE_BY_ID,
@@ -15,7 +14,7 @@ import {
   WHIP_BY_ID,
   WHIP_COLORS,
 } from "@/data/ingredients";
-import { DEFAULT_SCENT, toppingLoad, validWaxColors } from "@/data/build";
+import { DEFAULT_SCENT, TOP_STYLE_LABEL, toppingLoad, validWaxColors } from "@/data/build";
 import { SelectTile } from "@/components/ui/SelectTile";
 import { Chip } from "@/components/ui/Chip";
 import { haptic } from "@/lib/haptics";
@@ -25,6 +24,10 @@ import type { StepId } from "./useCandleBuild";
 interface StepProps {
   config: BuildConfig;
   update: (patch: Partial<BuildConfig>) => void;
+  /** Which wax layer is being edited — owned by useCandleBuild so it
+   *  survives leaving and re-entering the wax step. */
+  activeLayer: number;
+  setActiveLayer: (i: number) => void;
 }
 
 export function StepContent({ step, ...p }: StepProps & { step: StepId }) {
@@ -77,7 +80,7 @@ function VesselStep({ config, update }: StepProps) {
           >
             <span className="block font-display text-base text-espresso">{v.name}</span>
             <span className="label-caps !text-[0.55rem]">
-              {v.gel ? "Gel · drink" : "Soy blend"}
+              {v.gel ? "Gel · drink" : v.shape === "heart" ? "Wax melt · flameless" : "Soy blend"}
             </span>
           </SelectTile>
         ))}
@@ -88,11 +91,11 @@ function VesselStep({ config, update }: StepProps) {
 
 const STRENGTHS: ScentStrength[] = ["light", "medium", "strong"];
 
-function WaxStep({ config, update }: StepProps) {
+function WaxStep({ config, update, activeLayer, setActiveLayer }: StepProps) {
   const colors = validWaxColors(config.vesselId);
   const layers = [config.waxColorId, ...config.extraLayers]; // [bottom...top]
-  const [sel, setSel] = useState(0);
-  const cur = Math.min(sel, layers.length - 1);
+  const cur = Math.min(activeLayer, layers.length - 1);
+  const setSel = setActiveLayer;
   const canAdd = layers.length < MAX_LAYERS;
 
   function setLayerColor(id: string) {
@@ -348,6 +351,32 @@ function WhipStep({ config, update }: StepProps) {
           </SelectTile>
         ))}
       </div>
+      {/* HOW the top is formed — piped pile, soft-serve, scoop, or rose */}
+      {config.whipId && (
+        <div className="mt-5">
+          <span className="label-caps">Top style</span>
+          <div
+            className="mt-2 grid grid-cols-2 gap-3 sm:grid-cols-4"
+            role="radiogroup"
+            aria-label="Whipped top style"
+          >
+            {(Object.keys(TOP_STYLE_LABEL) as TopStyle[]).map((s) => (
+              <SelectTile
+                key={s}
+                groupId="topstyle-sel"
+                selected={(config.topStyle ?? "pile") === s}
+                onSelect={() => update({ topStyle: s })}
+                ariaLabel={TOP_STYLE_LABEL[s]}
+              >
+                <span className="mb-1 block text-xl" aria-hidden>
+                  {s === "pile" ? "🧁" : s === "swirl" ? "🍦" : s === "scoop" ? "🍨" : "🌹"}
+                </span>
+                <span className="text-xs text-cocoa">{TOP_STYLE_LABEL[s]}</span>
+              </SelectTile>
+            ))}
+          </div>
+        </div>
+      )}
       {config.whipId && (
         <div className="mt-4 rounded-2xl border hairline bg-porcelain/50 px-4">
           <ScentRow

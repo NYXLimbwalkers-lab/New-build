@@ -71,7 +71,7 @@ export function RevealCard({
           transition={{ type: "spring", stiffness: 200, damping: 22 }}
           className="mx-auto max-w-xs overflow-hidden rounded-3xl border border-gold/40 bg-gradient-to-b from-porcelain to-blush-soft/40 p-5 shadow-[var(--shadow-lift)]"
         >
-          <p className="label-caps !tracking-[0.3em] text-gold">DéLa Já · made just for you</p>
+          <p className="label-caps !tracking-[0.3em] text-gold-ink">DéLa Já · made just for you</p>
           <div className="my-3" ref={stageRef}>
             <CandleRenderer config={config} revealed showcase />
           </div>

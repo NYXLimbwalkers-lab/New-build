@@ -3,6 +3,7 @@ import type { BuildConfig } from "@/data/types";
 import {
   defaultBuild,
   isDrinkBuild,
+  isMeltBuild,
   priceBuild,
   reconcile,
   surpriseBuild,
@@ -38,6 +39,10 @@ export function useCandleBuild(initial?: BuildConfig) {
     reconcile(initial ?? defaultBuild()),
   );
   const [history, setHistory] = useState<BuildConfig[]>([]);
+  // Which wax layer the guest is editing — lives HERE (not in WaxStep) so
+  // leaving the wax step and coming back doesn't silently reset it to Base
+  // and land edits on the wrong layer.
+  const [activeLayer, setActiveLayer] = useState(0);
 
   const update = useCallback((patch: Partial<BuildConfig>) => {
     setConfig((prev) => {
@@ -69,12 +74,12 @@ export function useCandleBuild(initial?: BuildConfig) {
     });
   }, []);
 
-  // Gel "drink" builds skip whip/drizzle/toppings — those steps aren't shown.
+  // Gel "drink" builds skip whip/drizzle/toppings; flameless MELTS keep
+  // toppings (embeds) but skip whip/drizzle. Steps adapt to the vessel.
   const steps = useMemo<StepId[]>(() => {
-    const drink = isDrinkBuild(config);
-    return drink
-      ? ["vessel", "wax", "finish"]
-      : ["vessel", "wax", "whip", "drizzle", "toppings", "finish"];
+    if (isDrinkBuild(config)) return ["vessel", "wax", "finish"];
+    if (isMeltBuild(config)) return ["vessel", "wax", "toppings", "finish"];
+    return ["vessel", "wax", "whip", "drizzle", "toppings", "finish"];
   }, [config]);
 
   const price = useMemo(() => priceBuild(config), [config]);
@@ -88,6 +93,8 @@ export function useCandleBuild(initial?: BuildConfig) {
     steps,
     price,
     canUndo: history.length > 0,
+    activeLayer,
+    setActiveLayer,
   };
 }
 

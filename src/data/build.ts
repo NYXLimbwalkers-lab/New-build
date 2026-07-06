@@ -32,6 +32,7 @@ export function defaultBuild(): BuildConfig {
     strength: "medium",
     whipId: "whip-vanilla",
     whipScentId: DEFAULT_SCENT,
+    topStyle: "pile",
     drizzleId: null,
     drizzleScentId: null,
     toppingIds: [],
@@ -137,7 +138,8 @@ export function describeBuild(c: BuildConfig): [string, string][] {
   if (!isDrinkBuild(c)) {
     if (c.whipId) {
       const s = sName(c.whipScentId);
-      lines.push(["Whip", `${WHIP_BY_ID[c.whipId]?.name ?? c.whipId}${s ? ` · ${s}` : ""}`]);
+      const styleName = TOP_STYLE_LABEL[c.topStyle ?? "pile"];
+      lines.push(["Whip", `${WHIP_BY_ID[c.whipId]?.name ?? c.whipId}${styleName ? ` · ${styleName}` : ""}${s ? ` · ${s}` : ""}`]);
     }
     if (c.drizzleId) {
       const s = sName(c.drizzleScentId);
@@ -149,9 +151,45 @@ export function describeBuild(c: BuildConfig): [string, string][] {
     }
   }
   lines.push(["Strength", c.strength]);
-  lines.push(["Wick", c.wick === "wood" ? "Wood (crackle)" : "Cotton (silent)"]);
+  if (isMeltBuild(c)) lines.push(["Wick", "None — flameless wax melt"]);
+  else lines.push(["Wick", c.wick === "wood" ? "Wood (crackle)" : "Cotton (silent)"]);
   if (c.giftBox) lines.push(["Gift box", "Yes"]);
   return lines;
+}
+
+/** Names for the whipped-top styles (builder chips + recipes + read-aloud). */
+export const TOP_STYLE_LABEL: Record<NonNullable<BuildConfig["topStyle"]>, string> = {
+  pile: "Piped swirls",
+  swirl: "Soft-serve swirl",
+  scoop: "Ice-cream scoop",
+  rose: "Sculpted rose",
+};
+
+/**
+ * One spoken/screen-reader sentence describing the whole candle — the live
+ * preview is the product, so assistive tech must "see" it too.
+ */
+export function describeBuildSentence(c: BuildConfig): string {
+  const vessel = VESSEL_BY_ID[c.vesselId]?.name ?? "candle";
+  const layers = [c.waxColorId, ...(c.extraLayers ?? [])]
+    .map((id) => WAX_BY_ID[id]?.name ?? id)
+    .join(", ");
+  const parts: string[] = [`${vessel} with ${layers} wax`];
+  if (!isDrinkBuild(c)) {
+    if (c.whipId) {
+      parts.push(
+        `${WHIP_BY_ID[c.whipId]?.name ?? "whipped"} ${TOP_STYLE_LABEL[c.topStyle ?? "pile"].toLowerCase()} on top`,
+      );
+    }
+    if (c.drizzleId) parts.push(`${DRIZZLE_BY_ID[c.drizzleId]?.name ?? ""} drizzle`.trim());
+    if (c.toppingIds.length) {
+      parts.push(
+        `topped with ${c.toppingIds.map((t) => TOPPING_BY_ID[t]?.name ?? t).join(", ")}`,
+      );
+    }
+  }
+  if (isMeltBuild(c)) parts.push("a flameless wax melt");
+  return parts.join(", ") + ".";
 }
 
 /* ── Invisible validity rules — no hard errors, ever ──────────────────── */
@@ -188,6 +226,14 @@ export function isDrinkBuild(config: BuildConfig) {
 }
 
 /**
+ * Wax-MELT builds (heart tin): flameless — no wick, no whip/drizzle, but
+ * embeds (toppings) sit right on the creamy fill.
+ */
+export function isMeltBuild(config: BuildConfig) {
+  return VESSEL_BY_ID[config.vesselId]?.shape === "heart";
+}
+
+/**
  * Repair a build after a change so it's always producible:
  * - swap to a valid wax color if the vessel changed gel/soy path
  * - clear whip/drizzle/toppings on a gel drink
@@ -214,6 +260,9 @@ export function reconcile(config: BuildConfig): BuildConfig {
   next.whipScentId = next.whipId ? next.whipScentId ?? DEFAULT_SCENT : null;
   next.drizzleScentId = next.drizzleId ? next.drizzleScentId ?? DEFAULT_SCENT : null;
 
+  // Heal builds saved before the top-style feature.
+  if (!next.topStyle) next.topStyle = "pile";
+
   // Topping scents — one per present topping, drop the rest.
   const ts: Record<string, string> = {};
   for (const t of next.toppingIds) ts[t] = next.toppingScents?.[t] ?? DEFAULT_SCENT;
@@ -227,6 +276,17 @@ export function reconcile(config: BuildConfig): BuildConfig {
     next.toppingIds = [];
     next.toppingScents = {};
     next.extraLayers = []; // a poured drink is a single fill
+    next.layerScents = [next.layerScents[0] ?? DEFAULT_SCENT];
+  }
+
+  // Wax melts: flameless heart tin — embeds yes, whip/drizzle/wood-wick no.
+  if (isMeltBuild(next)) {
+    next.whipId = null;
+    next.whipScentId = null;
+    next.drizzleId = null;
+    next.drizzleScentId = null;
+    next.wick = "cotton"; // no wick upsell on a flameless melt
+    next.extraLayers = [];
     next.layerScents = [next.layerScents[0] ?? DEFAULT_SCENT];
   }
   return next;
@@ -252,8 +312,9 @@ const STRENGTHS: ScentStrength[] = ["light", "medium", "strong"];
 export function surpriseBuild(): BuildConfig {
   const pick = <T,>(arr: T[]) => arr[Math.floor(Math.random() * arr.length)];
 
-  // Keep it to soy dessert vessels for a coherent, pretty result.
-  const soyVessels = VESSELS.filter((v) => !v.gel);
+  // Keep it to soy dessert vessels for a coherent, pretty result
+  // (no gel drinks, no flameless melt tins in a surprise candle).
+  const soyVessels = VESSELS.filter((v) => !v.gel && v.shape !== "heart");
   const vesselId = pick(soyVessels).id;
   const base = defaultBuild();
 
@@ -263,6 +324,7 @@ export function surpriseBuild(): BuildConfig {
     waxColorId: pick(validWaxColors(vesselId)).id,
     strength: pick(STRENGTHS),
     whipId: pick(["whip-vanilla", "whip-strawberry", "whip-butter", null]),
+    topStyle: pick(["pile", "pile", "swirl", "scoop"]),
     drizzleId: pick(["caramel", "chocolate", "berry", null]),
     toppingIds: [],
     name: "",

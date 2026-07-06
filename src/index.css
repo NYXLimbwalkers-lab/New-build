@@ -26,6 +26,8 @@
   /* Champagne + soft gold leaf — a WHISPER only (hairlines, monogram, foil). */
   --color-champagne: #d8b98c;
   --color-gold: #c8a15a;
+  /* gold TEXT on light grounds — >=4.5:1 on porcelain (bright gold stays for hairlines/foil) */
+  --color-gold-ink: #8a6a2e;
   --color-gold-soft: #e3cfa8;
 
   /* Deep contrast anchors — espresso/cocoa + soft plum. WCAG-safe on canvas. */

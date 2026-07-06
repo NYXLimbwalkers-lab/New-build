@@ -156,7 +156,7 @@ function Ticket({
       exit={{ opacity: 0 }}
     >
       <div className="w-full max-w-md rounded-3xl border border-gold/40 bg-porcelain p-8 text-center shadow-[var(--shadow-lift)]">
-        <p className="label-caps !tracking-[0.3em] text-gold">Order placed ✦</p>
+        <p className="label-caps !tracking-[0.3em] text-gold-ink">Order placed ✦</p>
         <p className="mt-4 font-serif text-lg text-plum">Your pickup number</p>
         <p className="my-2 font-display text-7xl text-espresso">{pickup}</p>
         <p className="text-sm text-muted">
@@ -193,7 +193,7 @@ function AttractLoop({ onTouch }: { onTouch: () => void }) {
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
     >
-      <p className="label-caps !tracking-[0.4em] text-gold">DéLa Já</p>
+      <p className="label-caps !tracking-[0.4em] text-gold-ink">DéLa Já</p>
       <h2 className="mb-2 font-display text-5xl text-espresso">The Candle Patisserie</h2>
       <div className="w-full max-w-sm">
         <AnimatePresence mode="wait">

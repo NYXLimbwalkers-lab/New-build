@@ -7,6 +7,7 @@ import {
   WAX_BY_ID,
   WHIP_BY_ID,
 } from "@/data/ingredients";
+import { describeBuildSentence, isMeltBuild } from "@/data/build";
 import { cn } from "@/lib/cn";
 import type { RendererProps } from "./types";
 import {
@@ -15,9 +16,13 @@ import {
   Drizzle,
   Flame,
   GlowDefs,
+  HeartTin,
   JarVessel,
   NameLabel,
+  RoseTop,
+  ScoopTop,
   SurfaceShadow,
+  SwirlTop,
   TinVessel,
   ToppingCluster,
   WineGlass,
@@ -34,6 +39,8 @@ export function SvgLayerRenderer({ config, revealed, showcase, className }: Rend
   const whip = config.whipId ? WHIP_BY_ID[config.whipId] : null;
   const drizzle = config.drizzleId ? DRIZZLE_BY_ID[config.drizzleId] : null;
   const drink = vessel?.gel ?? false;
+  const melt = isMeltBuild(config);
+  const topStyle = config.topStyle ?? "pile";
   const layerHexes = useMemo(
     () =>
       [config.waxColorId, ...config.extraLayers].map(
@@ -51,10 +58,20 @@ export function SvgLayerRenderer({ config, revealed, showcase, className }: Rend
     [config.toppingIds],
   );
 
+  // Scoop and rose tops peak lower than the piped pile — the wick reaches
+  // down into them; on a gel drink the whole flame roots at the gel surface.
+  const wickLen = whip && (topStyle === "scoop" || topStyle === "rose") ? 88 : 40;
+  const Top =
+    topStyle === "swirl" ? SwirlTop : topStyle === "scoop" ? ScoopTop : topStyle === "rose" ? RoseTop : CreamSwirl;
+
   return (
-    <div className={cn("relative aspect-square w-full select-none", className)}>
+    <div
+      className={cn("relative aspect-square w-full select-none", className)}
+      role="img"
+      aria-label={describeBuildSentence(config)}
+    >
       <AnimatePresence>
-        {revealed && (
+        {revealed && !melt && (
           <motion.div
             key="glow"
             className="pointer-events-none absolute inset-0"
@@ -69,12 +86,17 @@ export function SvgLayerRenderer({ config, revealed, showcase, className }: Rend
         )}
       </AnimatePresence>
 
-      <svg viewBox="0 0 600 740" className="absolute inset-0 h-full w-full">
+      <svg viewBox="0 0 600 740" className="absolute inset-0 h-full w-full" aria-hidden>
         <GlowDefs />
-        <SurfaceShadow />
+        {!melt && <SurfaceShadow />}
 
         {drink ? (
           <WineGlass waxHex={layerHexes[0]} />
+        ) : melt ? (
+          <>
+            <HeartTin topColor={layerHexes[layerHexes.length - 1]} />
+            <ToppingCluster ids={toppings} surface="heart" />
+          </>
         ) : (
           <>
             {vessel?.shape === "tin" ? (
@@ -85,18 +107,22 @@ export function SvgLayerRenderer({ config, revealed, showcase, className }: Rend
               <JarVessel layers={layerHexes} />
             )}
             <AnimatePresence mode="popLayout">
-              {whip && <CreamSwirl key={`whip-${whip.id}`} hex={whip.hex} />}
+              {whip && <Top key={`whip-${whip.id}-${topStyle}`} hex={whip.hex} />}
             </AnimatePresence>
             <AnimatePresence>
               {drizzle && <Drizzle key={`dz-${drizzle.id}`} hex={drizzle.hex} />}
             </AnimatePresence>
-            <ToppingCluster ids={toppings} onCream={!!whip} />
+            <ToppingCluster ids={toppings} surface={whip ? "cream" : "wax"} />
           </>
         )}
 
-        {config.name.trim() && <NameLabel name={config.name} />}
+        {config.name.trim() && !melt && <NameLabel name={config.name} />}
 
-        <AnimatePresence>{revealed && <Flame key="flame" />}</AnimatePresence>
+        <AnimatePresence>
+          {revealed && !melt && (
+            <Flame key="flame" dy={drink ? 96 : 0} wickLen={wickLen} />
+          )}
+        </AnimatePresence>
       </svg>
 
       <AnimatePresence>
