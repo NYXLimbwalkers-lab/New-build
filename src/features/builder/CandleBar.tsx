@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import {
   motion,
   useMotionValue,
+  useReducedMotion,
   useTransform,
   type PanInfo,
 } from "motion/react";
@@ -12,6 +13,8 @@ import { useCartUI } from "@/features/cart/CartContext";
 import { useMode } from "@/lib/mode";
 import { useA11y } from "@/lib/a11y";
 import { speak } from "@/lib/speak";
+import { haptic } from "@/lib/haptics";
+import { playIgnite } from "@/lib/sound";
 import { describeBuildSentence, formatUSD, isDrinkBuild, usedScents } from "@/data/build";
 import {
   SCENT_BY_ID,
@@ -57,6 +60,10 @@ export function CandleBar({
   } = useCandleBuild(initial);
   const [[page, dir], setPage] = useState<[number, number]>([0, 0]);
   const [reveal, setReveal] = useState(false);
+  // Two-beat ceremony: `lit` blooms the flame on the STAGE candle first;
+  // the gift card slides up only after the flame settles.
+  const [lit, setLit] = useState(false);
+  const reduceMotion = useReducedMotion();
   const [favOpen, setFavOpen] = useState(false);
   // Kiosk is a shared screen: every customer is a first-timer, so the hint
   // returns on each attract-loop reset (remount) instead of once-per-device.
@@ -69,9 +76,22 @@ export function CandleBar({
     setHint(false);
     localStorage.setItem("delaja-builder-hint", "1");
   }
+  /** The ceremony: strike sound + haptic, flame blooms on the stage candle,
+   *  then the gift card slides up once the flame has settled. */
+  function lightIt() {
+    if (lit || reveal) return;
+    playIgnite();
+    haptic([10, 40, 18]);
+    setLit(true);
+    window.setTimeout(() => setReveal(true), reduceMotion ? 150 : 1150);
+  }
+  function closeReveal() {
+    setReveal(false);
+    setLit(false);
+  }
   function makeForMe() {
     surprise();
-    setReveal(true);
+    lightIt();
   }
 
   const current = Math.min(page, steps.length - 1);
@@ -106,12 +126,13 @@ export function CandleBar({
     await saveBuild(config, price.total, mode);
     await addBuildToCart(config, price.total, mode);
     setReveal(false);
+    setLit(false);
     if (onComplete) onComplete(config, price.total);
     else setOpen(true);
   }
 
   const NextButton = atLast ? (
-    <Button variant="gold" size="lg" onClick={() => setReveal(true)} className="flex-1 lg:flex-none">
+    <Button variant="gold" size="lg" onClick={lightIt} className="flex-1 lg:flex-none">
       Light it ✦
     </Button>
   ) : (
@@ -132,11 +153,11 @@ export function CandleBar({
             {/* soft pedestal glow instead of a hard bordered box */}
             <div className="absolute inset-x-6 bottom-6 top-10 rounded-[3rem] bg-gradient-to-b from-blush-soft/30 to-transparent blur-2xl" />
             <div className="relative">
-              <CandleRenderer config={config} revealed={reveal} />
+              <CandleRenderer config={config} revealed={lit} />
             </div>
 
             {/* tap-a-part hotspots (hidden during the lit reveal) */}
-            {!reveal && (
+            {!lit && (
               <div className="absolute inset-0 z-10">
                 {steps.map((s) => {
                   const h = HOTSPOTS[s];
@@ -285,7 +306,7 @@ export function CandleBar({
         open={reveal}
         config={config}
         price={price.total}
-        onClose={() => setReveal(false)}
+        onClose={closeReveal}
         onAddToCart={addToCart}
       />
       <GuidedTour open={tourOpen} onClose={() => setTourOpen(false)} />
