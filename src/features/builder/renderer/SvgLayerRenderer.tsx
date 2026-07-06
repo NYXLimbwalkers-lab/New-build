@@ -90,7 +90,7 @@ export function SvgLayerRenderer({ config, revealed, showcase, className }: Rend
             <AnimatePresence>
               {drizzle && <Drizzle key={`dz-${drizzle.id}`} hex={drizzle.hex} />}
             </AnimatePresence>
-            <ToppingCluster ids={toppings} />
+            <ToppingCluster ids={toppings} onCream={!!whip} />
           </>
         )}
 
