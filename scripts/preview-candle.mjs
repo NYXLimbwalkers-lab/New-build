@@ -807,6 +807,7 @@ export function candleSVG(opts = {}) {
     <radialGradient id="flameCore" cx="50%" cy="72%" r="60%"><stop offset="0" stop-color="#fff"/><stop offset=".55" stop-color="#F8E6B0"/><stop offset="1" stop-color="#F8E6B0" stop-opacity="0"/></radialGradient>
   </defs>
   <rect width="600" height="740" fill="url(#bg)"/>
+  <g transform="translate(300 650) scale(${opts.scale ?? 1}) translate(-300 -650)">
   ${(opts.vessel || "jar") === "heart-tin" ? "" : `<ellipse cx="300" cy="664" rx="170" ry="30" fill="#3A2C2A" opacity=".16"/>`}
   ${vesselArt(opts.vessel || "jar", opts.layers || [waxHex])}
   ${hasWaffleBase ? waffleBase() : ""}
@@ -824,6 +825,7 @@ export function candleSVG(opts = {}) {
   <path d="M300 64 C315 84 314 104 300 122 C286 104 285 84 300 64 Z" fill="url(#flameCore)"/>
   <ellipse cx="300" cy="119" rx="4.6" ry="7" fill="#8FB6F2" opacity=".55"/>
   </g>`}
+  </g>
 </svg>`;
 }
 
