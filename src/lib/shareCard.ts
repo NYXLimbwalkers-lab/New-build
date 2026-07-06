@@ -9,7 +9,7 @@ const H = 1350;
 
 export async function buildShareCard(
   svg: SVGSVGElement,
-  opts: { name: string; price: string },
+  opts: { name: string; price: string; recipe?: string },
 ): Promise<Blob | null> {
   try {
     // Serialize the candle SVG → an <img> we can draw to canvas.
@@ -60,24 +60,36 @@ export async function buildShareCard(
 
     // Name (display serif).
     ctx.fillStyle = "#2A1F1D";
-    ctx.font = "500 64px 'Playfair Display', Georgia, serif";
-    ctx.fillText(truncate(opts.name, 22), W / 2, 1040);
+    ctx.font = "500 62px 'Playfair Display', Georgia, serif";
+    ctx.fillText(truncate(opts.name, 24), W / 2, 1010);
 
     // Price.
     ctx.fillStyle = "#3A2C2A";
-    ctx.font = "400 40px 'Cormorant Garamond', Georgia, serif";
-    ctx.fillText(opts.price, W / 2, 1110);
+    ctx.font = "400 38px 'Cormorant Garamond', Georgia, serif";
+    ctx.fillText(opts.price, W / 2, 1068);
+
+    // The recipe story — what makes the share worth talking about.
+    if (opts.recipe) {
+      ctx.fillStyle = "#6F5F57";
+      ctx.font = "italic 400 30px 'Cormorant Garamond', Georgia, serif";
+      wrapText(ctx, opts.recipe, W / 2, 1122, W - 220, 38, 2);
+    }
 
     // Divider + footer.
     ctx.strokeStyle = "rgba(200,161,90,0.5)";
     ctx.lineWidth = 2;
     ctx.beginPath();
-    ctx.moveTo(W / 2 - 70, 1160);
-    ctx.lineTo(W / 2 + 70, 1160);
+    ctx.moveTo(W / 2 - 70, 1205);
+    ctx.lineTo(W / 2 + 70, 1205);
     ctx.stroke();
     ctx.fillStyle = "#8A7470";
     ctx.font = "400 22px Jost, sans-serif";
-    drawTracked(ctx, "HAND-POURED · SMALL-BATCH", W / 2, 1215, 4);
+    drawTracked(ctx, "HAND-POURED · SMALL-BATCH · GREAT FALLS, SC", W / 2, 1248, 4);
+
+    // The invitation — where the person seeing this share goes next.
+    ctx.fillStyle = "#8a6a2e";
+    ctx.font = "600 26px Jost, sans-serif";
+    drawTracked(ctx, "BUILD YOURS · DELAJACANDLES.COM", W / 2, 1296, 5);
 
     return await new Promise((resolve) =>
       canvas.toBlob((b) => resolve(b), "image/png", 0.95),
@@ -85,6 +97,35 @@ export async function buildShareCard(
   } catch {
     return null;
   }
+}
+
+/** Center-wrapped text, capped at maxLines with an ellipsis. */
+function wrapText(
+  ctx: CanvasRenderingContext2D,
+  text: string,
+  cx: number,
+  y: number,
+  maxWidth: number,
+  lineHeight: number,
+  maxLines: number,
+) {
+  const words = text.split(/\s+/);
+  let line = "";
+  let lines = 0;
+  for (let i = 0; i < words.length; i++) {
+    const test = line ? line + " " + words[i] : words[i];
+    if (ctx.measureText(test).width > maxWidth && line) {
+      lines++;
+      if (lines === maxLines) {
+        ctx.fillText(line.replace(/[,.]?$/, "…"), cx, y);
+        return;
+      }
+      ctx.fillText(line, cx, y);
+      y += lineHeight;
+      line = words[i];
+    } else line = test;
+  }
+  if (line) ctx.fillText(line, cx, y);
 }
 
 function truncate(s: string, n: number) {

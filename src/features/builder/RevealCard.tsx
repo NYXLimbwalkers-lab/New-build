@@ -1,7 +1,7 @@
 import { motion } from "motion/react";
 import { useRef, useState } from "react";
 import type { BuildConfig } from "@/data/types";
-import { formatUSD } from "@/data/build";
+import { describeBuildSentence, formatUSD } from "@/data/build";
 import { Sheet } from "@/components/ui/Sheet";
 import { Button } from "@/components/ui/Button";
 import { CandleRenderer } from "./renderer";
@@ -42,6 +42,7 @@ export function RevealCard({
         const blob = await buildShareCard(svg as SVGSVGElement, {
           name,
           price: formatUSD(price),
+          recipe: describeBuildSentence(config),
         });
         if (blob) {
           await shareOrDownload(blob, name);
