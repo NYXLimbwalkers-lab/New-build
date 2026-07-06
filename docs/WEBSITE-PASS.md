@@ -71,10 +71,16 @@ agent fan-outs; reuse the saved review findings (tasks/wuysbc5j8.output)._
 
 ## Follow-ups (not blocking)
 
-- TODO(confirm) prices: heart-tin vessel ($12), new topping add-ons,
-  festive-peppermint 14oz tier; whipped-kisses + berry-intoxicating photo
-  attribution.
-- HEADED=1 crawl for real names/sizes/prices from product pages (HTML
-  still challenge-blocked headless).
+- ~~HEADED crawl~~ DONE 2026-07-06: 30 products, 0 failures. Catalog fully
+  reconciled — real prices/sizes everywhere, photo swaps fixed from each
+  product page's own gallery, body butters split into her 3 real SKUs,
+  4 new products added (Little Luxuries Tins, Bewitched Bloom, Enchanted
+  Tea, Pawsome Melts). Heart-tin $12 CONFIRMED.
+- Still TODO(confirm) with the owner: topping add-on prices, festive-
+  peppermint price (not on the live shop — seasonal), Little Luxuries tin
+  size, Enchanted Tea size. "Lavender Lullabies" (from HANDOFF) is NOT on
+  her live shop — ask if renamed/retired.
+- Reveal ceremony shipped (two-beat light-it + synthesized sound+haptics).
 - SelectTile roving tabindex (arrow keys); kiosk/party full pass with the
-  new art; hero composites (manifest.heroes).
+  new art; hero composites (manifest.heroes); commerce adapter (needs her
+  Square/Woo account).

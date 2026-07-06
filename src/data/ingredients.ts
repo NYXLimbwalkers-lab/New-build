@@ -20,8 +20,7 @@ export const VESSELS: Vessel[] = [
   { id: "tin", name: "Tin · 7 oz", shape: "tin", gel: false, price: 18, toppingCap: 3 },
   { id: "dessert-glass", name: "Dessert Glass", shape: "dessert", gel: false, price: 23, toppingCap: 5 },
   { id: "wine", name: "Stemmed Wine Glass", shape: "wine", gel: true, price: 29.5, toppingCap: 0 },
-  // Her wax-melt line: flameless gold heart tin, embeds on the creamy fill.
-  // TODO(confirm): price matches the seeded 4 oz melt ($12) — verify with owner.
+  // Her wax-melt line (flameless gold heart tin) — $12 CONFIRMED by her live listing.
   { id: "heart-tin", name: "Heart Tin · Wax Melt", shape: "heart", gel: false, price: 12, toppingCap: 3 },
 ];
 
