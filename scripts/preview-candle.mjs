@@ -224,11 +224,52 @@ function placed(id) {
       </g>`;
     }
     case "marshmallow":
+      // toasted marshmallow CUBE (her photos): charred top, dusted sides
+      return `<g transform="rotate(-8)">
+        <rect x="-16" y="-15" width="32" height="30" rx="5" fill="url(#toast)" stroke="#D8B98C" stroke-width="1"/>
+        <path d="M-16 -8 Q0 -13 16 -8 L16 -15 Q16 -15 11 -15 L-11 -15 Q-16 -15 -16 -15 Z" fill="#8A5A33" opacity=".85"/>
+        <path d="M-13 -10 Q0 -14 13 -10" fill="none" stroke="#4A2E16" stroke-width="2.4" stroke-linecap="round" opacity=".7"/>
+        <circle cx="-6" cy="-11" r="1.8" fill="#3A2314"/><circle cx="5" cy="-12" r="1.4" fill="#3A2314"/>
+        <circle cx="7" cy="5" r="1.3" fill="#C9A876" opacity=".8"/>
+        <circle cx="-7" cy="9" r="1.1" fill="#C9A876" opacity=".7"/>
+        <circle cx="1" cy="1" r="1" fill="#C9A876" opacity=".6"/>
+        <path d="M-16 8 Q0 12 16 8" fill="none" stroke="#E8D8B8" stroke-width="1.6" opacity=".8"/>
+      </g>`;
+    case "banana":
+      // banana slice (her banana-pudding tins): pale disc, seed flecks
+      return `<g transform="rotate(-6)">
+        <circle cx="0" cy="0" r="17" fill="#EFDC8C"/>
+        <circle cx="0" cy="0" r="17" fill="none" stroke="#D9C06A" stroke-width="2.2"/>
+        <circle cx="0" cy="0" r="12.5" fill="#F6EAB4"/>
+        <circle cx="-3" cy="-2" r="1.7" fill="#6E4A2E"/><circle cx="3.5" cy="-1" r="1.3" fill="#6E4A2E"/>
+        <circle cx="0" cy="4" r="1.4" fill="#6E4A2E"/>
+        <ellipse cx="-5" cy="-6" rx="5" ry="3" fill="#fff" opacity=".4"/>
+      </g>`;
+    case "wafer":
+      // glossy amber wafer/honey dome (her banana-pudding + apple-crisp tins)
       return `<g>
-        <rect x="-15" y="-14" width="30" height="28" rx="6" fill="url(#toast)" stroke="#D8B98C" stroke-width="1"/>
-        <ellipse cx="0" cy="-14" rx="15" ry="5" fill="#FFFDF6" stroke="#EBDBBE" stroke-width="1"/>
-        <circle cx="7" cy="6" r="1.4" fill="#A87840" opacity=".55"/>
-        <circle cx="-6" cy="10" r="1.1" fill="#A87840" opacity=".45"/>
+        <ellipse cx="0" cy="2" rx="19" ry="15" fill="url(#honeyblob)"/>
+        <ellipse cx="0" cy="2" rx="19" ry="15" fill="none" stroke="#9A6A2C" stroke-opacity=".4" stroke-width="1.4"/>
+        <ellipse cx="-6" cy="-4" rx="7" ry="4.6" fill="#fff" opacity=".42"/>
+        <circle cx="6" cy="-2" r="1" fill="#FBE7C4" opacity=".8"/><circle cx="1" cy="6" r="1.2" fill="#FBE7C4" opacity=".7"/>
+      </g>`;
+    case "graham":
+      // toffee/graham slab (her toasted-marshmallow candle): amber square slab
+      return `<g transform="rotate(-14)">
+        <rect x="-20" y="-16" width="40" height="32" rx="3" fill="#B8552E"/>
+        <rect x="-22" y="-19" width="40" height="32" rx="3" fill="#CE6636"/>
+        <rect x="-22" y="-19" width="40" height="32" rx="3" fill="none" stroke="#8F3D1E" stroke-opacity=".5" stroke-width="1.4"/>
+        <path d="M-16 -13 q17 -4 30 0" stroke="#F0A468" stroke-width="2.4" opacity=".6" fill="none" stroke-linecap="round"/>
+        <circle cx="-8" cy="-6" r="1.1" fill="#F6D8B8" opacity=".7"/><circle cx="6" cy="-1" r="1.3" fill="#F6D8B8" opacity=".6"/>
+        <circle cx="-2" cy="6" r="1" fill="#F6D8B8" opacity=".65"/>
+      </g>`;
+    case "peppermint":
+      // peppermint crumble shard (festive line): white shard, red stripes
+      return `<g transform="rotate(-20)">
+        <path d="M-16 -10 L14 -14 L18 8 L-8 14 Z" fill="#FDF8F4"/>
+        <path d="M-16 -10 L14 -14 L18 8 L-8 14 Z" fill="none" stroke="#E3CFC8" stroke-width="1.2"/>
+        <path d="M-10 -11 L-4 13 M0 -12.5 L6 12 M9 -13.5 L14 10" stroke="#C42C3E" stroke-width="4" stroke-linecap="round" opacity=".85"/>
+        <ellipse cx="-4" cy="-6" rx="6" ry="3" fill="#fff" opacity=".6"/>
       </g>`;
     case "pecan":
       // pecan half: lobed oval, central groove, wrinkled ridges
@@ -397,20 +438,64 @@ function vesselArt(vessel, layers) {
       <ellipse cx="300" cy="350" rx="120" ry="13" fill="${top}" fill-opacity=".5"/>`;
   }
   if (vessel === "heart-tin") {
-    // shallow gold heart tin (wax-melt line): low wide dish, embossed heart on
-    // the front, wax surface at the shared mouth so embeds sit right on it
+    // gold heart tin seen TOP-DOWN (her wax-melt photos): creamy piped wax
+    // filling the heart, banana slice + glossy amber wafer domes + crumble
+    // dust visible inside. Flameless.
+    const heart = (s) =>
+      `M300 ${370 + s} C${270 - s} ${330 - s} ${192 - s} ${334 - s} ${183 - s} ${398}` +
+      ` C${176 - s} ${452 + s} ${240 - s / 2} ${500 + s} 300 ${534 + s}` +
+      ` C${360 + s / 2} ${500 + s} ${424 + s} ${452 + s} ${417 + s} ${398}` +
+      ` C${408 + s} ${334 - s} ${330 + s} ${330 - s} 300 ${370 + s} Z`;
+    const cream = lighten(top, 0.12);
+    const bumpShade = darken(top, 0.3);
+    // piped dollop rows inside (soft bumps like her photo) — with real contrast
+    let bumps = "";
+    const rows = [
+      [252, 402, 17], [300, 396, 19], [348, 402, 17], [226, 436, 15], [276, 442, 18],
+      [326, 442, 18], [374, 436, 15], [252, 478, 15], [300, 486, 17], [348, 478, 15],
+    ];
+    for (const [bx, by, br] of rows) {
+      bumps += `<ellipse cx="${bx}" cy="${by + br * 0.55}" rx="${br * 0.95}" ry="${br * 0.45}" fill="${bumpShade}" opacity=".3"/>`;
+      bumps += `<circle cx="${bx}" cy="${by}" r="${br}" fill="${cream}"/>`;
+      bumps += `<path d="M${bx - br * 0.6} ${by - br * 0.25} Q${bx} ${by - br * 0.95} ${bx + br * 0.6} ${by - br * 0.25}" fill="none" stroke="#fff" stroke-opacity=".75" stroke-width="2.2"/>`;
+      bumps += `<path d="M${bx - br * 0.55} ${by + br * 0.4} Q${bx} ${by + br * 0.9} ${bx + br * 0.55} ${by + br * 0.4}" fill="none" stroke="${bumpShade}" stroke-opacity=".4" stroke-width="2.2"/>`;
+    }
+    // crumble dust
+    let dust = "";
+    const rr = rng(41);
+    for (let i = 0; i < 26; i++) {
+      const a = rr() * Math.PI * 2, rad = Math.sqrt(rr());
+      const dx = 300 + Math.cos(a) * rad * 96, dy = 436 + Math.sin(a) * rad * 66;
+      dust += `<circle cx="${dx.toFixed(1)}" cy="${dy.toFixed(1)}" r="${(1 + rr() * 1.6).toFixed(1)}" fill="#C89B62" opacity="${(0.5 + rr() * 0.4).toFixed(2)}"/>`;
+    }
     return `
-      <g filter="url(#soft)"><path d="M176 352 L176 462 Q176 486 202 486 L398 486 Q424 486 424 462 L424 352 Z" fill="#D9B44A"/></g>
-      <path d="M176 352 L176 462 Q176 486 202 486 L398 486 Q424 486 424 462 L424 352 Z" fill="url(#goldMetal)"/>
-      <rect x="186" y="360" width="10" height="112" rx="5" fill="#fff" opacity=".45"/>
-      <rect x="402" y="366" width="6" height="102" rx="3" fill="#3A2C2A" opacity=".12"/>
-      <path d="M300 408 C293 398 279 398 274 408 C269 417 276 426 300 442 C324 426 331 417 326 408 C321 398 307 398 300 408 Z" fill="none" stroke="#96712B" stroke-width="2.4" opacity=".65"/>
-      <path d="M300 405 C294 396 281 396 276 405 C272 413 278 421 300 436 C322 421 328 413 324 405 C319 396 306 396 300 405 Z" fill="#F6E3A0" opacity=".28"/>
-      <ellipse cx="300" cy="352" rx="126" ry="17" fill="#B8903A"/>
-      <ellipse cx="300" cy="350" rx="118" ry="14" fill="${darken(top, 0.06)}"/>
-      <ellipse cx="300" cy="349" rx="111" ry="11.5" fill="${lighten(top, 0.28)}"/>
-      <ellipse cx="272" cy="347.5" rx="44" ry="5" fill="${lighten(top, 0.5)}" opacity=".8"/>
-      <ellipse cx="300" cy="352" rx="126" ry="17" fill="none" stroke="#96712B" stroke-width="2"/>`;
+      <g transform="translate(300 452) scale(1.34) translate(-300 -442)">
+      <g filter="url(#soft)"><path d="${heart(10)}" fill="#B8903A"/></g>
+      <path d="${heart(10)}" fill="url(#goldMetal)"/>
+      <path d="${heart(0)}" fill="#C9A23C"/>
+      <path d="${heart(-7)}" fill="${top}"/>
+      ${bumps}
+      <clipPath id="htclip"><path d="${heart(-7)}"/></clipPath>
+      <g clip-path="url(#htclip)">
+        ${dust}
+        <g filter="url(#tinyshadow)">
+          <circle cx="252" cy="412" r="30" fill="#EFDC8C"/>
+          <circle cx="252" cy="412" r="30" fill="none" stroke="#D9C06A" stroke-width="2.5"/>
+          <circle cx="247" cy="408" r="2.2" fill="#6E4A2E"/><circle cx="257" cy="410" r="1.8" fill="#6E4A2E"/>
+          <circle cx="251" cy="418" r="1.9" fill="#6E4A2E"/><circle cx="259" cy="417" r="1.4" fill="#6E4A2E"/>
+        </g>
+        <g filter="url(#tinyshadow)">
+          <ellipse cx="342" cy="428" rx="42" ry="36" fill="url(#honeyblob)"/>
+          <ellipse cx="330" cy="415" rx="13" ry="9" fill="#fff" opacity=".4"/>
+        </g>
+        <g filter="url(#tinyshadow)">
+          <ellipse cx="276" cy="486" rx="33" ry="28" fill="url(#honeyblob)"/>
+          <ellipse cx="267" cy="476" rx="10" ry="7" fill="#fff" opacity=".38"/>
+        </g>
+      </g>
+      <path d="${heart(0)}" fill="none" stroke="#96712B" stroke-width="2.4" opacity=".7"/>
+      <path d="M232 352 Q262 338 296 350" fill="none" stroke="#F6E3A0" stroke-width="3" opacity=".7" stroke-linecap="round"/>
+      </g>`;
   }
   if (vessel === "wine") {
     // stemmed wine glass with translucent GEL + drips up the bowl (her "drink"
@@ -436,8 +521,10 @@ function vesselArt(vessel, layers) {
       <path d="${bowl}" fill="url(#glass)"/>
       <path d="M214 226 Q216 324 292 364" fill="none" stroke="#fff" stroke-opacity=".45" stroke-width="8" stroke-linecap="round"/>
       <ellipse cx="300" cy="214" rx="104" ry="16" fill="#EDE7DF" fill-opacity=".7" stroke="#D2C8C1" stroke-width="2"/>
-      <rect x="294" y="396" width="12" height="150" fill="#ECE7E3" fill-opacity=".55"/>
-      <ellipse cx="300" cy="554" rx="76" ry="16" fill="#EDE7DF" fill-opacity=".6" stroke="#D2C8C1" stroke-width="2"/>`;
+      <rect x="294" y="396" width="12" height="236" fill="#ECE7E3" fill-opacity=".55"/>
+      <path d="M296 400 L296 626" stroke="#fff" stroke-opacity=".5" stroke-width="2.4"/>
+      <ellipse cx="300" cy="636" rx="88" ry="15" fill="#EDE7DF" fill-opacity=".6" stroke="#D2C8C1" stroke-width="2"/>
+      <ellipse cx="300" cy="632" rx="60" ry="8" fill="#fff" fill-opacity=".25"/>`;
   }
   // default: clean straight-sided glass tumbler (her jars are simple cylinders)
   return `
@@ -459,24 +546,25 @@ function vesselArt(vessel, layers) {
 // pile and the ice-cream scoop). Base sits on the mouth (y≈348), peak ~y=132.
 function swirl(hex) {
   const cx = 300;
+  // fewer, FATTER coils — soft-serve ribbons, not stacked rings
   const tiers = [
-    { y: 348, hw: 118, dx: 0 }, { y: 321, hw: 115, dx: -5 }, { y: 293, hw: 105, dx: 5 },
-    { y: 265, hw: 91, dx: -6 }, { y: 237, hw: 76, dx: 5 }, { y: 210, hw: 59, dx: -4 },
-    { y: 185, hw: 43, dx: 4 }, { y: 162, hw: 27, dx: -3 }, { y: 143, hw: 12, dx: 2 },
+    { y: 348, hw: 118, dx: 0 }, { y: 312, hw: 110, dx: -6 }, { y: 276, hw: 94, dx: 6 },
+    { y: 242, hw: 74, dx: -6 }, { y: 210, hw: 52, dx: 5 }, { y: 182, hw: 31, dx: -4 },
+    { y: 158, hw: 13, dx: 2 },
   ];
   const L = (t) => cx + t.dx - t.hw;
   const R = (t) => cx + t.dx + t.hw;
   let d = `M${L(tiers[0])} ${tiers[0].y}`;
   for (let i = 0; i < tiers.length - 1; i++) {
     const a = tiers[i], b = tiers[i + 1];
-    const bulge = Math.max(a.hw, b.hw) + 19;
+    const bulge = Math.max(a.hw, b.hw) + 27;
     d += ` Q${cx + (a.dx + b.dx) / 2 - bulge} ${(a.y + b.y) / 2} ${L(b)} ${b.y}`;
   }
   const top = tiers[tiers.length - 1];
-  d += ` C${cx + top.dx - 6} ${top.y - 22} ${cx + top.dx + 14} ${top.y - 18} ${R(top)} ${top.y}`;
+  d += ` C${cx + top.dx - 7} ${top.y - 26} ${cx + top.dx + 16} ${top.y - 21} ${R(top)} ${top.y}`;
   for (let i = tiers.length - 1; i > 0; i--) {
     const a = tiers[i], b = tiers[i - 1];
-    const bulge = Math.max(a.hw, b.hw) + 19;
+    const bulge = Math.max(a.hw, b.hw) + 27;
     d += ` Q${cx + (a.dx + b.dx) / 2 + bulge} ${(a.y + b.y) / 2} ${R(b)} ${b.y}`;
   }
   d += " Z";
@@ -492,13 +580,14 @@ function swirl(hex) {
   out += `</g>`;
   // spiralling ridge folds: each tier's fold drifts sideways so it reads as a
   // wound soft-serve swirl rather than stacked rings
-  for (let i = 0; i < tiers.length - 2; i++) {
+  for (let i = 0; i < tiers.length - 1; i++) {
     const t = tiers[i];
-    const drift = (i % 2 ? 1 : -1) * t.hw * 0.16;
-    const w = t.hw * 0.84;
-    const sag = 12 - i * 0.6;
-    out += `<path d="M${cx + t.dx - w + drift} ${t.y - 1} Q${cx + t.dx + drift} ${t.y + sag} ${cx + t.dx + w + drift} ${t.y - 1}" fill="none" stroke="#6B4A3F" stroke-opacity=".1" stroke-width="${6.5 - i * 0.35}" stroke-linecap="round"/>`;
-    out += `<path d="M${cx + t.dx - w * 0.9 + drift} ${t.y - 7} Q${cx + t.dx + drift} ${t.y + sag - 9} ${cx + t.dx + w * 0.9 + drift} ${t.y - 7}" fill="none" stroke="#fff" stroke-opacity=".5" stroke-width="2.6" stroke-linecap="round"/>`;
+    const drift = (i % 2 ? 1 : -1) * t.hw * 0.14;
+    const w = t.hw * 0.86;
+    const sag = 17 - i * 1.4;
+    // deep tuck under each fat coil + a broad catchlight on its crown
+    out += `<path d="M${cx + t.dx - w + drift} ${t.y - 1} Q${cx + t.dx + drift} ${t.y + sag} ${cx + t.dx + w + drift} ${t.y - 1}" fill="none" stroke="#6B4A3F" stroke-opacity=".14" stroke-width="${9 - i * 0.7}" stroke-linecap="round"/>`;
+    out += `<path d="M${cx + t.dx - w * 0.9 + drift} ${t.y - 9} Q${cx + t.dx + drift} ${t.y + sag - 12} ${cx + t.dx + w * 0.9 + drift} ${t.y - 9}" fill="none" stroke="#fff" stroke-opacity=".55" stroke-width="3.4" stroke-linecap="round"/>`;
   }
   return out;
 }
@@ -518,6 +607,7 @@ function rose(hex) {
   const outer = [
     [-96, 26, 52, 38, -38], [-58, 62, 54, 40, -16], [0, 74, 58, 40, 0],
     [58, 62, 54, 40, 16], [96, 26, 52, 38, 38], [-88, -28, 48, 36, -64], [88, -28, 48, 36, 64],
+    [-50, -62, 46, 34, -28], [50, -62, 46, 34, 28],
   ];
   for (const [dx, dy, rx, ry, rot] of outer) {
     g += `<g transform="translate(${cx + dx} ${cy + dy}) rotate(${rot})">`;
@@ -717,7 +807,7 @@ export function candleSVG(opts = {}) {
     <radialGradient id="flameCore" cx="50%" cy="72%" r="60%"><stop offset="0" stop-color="#fff"/><stop offset=".55" stop-color="#F8E6B0"/><stop offset="1" stop-color="#F8E6B0" stop-opacity="0"/></radialGradient>
   </defs>
   <rect width="600" height="740" fill="url(#bg)"/>
-  <ellipse cx="300" cy="664" rx="170" ry="30" fill="#3A2C2A" opacity=".16"/>
+  ${(opts.vessel || "jar") === "heart-tin" ? "" : `<ellipse cx="300" cy="664" rx="170" ry="30" fill="#3A2C2A" opacity=".16"/>`}
   ${vesselArt(opts.vessel || "jar", opts.layers || [waxHex])}
   ${hasWaffleBase ? waffleBase() : ""}
   ${hasWhip ? (whipStyle === "scoop" ? scoop(whipHex) : whipStyle === "swirl" ? swirl(whipHex) : whipStyle === "rose" ? rose(whipHex) : cream(whipHex)) : ""}
@@ -737,64 +827,38 @@ export function candleSVG(opts = {}) {
 </svg>`;
 }
 
-// Piped whipped cream — her signature: a MOUND of star-tip ROSETTES.
-// One rosette = a scalloped swirl silhouette whose flute lines (tuck shadow +
-// catchlight) spiral up into a curled tip, like frosting from a closed star
-// tip. Rosettes are composed back-to-front into a pile sitting on the vessel
-// mouth (base y≈348), crown swirl rising to meet the wick.
+// Piped whipped cream — her signature: a MOUND of star-tip PIPED SWIRLS
+// (like the icing swirls in her photos: wrapped ribbon bands with parallel
+// piping grooves, curling to a soft peak). Composed back-to-front into a pile
+// sitting on the vessel mouth (base y≈348), crown swirl meeting the wick.
 function cream(whipHex) {
   const cx = 300;
 
-  // one rosette on (0,0): base lobes ~y=8, curled tip ~y=-88, half-width ~52
+  // one piped swirl on (0,0): base ~y=12, curled tip ~y=-78, half-width ~47
   const rosette = (shade = 0) => {
     const body = shade ? mix(whipHex, "#C69B72", shade) : whipHex;
-    const tuck = mix(body, "#8A5F46", 0.5);
-    const edge = mix(body, "#8A5F46", 0.3);
-    const outline =
-      "M-45 -8" +
-      " Q-35 11 -17 2" +
-      " Q-1 13 15 2" +
-      " Q33 10 43 -10" +
-      " Q60 -22 44 -38" +
-      " Q52 -54 30 -60" +
-      " Q26 -76 2 -72" +
-      " Q10 -90 -2 -88" +
-      " Q-14 -86 -24 -64" +
-      " Q-46 -58 -40 -40" +
-      " Q-57 -24 -45 -8 Z";
-    // flute folds: from the cusps between lobes, spiraling up to gather
-    // beneath the curled tip — the thing that makes it read PIPED
-    const flutes = [
-      "M-17 2 C-13 -20 -9 -40 -4 -58",
-      "M15 2 C15 -22 9 -42 1 -60",
-      "M43 -10 C35 -28 23 -44 10 -58",
-      "M-40 -40 C-30 -46 -18 -53 -8 -62",
-      "M44 -38 C36 -46 26 -53 14 -60",
-      "M30 -60 C22 -64 12 -68 4 -70",
-      "M-24 -64 C-18 -68 -10 -70 -4 -72",
-    ];
-    // darker tapered accents at the flute BASES — the V-notch where two
-    // flutes meet is deepest, fading as the fold rises toward the tip
-    const fluteBases = [
-      "M-17 2 C-15 -8 -13 -16 -12 -24",
-      "M15 2 C15 -8 13 -16 11 -24",
-      "M43 -10 C39 -18 35 -26 29 -33",
-      "M-40 -40 C-35 -43 -29 -46 -24 -49",
-      "M44 -38 C40 -42 35 -45 30 -48",
-    ];
-    let g = `<ellipse cx="2" cy="3" rx="40" ry="8" fill="#8A5F46" opacity=".14"/>`;
-    g += `<path d="${outline}" fill="${body}"/>`;
-    g += `<path d="${outline}" fill="none" stroke="${edge}" stroke-opacity=".35" stroke-width="1.4"/>`;
-    for (const f of flutes) {
-      g += `<path d="${f}" fill="none" stroke="${tuck}" stroke-opacity=".16" stroke-width="7" stroke-linecap="round"/>`;
-      g += `<path d="${f}" fill="none" stroke="${tuck}" stroke-opacity=".4" stroke-width="2.4" stroke-linecap="round"/>`;
-      g += `<path d="${f}" fill="none" stroke="#fff" stroke-opacity=".52" stroke-width="1.5" stroke-linecap="round" transform="translate(-2.4 -1.8)"/>`;
-    }
-    for (const f of fluteBases) {
-      g += `<path d="${f}" fill="none" stroke="${tuck}" stroke-opacity=".38" stroke-width="4.4" stroke-linecap="round"/>`;
-    }
-    g += `<ellipse cx="-14" cy="-46" rx="25" ry="27" fill="url(#roseHi)" opacity=".7"/>`;
-    g += `<path d="M-8 -83 Q0 -87 5 -79" stroke="#fff" stroke-opacity=".65" stroke-width="2" fill="none" stroke-linecap="round"/>`;
+    const tuck = mix(body, "#8A5F46", 0.48);
+    let g = `<ellipse cx="0" cy="9" rx="44" ry="8" fill="#8A5F46" opacity=".16"/>`;
+    // BASE WRAP — the widest ribbon, bulging at the front
+    g += `<path d="M-46 -10 Q-50 6 -30 11 Q0 16 30 11 Q50 6 46 -10 Q46 -22 26 -27 Q0 -31 -26 -27 Q-46 -22 -46 -10 Z" fill="${body}"/>`;
+    // star-tip grooves along the ribbon
+    g += `<path d="M-42 -3 Q0 11 42 -3" fill="none" stroke="${tuck}" stroke-opacity=".3" stroke-width="1.8" stroke-linecap="round"/>`;
+    g += `<path d="M-38 -8 Q0 5 38 -8" fill="none" stroke="${tuck}" stroke-opacity=".26" stroke-width="1.7" stroke-linecap="round"/>`;
+    g += `<path d="M-32 -14 Q0 -3 32 -14" fill="none" stroke="${tuck}" stroke-opacity=".2" stroke-width="1.6" stroke-linecap="round"/>`;
+    g += `<path d="M-28 -21 Q0 -27 28 -21" fill="none" stroke="#fff" stroke-opacity=".45" stroke-width="2" stroke-linecap="round"/>`;
+    // MIDDLE WRAP — sweeps right→left so the spiral direction reads
+    g += `<path d="M-40 -20 Q-47 -39 -22 -46 Q8 -53 30 -44 Q45 -37 40 -25 Q37 -17 26 -20 Q4 -33 -20 -29 Q-34 -26 -40 -20 Z" fill="${body}"/>`;
+    g += `<path d="M-34 -26 Q0 -40 33 -28" fill="none" stroke="${tuck}" stroke-opacity=".28" stroke-width="1.7" stroke-linecap="round"/>`;
+    g += `<path d="M-28 -32 Q-1 -44 27 -34" fill="none" stroke="${tuck}" stroke-opacity=".22" stroke-width="1.6" stroke-linecap="round"/>`;
+    g += `<path d="M-23 -39 Q-1 -48 21 -40" fill="none" stroke="#fff" stroke-opacity=".42" stroke-width="1.9" stroke-linecap="round"/>`;
+    // TOP CURL — a comma wrapping up to the tip
+    g += `<path d="M-23 -37 Q-29 -57 -7 -64 Q12 -69 21 -58 Q25 -50 15 -46 Q7 -56 -5 -52 Q-17 -48 -23 -37 Z" fill="${body}"/>`;
+    g += `<path d="M-17 -46 Q-4 -58 13 -52" fill="none" stroke="${tuck}" stroke-opacity=".26" stroke-width="1.6" stroke-linecap="round"/>`;
+    g += `<path d="M-13 -52 Q-2 -60 9 -55" fill="none" stroke="#fff" stroke-opacity=".4" stroke-width="1.7" stroke-linecap="round"/>`;
+    // soft peak flick
+    g += `<path d="M0 -60 Q6 -70 -2 -78 Q2 -68 -4 -60 Q-2 -56 0 -60 Z" fill="${body}"/>`;
+    // sheen
+    g += `<ellipse cx="-10" cy="-38" rx="20" ry="16" fill="url(#roseHi)" opacity=".5"/>`;
     return g;
   };
   const put = (x, y, sx, sy, rot, shade = 0) =>
@@ -841,9 +905,9 @@ function board(list, label) {
 
 // Distinct vessels test.
 board([
-  { name: "White Tea & Rose", vessel: "jar", layers: ["#F3E9DD"], whipStyle: "rose", whipHex: "#EFA8B8", hasDrizzle: false, toppingIds: [] },
-  { name: "Berry Wine", vessel: "wine", layers: ["#7A1F3D"], hasWhip: false, hasDrizzle: false, toppingIds: [] },
-  { name: "Banana Pudding Tin", vessel: "heart-tin", layers: ["#FBF3E4"], hasWhip: false, hasDrizzle: false, toppingIds: ["honey", "marshmallow"] },
-  { name: "Lavender Swirl", vessel: "jar", layers: ["#D8CCE6"], whipStyle: "swirl", whipHex: "#DDD2E8", hasDrizzle: false, toppingIds: [] },
+  { name: "Rose", vessel: "jar", layers: ["#F3E9DD"], whipStyle: "rose", whipHex: "#EFA8B8", hasDrizzle: false, toppingIds: [] },
+  { name: "Sundae Scoop", vessel: "dessert", layers: ["#EBB7BE", "#F4E4C9"], whipStyle: "scoop", whipHex: "#F3E7C9", drizzleId: "berry", toppingIds: ["waffle"] },
+  { name: "Swirl + Peppermint", vessel: "tin", layers: ["#F4E4C9"], whipStyle: "swirl", whipHex: "#FBF3E4", hasDrizzle: false, toppingIds: ["peppermint", "crumble"] },
+  { name: "Banana Tin", vessel: "heart-tin", layers: ["#FBF3E4"], hasWhip: false, hasDrizzle: false, toppingIds: [] },
 ], "candle-preview");
 console.log("wrote candle-preview.png");
