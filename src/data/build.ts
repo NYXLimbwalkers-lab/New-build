@@ -256,6 +256,12 @@ export function reconcile(config: BuildConfig): BuildConfig {
   ls.length = layerCount;
   next.layerScents = ls.map((s) => s || DEFAULT_SCENT);
 
+  // Drizzle physically drapes over the whipped top — with no whip it would
+  // hang in mid-air, so it quietly comes off (invisible rule, no hard error).
+  if (!next.whipId) {
+    next.drizzleId = null;
+  }
+
   // Whip/drizzle carry a scent only when they're present.
   next.whipScentId = next.whipId ? next.whipScentId ?? DEFAULT_SCENT : null;
   next.drizzleScentId = next.drizzleId ? next.drizzleScentId ?? DEFAULT_SCENT : null;
@@ -323,7 +329,9 @@ export function surpriseBuild(): BuildConfig {
     vesselId,
     waxColorId: pick(validWaxColors(vesselId)).id,
     strength: pick(STRENGTHS),
-    whipId: pick(["whip-vanilla", "whip-strawberry", "whip-butter", null]),
+    // A surprise ALWAYS gets a whipped top — her signature look, and the
+    // perch that drizzle + toppings visually need (owner's rule).
+    whipId: pick(["whip-vanilla", "whip-strawberry", "whip-butter", "whip-chocolate"]),
     topStyle: pick(["pile", "pile", "swirl", "scoop"]),
     drizzleId: pick(["caramel", "chocolate", "berry", null]),
     toppingIds: [],

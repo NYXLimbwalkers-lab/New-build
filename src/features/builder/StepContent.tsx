@@ -393,9 +393,26 @@ function WhipStep({ config, update }: StepProps) {
 }
 
 function DrizzleStep({ config, update }: StepProps) {
+  const noWhip = !config.whipId;
   return (
     <div>
-      <StepHeading title="Drizzle & scent it" hint="Glossy ribbons over the top — choose the drizzle and its scent." />
+      <StepHeading
+        title="Drizzle & scent it"
+        hint={
+          noWhip
+            ? "Drizzle rests on a whipped top — add a whip and this unlocks."
+            : "Glossy ribbons over the top — choose the drizzle and its scent."
+        }
+      />
+      {noWhip && (
+        <button
+          type="button"
+          onClick={() => update({ whipId: "whip-vanilla" })}
+          className="mb-4 w-full rounded-2xl border border-dashed hairline bg-blush-soft/30 p-3 text-sm text-cocoa hover:bg-blush-soft/50"
+        >
+          ✦ Add a vanilla whip so the drizzle has somewhere to land
+        </button>
+      )}
       <div className="grid grid-cols-3 gap-3">
         <SelectTile
           groupId="drizzle-sel"
@@ -413,6 +430,7 @@ function DrizzleStep({ config, update }: StepProps) {
             key={d.id}
             groupId="drizzle-sel"
             selected={config.drizzleId === d.id}
+            disabled={noWhip}
             onSelect={() => update({ drizzleId: d.id })}
             ariaLabel={d.name}
           >
