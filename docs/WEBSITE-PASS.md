@@ -1,6 +1,7 @@
 # WEBSITE PASS — the working brief
 
-_The prompt for the full site upgrade. Execute top-to-bottom, commit per phase,
+_STATUS: Phases A, B, C executed and verified live (2026-07-06). Remaining
+follow-ups listed at the bottom. Execute top-to-bottom, commit per phase,
 `npm run build` green before every commit. Token discipline: work directly, no
 agent fan-outs; reuse the saved review findings (tasks/wuysbc5j8.output)._
 
@@ -52,3 +53,28 @@ agent fan-outs; reuse the saved review findings (tasks/wuysbc5j8.output)._
 - Rig (`preview-candle.mjs`) stays the design source; keep parity when
   changing either side.
 - Commit small, push each phase; update this file's checkboxes.
+
+
+## Completed (2026-07-06, verified in the running app)
+
+- A1 art port · A2 topStyle picker (pile/swirl/scoop/rose) · A3 heart-tin
+  melt flow (flameless, embeds on the heart fill, surface-aware toppings).
+- THE step-freeze bug fixed (AnimatePresence mode="wait" -> keyed remount)
+  — this was the owner's "can't change toppings".
+- motion 12.40 -> 12.42.2 (frozen SVG spring mounts: invisible whip/tin).
+- A11y: spoken preview (role="img" + live sentence), Sheet focus trap,
+  flame perf + reduced-motion, gold-ink contrast token, radiogroup labels.
+- 9 new toppings registered + recipes mirror her real products.
+- Showcase pass: 17 more products wired to her REAL photos (from the
+  crawled library, IDed against her labels) — 29 CDN photos load on the
+  menu; toasted-mellow/banana-pudding/body-butters got galleries.
+
+## Follow-ups (not blocking)
+
+- TODO(confirm) prices: heart-tin vessel ($12), new topping add-ons,
+  festive-peppermint 14oz tier; whipped-kisses + berry-intoxicating photo
+  attribution.
+- HEADED=1 crawl for real names/sizes/prices from product pages (HTML
+  still challenge-blocked headless).
+- SelectTile roving tabindex (arrow keys); kiosk/party full pass with the
+  new art; hero composites (manifest.heroes).

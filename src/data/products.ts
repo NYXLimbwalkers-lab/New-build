@@ -22,6 +22,8 @@ export const PRODUCTS: Product[] = [
     smellsLike: "Your signature scent, simply done",
     notes: "Standard, wood lid",
     badges: ["bestseller"],
+    // Her wood-lid classic pour (the "You Wanted a Real Tree" shot).
+    image: `${UPLOADS}/2025/11/21872.jpg`,
     recipe: {
       vesselId: "jar-14",
       waxColorId: "ivory",
@@ -42,6 +44,10 @@ export const PRODUCTS: Product[] = [
     notes: "Wax marshmallow embeds",
     badges: ["bestseller", "staff-pick"],
     image: `${UPLOADS}/2026/05/46981-scaled.jpg`,
+    images: [
+      `${UPLOADS}/2026/05/46981-scaled.jpg`,
+      `${UPLOADS}/2026/05/46984-1-scaled.jpg`,
+    ],
     recipe: {
       vesselId: "jar-14",
       waxColorId: "cream",
@@ -97,6 +103,7 @@ export const PRODUCTS: Product[] = [
     looksLike: "Golden whipped butter with a honey sheen",
     smellsLike: "Salted honey, warm and round",
     notes: "Whipped topping",
+    image: `${UPLOADS}/2026/03/37275-scaled.webp`,
     recipe: {
       vesselId: "jar-12",
       waxColorId: "honey",
@@ -137,6 +144,7 @@ export const PRODUCTS: Product[] = [
     smellsLike: "Maple bourbon apple / hot apple pie",
     notes: "2-pack",
     seasonalMonths: [9, 10, 11, 12],
+    image: `${UPLOADS}/2025/10/15774-scaled.webp`,
   },
   {
     id: "waffles-ice-cream",
@@ -175,6 +183,7 @@ export const PRODUCTS: Product[] = [
     looksLike: "Golden waffle with toasted pecans",
     smellsLike: "Buttery waffle, maple, pecan",
     notes: "Waffle + syrup",
+    image: `${UPLOADS}/2025/07/waf.jpg`,
     recipe: {
       vesselId: "jar-14",
       waxColorId: "honey",
@@ -193,6 +202,8 @@ export const PRODUCTS: Product[] = [
     looksLike: "A dessert in a glass, piped high",
     smellsLike: "Soft vanilla cream",
     notes: "Dessert in a glass",
+    // TODO(confirm): berries-and-cream dessert-cup shot — verify it is this listing.
+    image: `${UPLOADS}/2025/07/st.jpg`,
   },
   {
     // Verified via her live listings: 8 oz, frosted whipped top.
@@ -225,6 +236,7 @@ export const PRODUCTS: Product[] = [
     looksLike: "Creamy pink shake, whipped high",
     smellsLike: "Strawberry cheesecake, blended",
     notes: "Creamy",
+    image: `${UPLOADS}/2025/07/edited_1.png`,
     recipe: {
       vesselId: "jar-12",
       waxColorId: "strawberry",
@@ -245,6 +257,7 @@ export const PRODUCTS: Product[] = [
     looksLike: "A confetti of candy on whipped cream",
     smellsLike: "Strawberry cream, sweet sugar-rush",
     notes: "Whipped + candy",
+    image: `${UPLOADS}/2025/05/9742-scaled.jpg`,
     recipe: {
       vesselId: "jar-12",
       waxColorId: "cream",
@@ -263,6 +276,7 @@ export const PRODUCTS: Product[] = [
     looksLike: "Whipped cream dusted in pink crumble",
     smellsLike: "Spun pink sugar",
     notes: "Whipped + pink crumble",
+    image: `${UPLOADS}/2025/07/pinkk.jpg`,
     recipe: {
       vesselId: "dessert-glass",
       waxColorId: "cream",
@@ -292,6 +306,7 @@ export const PRODUCTS: Product[] = [
     looksLike: "A whipped design with cosmic calm",
     smellsLike: "Smooth sandalwood",
     notes: "Whipped design",
+    image: `${UPLOADS}/2026/01/30420-scaled.jpg`,
   },
   {
     id: "white-tea-rose",
@@ -304,6 +319,7 @@ export const PRODUCTS: Product[] = [
     smellsLike: "White tea and soft rose petals",
     notes: "Sculpted rose wax",
     badges: ["staff-pick"],
+    image: `${UPLOADS}/2026/01/30430-scaled.jpg`,
     recipe: {
       vesselId: "jar-14",
       waxColorId: "ivory",
@@ -337,6 +353,8 @@ export const PRODUCTS: Product[] = [
     smellsLike: "Juicy blackberry & mixed berry",
     notes: "Gel wax, 12 oz, wine glass",
     badges: ["bestseller"],
+    // TODO(confirm): berry-dripped stemmed-glass shot — verify vs her listing.
+    image: `${UPLOADS}/2026/04/43694-scaled.jpg`,
     recipe: {
       vesselId: "wine",
       waxColorId: "garnet-gel",
@@ -355,6 +373,7 @@ export const PRODUCTS: Product[] = [
     looksLike: "Black cherry merlot, poured in gel",
     smellsLike: "Black cherry, red wine, vanilla",
     notes: "Gel wax, wine glass",
+    image: `${UPLOADS}/2025/08/8041-scaled.jpg`,
     recipe: {
       vesselId: "wine",
       waxColorId: "garnet-gel",
@@ -373,6 +392,7 @@ export const PRODUCTS: Product[] = [
     looksLike: "A pink/blue gel pour with depth",
     smellsLike: "Cool, layered, a little electric",
     notes: "Gel wax, wine glass",
+    image: `${UPLOADS}/2025/09/897dedcf-1801-4e98-b56a-abbb5d3f7fb7-1_all_14811-scaled.webp`,
     recipe: {
       vesselId: "wine",
       waxColorId: "blue-gel",
@@ -415,6 +435,10 @@ export const PRODUCTS: Product[] = [
     smellsLike: "Banana, vanilla wafer, cream",
     notes: "Scoopable wax melt",
     image: `${UPLOADS}/2026/03/37271-scaled.webp`,
+    images: [
+      `${UPLOADS}/2026/03/37271-scaled.webp`,
+      `${UPLOADS}/2026/03/37269-scaled.webp`,
+    ],
     recipe: {
       vesselId: "heart-tin",
       waxColorId: "cream",
@@ -433,6 +457,12 @@ export const PRODUCTS: Product[] = [
     looksLike: "Love Drunk / Nude Petals / Midnight Saddle",
     smellsLike: "Your scent, on your skin",
     notes: "Whipped body butter ($14–24)",
+    image: `${UPLOADS}/2026/05/49974.png`,
+    images: [
+      `${UPLOADS}/2026/05/49974.png`,
+      `${UPLOADS}/2026/05/49972.png`,
+      `${UPLOADS}/2026/05/49977.webp`,
+    ],
   },
   {
     id: "car-diffuser",
@@ -444,6 +474,7 @@ export const PRODUCTS: Product[] = [
     looksLike: "A little hanging diffuser",
     smellsLike: "Carry the scent everywhere",
     notes: "Accessory",
+    image: `${UPLOADS}/2025/11/21878-scaled.webp`,
   },
 ];
 
