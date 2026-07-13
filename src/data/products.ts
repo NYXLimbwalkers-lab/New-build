@@ -1,14 +1,7 @@
 import type { Product } from "./types";
 
-/*
-  Her full catalog — real names, sizes, prices (Part 2 of the deep plan).
-  `recipe` seeds "Start from a Favorite" for the candles that map cleanly
-  onto the builder's ingredient ids (see ingredients.ts).
-  Images are her live source URLs (Appendix A); re-fetch + localize before
-  relying on them for production.
-*/
-
-const UPLOADS = "https://i0.wp.com/delajacandles.com/wp-content/uploads";
+// Managed by NOVA's Shop tab — her candle catalog. Edit candles in NOVA (add/price/photo/hide) and
+// publish; this file is regenerated. Hand-editing here is fine too — NOVA re-reads it.
 
 export const PRODUCTS: Product[] = [
   {
@@ -21,16 +14,8 @@ export const PRODUCTS: Product[] = [
     looksLike: "A clean poured candle with a wood lid",
     smellsLike: "Choose your scent (Frosted Juniper, Salted Honey Butter…)",
     notes: "Standard, wood lid",
+    image: "https://i0.wp.com/delajacandles.com/wp-content/uploads/2025/11/21872.jpg",
     badges: ["bestseller"],
-    // Her wood-lid classic pour (the "You Wanted a Real Tree" shot).
-    image: `${UPLOADS}/2025/11/21872.jpg`,
-    recipe: {
-      vesselId: "jar-14",
-      waxColorId: "ivory",
-      whipId: null,
-      drizzleId: null,
-      toppingIds: [],
-    },
   },
   {
     id: "toasted-mellow",
@@ -42,38 +27,8 @@ export const PRODUCTS: Product[] = [
     looksLike: "Toasted marshmallows nestled in cream",
     smellsLike: "Campfire marshmallow, warm and sweet",
     notes: "Wax marshmallow embeds",
+    image: "https://i0.wp.com/delajacandles.com/wp-content/uploads/2026/05/46981-scaled.jpg",
     badges: ["bestseller", "staff-pick"],
-    image: `${UPLOADS}/2026/05/46981-scaled.jpg`,
-    images: [
-      `${UPLOADS}/2026/05/46981-scaled.jpg`,
-      `${UPLOADS}/2026/05/46984-1-scaled.jpg`,
-    ],
-    recipe: {
-      vesselId: "jar-14",
-      waxColorId: "cream",
-      whipId: "whip-vanilla",
-      drizzleId: null,
-      toppingIds: ["marshmallow", "graham", "crumble"],
-    },
-  },
-  {
-    id: "orange-dreamsicle",
-    name: "Orange Dreamsicle",
-    size: "12 oz",
-    price: 24.95,
-    category: "fruity",
-    scentFamily: "Fruity",
-    looksLike: "Creamsicle swirl with a citrus glow",
-    smellsLike: "Orange & vanilla cream",
-    notes: "Whipped topping",
-    image: `${UPLOADS}/2026/05/49861-2-scaled.webp`,
-    recipe: {
-      vesselId: "jar-12",
-      waxColorId: "orange-cream",
-      whipId: "whip-vanilla",
-      drizzleId: null,
-      toppingIds: ["orange-slice"],
-    },
   },
   {
     id: "dreamsicle",
@@ -85,54 +40,7 @@ export const PRODUCTS: Product[] = [
     looksLike: "Whipped cream crowned with orange",
     smellsLike: "Bright orange folded into vanilla",
     notes: "Whipped + orange pieces",
-    image: `${UPLOADS}/2025/07/Messenger_creation_7C35B6DB-D94B-40AE-831C-515369D99907.jpeg`,
-    recipe: {
-      vesselId: "jar-14",
-      waxColorId: "orange-cream",
-      whipId: "whip-vanilla",
-      drizzleId: null,
-      toppingIds: ["orange-slice"],
-    },
-  },
-  {
-    id: "salted-honey-butter",
-    name: "Salted Honey Butter",
-    size: "12 oz",
-    price: 20.0,
-    category: "bakery",
-    scentFamily: "Bakery",
-    looksLike: "Golden whipped butter with a honey sheen",
-    smellsLike: "Salted honey, warm and round",
-    notes: "Whipped topping",
-    image: `${UPLOADS}/2026/03/37275-scaled.webp`,
-    recipe: {
-      vesselId: "jar-12",
-      waxColorId: "honey",
-      whipId: "whip-butter",
-      drizzleId: "honey",
-      toppingIds: ["honeycomb", "honey"],
-    },
-  },
-  {
-    id: "maple-bourbon-apple-crisp",
-    name: "Maple Bourbon Apple Crisp",
-    size: "14 oz",
-    price: 24.99,
-    category: "bakery",
-    scentFamily: "Bakery",
-    looksLike: "Crumble-topped crisp with caramel ribbons",
-    smellsLike: "Baked apple, maple, a bourbon whisper",
-    notes: "Whipped + crumble + caramel drizzle",
-    badges: ["seasonal"],
-    seasonalMonths: [9, 10, 11],
-    image: `${UPLOADS}/2025/07/6823-scaled.jpg`,
-    recipe: {
-      vesselId: "jar-14",
-      waxColorId: "caramel",
-      whipId: "whip-vanilla",
-      drizzleId: "caramel",
-      toppingIds: ["crumble"],
-    },
+    image: "https://i0.wp.com/delajacandles.com/wp-content/uploads/2025/07/Messenger_creation_7C35B6DB-D94B-40AE-831C-515369D99907.jpeg",
   },
   {
     id: "cozy-indulgence",
@@ -144,54 +52,7 @@ export const PRODUCTS: Product[] = [
     looksLike: "A cozy duo — apple & hot pie",
     smellsLike: "8 scents, incl. Maple Bourbon Apple & Hot Apple Pie",
     notes: "Collection · choose your scent",
-    seasonalMonths: [9, 10, 11, 12],
-    image: `${UPLOADS}/2025/10/15774-scaled.webp`,
-  },
-  {
-    id: "waffles-ice-cream",
-    name: "Waffles & Ice Cream",
-    size: "14 oz",
-    price: 24.0,
-    category: "dessert",
-    scentFamily: "Dessert",
-    looksLike: "A waffle base, a scoop, syrup, blueberries",
-    smellsLike: "Warm waffles, sweet cream, berry",
-    notes: "Waffle base + scoop + syrup + blueberries",
-    badges: ["bestseller"],
-    image: `${UPLOADS}/2025/07/6845-scaled.jpg`,
-    images: [
-      `${UPLOADS}/2025/07/6845-scaled.jpg`,
-      `${UPLOADS}/2025/07/6842-scaled.jpg`,
-      `${UPLOADS}/2025/07/6841-scaled.jpg`,
-      `${UPLOADS}/2025/07/6846-scaled.jpg`,
-    ],
-    recipe: {
-      vesselId: "jar-14",
-      waxColorId: "cream",
-      whipId: "whip-vanilla",
-      topStyle: "scoop",
-      drizzleId: "berry",
-      toppingIds: ["blueberry", "waffle"],
-    },
-  },
-  {
-    id: "pecan-waffle",
-    name: "Pecan Waffle",
-    size: "14 oz",
-    price: 24.99,
-    category: "bakery",
-    scentFamily: "Bakery",
-    looksLike: "Golden waffle with toasted pecans",
-    smellsLike: "Buttery waffle, maple, pecan",
-    notes: "Waffle + syrup",
-    image: `${UPLOADS}/2025/07/waf.jpg`,
-    recipe: {
-      vesselId: "jar-14",
-      waxColorId: "honey",
-      whipId: "whip-butter",
-      drizzleId: "caramel",
-      toppingIds: ["pecan", "waffle"],
-    },
+    image: "https://i0.wp.com/delajacandles.com/wp-content/uploads/2025/10/15774-scaled.webp",
   },
   {
     id: "whipped-kisses",
@@ -203,7 +64,7 @@ export const PRODUCTS: Product[] = [
     looksLike: "A dessert in a glass, piped high",
     smellsLike: "Soft vanilla cream",
     notes: "Dessert in a glass",
-    image: `${UPLOADS}/2025/07/edited_1.png`,
+    image: "https://i0.wp.com/delajacandles.com/wp-content/uploads/2025/07/edited_1.png",
   },
   {
     id: "choc-strawberries",
@@ -215,15 +76,8 @@ export const PRODUCTS: Product[] = [
     looksLike: "A frosted whipped top with a chocolate-dipped berry",
     smellsLike: "Ripe strawberry dipped in cocoa",
     notes: "Whipped + strawberry embed",
+    image: "https://i0.wp.com/delajacandles.com/wp-content/uploads/2026/01/29519-1-scaled.jpg",
     badges: ["staff-pick"],
-    image: `${UPLOADS}/2026/01/29519-1-scaled.jpg`,
-    recipe: {
-      vesselId: "jar-14",
-      waxColorId: "cocoa",
-      whipId: "whip-vanilla",
-      drizzleId: "chocolate",
-      toppingIds: ["strawberry", "chocolate"],
-    },
   },
   {
     id: "strawberry-cheesecake-milkshake",
@@ -235,18 +89,9 @@ export const PRODUCTS: Product[] = [
     looksLike: "Creamy pink shake, whipped high",
     smellsLike: "Strawberry cheesecake, blended",
     notes: "Creamy",
-    image: `${UPLOADS}/2025/07/st.jpg`,
-    recipe: {
-      vesselId: "jar-12",
-      waxColorId: "strawberry",
-      whipId: "whip-strawberry",
-      topStyle: "swirl",
-      drizzleId: "berry",
-      toppingIds: ["strawberry"],
-    },
+    image: "https://i0.wp.com/delajacandles.com/wp-content/uploads/2025/07/st.jpg",
   },
   {
-    // Verified via her live listings: 14 oz, strawberry-cream scent.
     id: "candy-explosion",
     name: "Candy Explosion",
     size: "12 oz",
@@ -256,14 +101,7 @@ export const PRODUCTS: Product[] = [
     looksLike: "A confetti of candy on whipped cream",
     smellsLike: "Strawberry cream, sweet sugar-rush",
     notes: "Whipped + candy",
-    image: `${UPLOADS}/2025/05/9742-scaled.jpg`,
-    recipe: {
-      vesselId: "jar-12",
-      waxColorId: "cream",
-      whipId: "whip-vanilla",
-      drizzleId: null,
-      toppingIds: ["candy", "sprinkles"],
-    },
+    image: "https://i0.wp.com/delajacandles.com/wp-content/uploads/2025/05/9742-scaled.jpg",
   },
   {
     id: "pink-sugar-crystals",
@@ -275,14 +113,7 @@ export const PRODUCTS: Product[] = [
     looksLike: "A 4 oz jelly jar, whipped and dusted pink",
     smellsLike: "Spun pink sugar",
     notes: "Whipped + pink crumble",
-    image: `${UPLOADS}/2025/07/pinkk.jpg`,
-    recipe: {
-      vesselId: "dessert-glass",
-      waxColorId: "cream",
-      whipId: "whip-strawberry",
-      drizzleId: null,
-      toppingIds: ["crumble"],
-    },
+    image: "https://i0.wp.com/delajacandles.com/wp-content/uploads/2025/07/pinkk.jpg",
   },
   {
     id: "snickerdoodle",
@@ -294,19 +125,7 @@ export const PRODUCTS: Product[] = [
     looksLike: "A little cinnamon-sugar cookie",
     smellsLike: "Cinnamon sugar, fresh-baked",
     notes: "Small bakery",
-    image: `${UPLOADS}/2025/07/images-1.jpg`,
-  },
-  {
-    id: "out-of-this-world",
-    name: "You're Out of This World",
-    size: "12 oz",
-    price: 19.5,
-    category: "dessert",
-    scentFamily: "Woody",
-    looksLike: "A whipped design with cosmic calm",
-    smellsLike: "Smooth sandalwood",
-    notes: "Whipped design",
-    image: `${UPLOADS}/2026/01/30420-scaled.jpg`,
+    image: "https://i0.wp.com/delajacandles.com/wp-content/uploads/2025/07/images-1.jpg",
   },
   {
     id: "white-tea-rose",
@@ -318,16 +137,8 @@ export const PRODUCTS: Product[] = [
     looksLike: "A sculpted wax rose",
     smellsLike: "White tea and soft rose petals",
     notes: "Sculpted rose wax",
+    image: "https://i0.wp.com/delajacandles.com/wp-content/uploads/2026/01/30430-scaled.jpg",
     badges: ["staff-pick"],
-    image: `${UPLOADS}/2026/01/30430-scaled.jpg`,
-    recipe: {
-      vesselId: "jar-14",
-      waxColorId: "ivory",
-      whipId: "whip-strawberry",
-      topStyle: "rose",
-      drizzleId: null,
-      toppingIds: [],
-    },
   },
   {
     id: "driftwood-midnight",
@@ -339,10 +150,9 @@ export const PRODUCTS: Product[] = [
     looksLike: "Dark, moody, luminescent luxury",
     smellsLike: "Driftwood, amber, midnight air",
     notes: "Dark, moody luxury",
-    image: `${UPLOADS}/2026/01/28710-scaled.webp`,
+    image: "https://i0.wp.com/delajacandles.com/wp-content/uploads/2026/01/28710-scaled.webp",
   },
   {
-    // Verified via her live listings: 12 oz gel candle, juicy berry fragrance.
     id: "berry-intoxicating",
     name: "Berry Intoxicating",
     size: "12 oz",
@@ -352,15 +162,8 @@ export const PRODUCTS: Product[] = [
     looksLike: "Berry-red gel poured in a stemmed glass",
     smellsLike: "Juicy blackberry & mixed berry",
     notes: "Gel wax, 12 oz, wine glass",
+    image: "https://i0.wp.com/delajacandles.com/wp-content/uploads/2025/09/897dedcf-1801-4e98-b56a-abbb5d3f7fb7-1_all_14811-scaled.webp",
     badges: ["bestseller"],
-    image: `${UPLOADS}/2025/09/897dedcf-1801-4e98-b56a-abbb5d3f7fb7-1_all_14811-scaled.webp`,
-    recipe: {
-      vesselId: "wine",
-      waxColorId: "garnet-gel",
-      whipId: null,
-      drizzleId: null,
-      toppingIds: [],
-    },
   },
   {
     id: "sip-surrender",
@@ -372,14 +175,7 @@ export const PRODUCTS: Product[] = [
     looksLike: "Black cherry merlot, poured in gel",
     smellsLike: "Black cherry, red wine, vanilla",
     notes: "Gel wax, wine glass",
-    image: `${UPLOADS}/2025/08/8041-scaled.jpg`,
-    recipe: {
-      vesselId: "wine",
-      waxColorId: "garnet-gel",
-      whipId: null,
-      drizzleId: null,
-      toppingIds: [],
-    },
+    image: "https://i0.wp.com/delajacandles.com/wp-content/uploads/2025/08/8041-scaled.jpg",
   },
   {
     id: "quiet-tension",
@@ -391,19 +187,9 @@ export const PRODUCTS: Product[] = [
     looksLike: "A pink/blue gel pour with depth",
     smellsLike: "Cool, layered, a little electric",
     notes: "Gel wax, wine glass · pink or blue",
-    image: `${UPLOADS}/2026/04/43694-scaled.jpg`,
-    recipe: {
-      vesselId: "wine",
-      waxColorId: "blue-gel",
-      whipId: null,
-      drizzleId: null,
-      toppingIds: [],
-    },
+    image: "https://i0.wp.com/delajacandles.com/wp-content/uploads/2026/04/43694-scaled.jpg",
   },
   {
-    // Verified via her live listings: 14 oz "Candy Cane Lane" / Festive
-    // Peppermint Whip — red & white swirl, whipped top + peppermint crumble,
-    // peppermint & vanilla. Price estimated to her 14 oz tier (confirm).
     id: "festive-peppermint-whip",
     name: "Festive Peppermint Whip",
     size: "14 oz",
@@ -414,14 +200,6 @@ export const PRODUCTS: Product[] = [
     smellsLike: "Cool peppermint folded into vanilla",
     notes: "Whipped + peppermint crumble · holiday",
     badges: ["seasonal"],
-    seasonalMonths: [11, 12],
-    recipe: {
-      vesselId: "jar-14",
-      waxColorId: "strawberry",
-      whipId: "whip-vanilla",
-      drizzleId: null,
-      toppingIds: ["peppermint", "crumble"],
-    },
   },
   {
     id: "banana-pudding",
@@ -433,54 +211,43 @@ export const PRODUCTS: Product[] = [
     looksLike: "Scoopable banana pudding",
     smellsLike: "Banana, vanilla wafer, cream",
     notes: "Scoopable wax melt",
-    image: `${UPLOADS}/2026/03/37271-scaled.webp`,
-    images: [
-      `${UPLOADS}/2026/03/37271-scaled.webp`,
-      `${UPLOADS}/2026/03/37269-scaled.webp`,
-    ],
-    recipe: {
-      vesselId: "heart-tin",
-      waxColorId: "cream",
-      whipId: null,
-      drizzleId: null,
-      toppingIds: ["banana", "wafer", "crumble"],
-    },
+    image: "https://i0.wp.com/delajacandles.com/wp-content/uploads/2026/03/37271-scaled.webp",
   },
   {
     id: "love-drunk",
     name: "Love Drunk Whipped Body Butter",
     size: "4 / 8 oz",
-    price: 14.0, // $14 (4 oz) · $24 (8 oz) — confirmed from her Square variations
+    price: 14.0,
     category: "body-care",
     scentFamily: "Fresh",
     looksLike: "Whipped moisturizer in a floral jar",
     smellsLike: "Peach, jasmine, vanilla",
     notes: "$14 (4 oz) · $24 (8 oz)",
-    image: `${UPLOADS}/2026/05/49974.png`,
+    image: "https://i0.wp.com/delajacandles.com/wp-content/uploads/2026/05/49974.png",
   },
   {
     id: "nude-petals",
     name: "Nude Petals Whipped Body Butter",
     size: "4 / 8 oz",
-    price: 14.0, // $14 (4 oz) · $24 (8 oz) — confirmed from her Square variations
+    price: 14.0,
     category: "body-care",
     scentFamily: "Fresh",
     looksLike: "Soft-cream jar, gilded label",
     smellsLike: "White tea, jasmine, soft rose",
     notes: "$14 (4 oz) · $24 (8 oz)",
-    image: `${UPLOADS}/2026/05/49977.webp`,
+    image: "https://i0.wp.com/delajacandles.com/wp-content/uploads/2026/05/49977.webp",
   },
   {
     id: "midnight-saddle",
     name: "Midnight Saddle Body Butter",
     size: "4 / 8 oz",
-    price: 14.0, // $14 (4 oz) · $24 (8 oz) — confirmed from her Square variations
+    price: 14.0,
     category: "body-care",
     scentFamily: "Woody",
     looksLike: "For him — midnight-black jar",
     smellsLike: "Leather, spice, citrus & sandalwood",
     notes: "$14 (4 oz) · $24 (8 oz)",
-    image: `${UPLOADS}/2026/05/49972.png`,
+    image: "https://i0.wp.com/delajacandles.com/wp-content/uploads/2026/05/49972.png",
   },
   {
     id: "little-luxuries-tins",
@@ -492,14 +259,7 @@ export const PRODUCTS: Product[] = [
     looksLike: "A little travel tin, hand-poured",
     smellsLike: "Your favorite scent, to go",
     notes: "Travel tin",
-    image: `${UPLOADS}/2025/09/20250905_004125-scaled.jpg`,
-    recipe: {
-      vesselId: "tin",
-      waxColorId: "ivory",
-      whipId: null,
-      drizzleId: null,
-      toppingIds: [],
-    },
+    image: "https://i0.wp.com/delajacandles.com/wp-content/uploads/2025/09/20250905_004125-scaled.jpg",
   },
   {
     id: "bewitched-bloom",
@@ -511,7 +271,7 @@ export const PRODUCTS: Product[] = [
     looksLike: "Green whipped wax crowned with a flower",
     smellsLike: "An enchanted floral blend",
     notes: "Decorative flower top",
-    image: `${UPLOADS}/2025/07/gr.jpg`,
+    image: "https://i0.wp.com/delajacandles.com/wp-content/uploads/2025/07/gr.jpg",
   },
   {
     id: "enchanted-tea",
@@ -523,7 +283,7 @@ export const PRODUCTS: Product[] = [
     looksLike: "A mystical forest pour",
     smellsLike: "Herbal tea, deep woods",
     notes: "Limited",
-    image: `${UPLOADS}/2025/07/enc.jpg`,
+    image: "https://i0.wp.com/delajacandles.com/wp-content/uploads/2025/07/enc.jpg",
   },
   {
     id: "pawsome-melts",
@@ -535,7 +295,7 @@ export const PRODUCTS: Product[] = [
     looksLike: "Paw-print wax melts",
     smellsLike: "A surprise in every batch",
     notes: "Flameless wax melts",
-    image: `${UPLOADS}/2025/04/FB_IMG_1738359944753.jpg`,
+    image: "https://i0.wp.com/delajacandles.com/wp-content/uploads/2025/04/FB_IMG_1738359944753.jpg",
   },
   {
     id: "car-diffuser",
@@ -547,10 +307,6 @@ export const PRODUCTS: Product[] = [
     looksLike: "A little hanging diffuser",
     smellsLike: "Pink Sugar · Butterscotch Bourbon · Sandalwood · Black Cherry Merlot",
     notes: "Accessory · choose your scent",
-    image: `${UPLOADS}/2025/11/21878-scaled.webp`,
+    image: "https://i0.wp.com/delajacandles.com/wp-content/uploads/2025/11/21878-scaled.webp",
   },
 ];
-
-export const PRODUCT_BY_ID: Record<string, Product> = Object.fromEntries(
-  PRODUCTS.map((p) => [p.id, p]),
-);
