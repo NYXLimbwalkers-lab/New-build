@@ -43,9 +43,32 @@ BG = ("uniform flat vivid magenta (hex FF00FF) studio background filling the who
 CAM = "perfectly centered, straight-on front view at eye level, soft even diffused studio light, square 1:1 image"
 
 # ---- the ingredient vocabulary (ids + hexes MUST mirror src/data/ingredients.ts) ----
+# Per-vessel plan. gel vessels take ONLY the gel wax colors and stop after wax (the builder's
+# "drink" flow has no whip/drizzle/topping steps — read the code before you generate, or you
+# buy 33 states a wine glass can never use). halves=True adds the parfait chain: half-fill →
+# full-fill per color, so 2-layer builds composite from real pours. Opaque vessels (tin) need
+# no halves — layered wax is invisible through metal; the renderer shows the top color.
 VESSELS = {
-    "jar-14": "clear glass straight-sided jar, 14 oz size (roughly as wide as it is tall), occupying the lower 62% of frame height, base at 12% from the bottom edge",
-    "tin": "seamless brushed-silver metal tin, 7 oz size (wide and low, about half as tall as it is wide), occupying the lower 45% of frame height, base at 12% from the bottom edge",
+    "jar-14": {"desc": "clear glass straight-sided jar, 14 oz size (roughly as wide as it is tall), occupying the lower 62% of frame height, base at 12% from the bottom edge",
+               "material": "clear glass (wax visible through it with natural refraction)",
+               "halves": True, "tops": True, "gel": False},
+    "jar-12": {"desc": "clear glass straight-sided jar, 12 oz size (a touch narrower and shorter than a 14 oz), occupying the lower 56% of frame height, base at 12% from the bottom edge",
+               "material": "clear glass (wax visible through it with natural refraction)",
+               "halves": True, "tops": True, "gel": False},
+    "tin": {"desc": "seamless brushed-silver metal tin, 7 oz size (wide and low, about half as tall as it is wide), occupying the lower 45% of frame height, base at 12% from the bottom edge",
+            "material": "metal tin (opaque)",
+            "halves": False, "tops": True, "gel": False},
+    "dessert-glass": {"desc": "clear glass footed dessert coupe (a sundae glass on a short stem), occupying the lower 60% of frame height, base at 12% from the bottom edge",
+                      "material": "clear glass (wax visible through it with natural refraction)",
+                      "halves": True, "tops": True, "gel": False},
+    "wine": {"desc": "clear stemmed wine glass, occupying the lower 68% of frame height, base at 12% from the bottom edge",
+             "material": "clear glass (translucent gel wax visible through it, softly luminous with a few tiny suspended bubbles)",
+             "halves": False, "tops": False, "gel": True},
+}
+GELWAXES = {  # gel-only colors (wine); translucent drink-like gel wax
+    "garnet-gel": ("7A1F3D", "deep garnet red, like a glass of merlot"),
+    "blue-gel": ("3E5A8A", "dusky twilight blue"),
+    "rose-gel": ("C77F8E", "blush rosé pink"),
 }
 LABEL = "a clear round sticker label on the front reading only 'DéLa Já Candles / Great Falls, SC / Hand-poured Candle' in elegant small dark lettering (NO product name)"
 WAXES = {  # non-gel colors
@@ -154,16 +177,25 @@ def _write_chain(vd: Path) -> None:
     """CHAIN.json — each state's true diff parent, so extract_layers.py never has to guess.
     (The first library was cut with guessed parents; a whip shot over cocoa but diffed
     against cream would be garbage. States absent from CHAIN.json get legacy handling.)"""
+    spec = VESSELS[vd.name]
     chain = {}
+    if spec["gel"]:
+        for wid in GELWAXES:
+            chain[f"wax-{wid}.png"] = "A.png"
+        (vd / "CHAIN.json").write_text(json.dumps(chain, indent=1))
+        return
     for wid in WAXES:
         chain[f"wax-{wid}.png"] = "A.png"
-    for wid in WHIPS:
-        chain[f"whip-{wid.removeprefix('whip-')}.png"] = (
-            "wax-cream.png" if wid == "whip-chocolate" else "wax-cocoa.png")
-    for did in DRIZZLES:
-        chain[f"drizzle-{did}.png"] = "whip-vanilla.png"
-    for tid in TOPPINGS:
-        chain[f"topping-{tid}.png"] = "whip-vanilla.png"
+        if spec["halves"]:
+            chain[f"waxh-{wid}.png"] = f"wax-{wid}.png"   # half = DRAIN edit of the full
+    if spec["tops"]:
+        for wid in WHIPS:
+            chain[f"whip-{wid.removeprefix('whip-')}.png"] = (
+                "wax-cream.png" if wid == "whip-chocolate" else "wax-cocoa.png")
+        for did in DRIZZLES:
+            chain[f"drizzle-{did}.png"] = "whip-vanilla.png"
+        for tid in TOPPINGS:
+            chain[f"topping-{tid}.png"] = "whip-vanilla.png"
     (vd / "CHAIN.json").write_text(json.dumps(chain, indent=1))
 
 
@@ -173,21 +205,54 @@ def main() -> int:
                else list(VESSELS))
     for v in vessels:
         vd = OUT / v
-        base = VESSELS[v]
-        material = "metal tin (opaque)" if v == "tin" else "clear glass (wax visible through it with natural refraction)"
+        spec = VESSELS[v]
+        material = spec["material"]
         # wave 1: the empty vessel (chain root)
         if not _wave([(vd / "A.png",
                        f"Studio product photography. Using the attached reference photo for the brand and glass style: "
-                       f"a photorealistic studio shot of ONLY the EMPTY {base}, with {LABEL}, {CAM}, {BG}.",
+                       f"a photorealistic studio shot of ONLY the EMPTY {spec['desc']}, with {LABEL}, {CAM}, {BG}.",
                        [REF])]):
             return 1
-        # wave 2: every wax color as an edit of A
-        if only in (None, "wax") and not _wave([
-            (vd / f"wax-{wid}.png",
-             f"Edit the attached photo: fill the empty vessel with smooth {wid.replace('-', ' ')} colored candle wax "
-             f"(hex {hx}) up to 75% of the vessel's interior height, flat softly-glossy wax surface, {material}. {KEEP}",
-             [vd / "A.png"]) for wid, hx in WAXES.items()]):
-            return 1
+        if spec["gel"]:
+            # gel drink build: wax states only — the builder has no whip/drizzle/topping
+            # steps for this vessel, so nothing else is worth a cent.
+            if only in (None, "wax") and not _wave([
+                (vd / f"wax-{wid}.png",
+                 f"Edit the attached photo: fill the glass with translucent {desc} gel wax (hex {hx}) up to 75% "
+                 f"of the bowl's interior height, softly luminous with a few tiny suspended bubbles, a level "
+                 f"liquid-like surface, {material}. The wax color is exactly hex {hx} with no pink or magenta "
+                 f"tint. {KEEP}",
+                 [vd / "A.png"]) for wid, (hx, desc) in GELWAXES.items()]):
+                return 1
+            _write_chain(vd)
+            continue
+        # wave 2: every wax color as a full fill from A. Percentages don't land ("37%"
+        # poured ~90% — visual-QA 2026-07-21), so fill lines anchor to the LABEL, the one
+        # landmark every shot carries.
+        if only in (None, "wax"):
+            if not _wave([
+                (vd / f"wax-{wid}.png",
+                 f"Edit the attached photo: fill the empty vessel with smooth {wid.replace('-', ' ')} "
+                 f"colored candle wax (hex {hx}), the wax surface just ABOVE the top edge of the round "
+                 f"label, leaving the top quarter of the vessel as empty glass; flat softly-glossy wax "
+                 f"surface, {material}. Do not move, resize, or reframe the vessel in any way. The wax "
+                 f"color is exactly hex {hx} with no pink or magenta tint. {KEEP}",
+                 [vd / "A.png"]) for wid, hx in WAXES.items()]):
+                return 1
+            # wave 2b: the parfait half state is a DRAIN edit of the finished full — not a
+            # second pour chain. The full/half pair is then pixel-consistent by construction
+            # (both bands cut from the same two frames), and regenerating halves never
+            # disturbs the fulls that whips and toppings were shot over. validate_bands()
+            # in the extractor is the hard gate: a bad half-pour never ships.
+            if spec["halves"] and not _wave([
+                (vd / f"waxh-{wid}.png",
+                 f"Edit the attached photo: LOWER the wax level — remove the upper portion of the wax so "
+                 f"the wax surface sits clearly BELOW the round label, about one third of the way up the "
+                 f"vessel, with the glass above it empty and clean — a half-poured candle. Keep the "
+                 f"remaining wax, vessel, label, lighting, camera and background pixel-identical. "
+                 f"Photorealistic, {material}.",
+                 [vd / f"wax-{wid}.png"]) for wid, hx in WAXES.items()]):
+                return 1
         # wave 3: every whip color as an edit of a CONTRASTING wax state. The whip layer is
         # extracted as a diff against its parent, and a diff can only see what CONTRASTS: a
         # vanilla whip shot over cream wax came out as swiss cheese (visual-QA 2026-07-21),
@@ -203,6 +268,9 @@ def main() -> int:
              [vd / ("wax-cream.png" if wid == "whip-chocolate" else "wax-cocoa.png")])
             for wid, (hx, desc) in WHIPS.items()]):
             return 1
+        if not spec["tops"]:
+            _write_chain(vd)
+            continue
         # wave 4: drizzles + toppings as edits of the VANILLA whip state
         w4 = []
         if only in (None, "drizzle"):

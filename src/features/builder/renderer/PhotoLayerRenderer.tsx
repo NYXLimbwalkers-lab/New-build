@@ -15,7 +15,7 @@ import {
 import { SPRING } from "@/lib/motionPresets";
 import { cn } from "@/lib/cn";
 import type { RendererProps } from "./types";
-import { layerFor, type LayerEntry, type LayerManifest } from "./layerManifest";
+import { layerFor, OPAQUE_VESSELS, type LayerEntry, type LayerManifest } from "./layerManifest";
 
 /*
   REAL-PHOTO compositing engine. Stacks full-frame transparent-PNG photo layers
@@ -108,8 +108,22 @@ export function PhotoLayerRenderer({
     // Every wax layer, bottom→top (a parfait must not collapse to one fill).
     // Keys are SLOT-based (not color-based) so a color swap recolors the
     // mounted layer in place instead of replaying the whole pour animation.
-    [config.waxColorId, ...(config.extraLayers ?? [])].forEach((colorId, li) => {
-      const wax = layerFor(manifest, "wax", v, colorId);
+    // Glass 2-layer parfaits composite from real half-pour bands (@hb/@ht);
+    // opaque vessels show only their LAST pour (metal hides the rest).
+    const extras = config.extraLayers ?? [];
+    const waxSlots: { colorId: string; lookup: string }[] =
+      extras.length === 0
+        ? [{ colorId: config.waxColorId, lookup: config.waxColorId }]
+        : OPAQUE_VESSELS.has(v)
+          ? [{ colorId: extras[extras.length - 1], lookup: extras[extras.length - 1] }]
+          : extras.length === 1
+            ? [
+                { colorId: config.waxColorId, lookup: `${config.waxColorId}@hb` },
+                { colorId: extras[0], lookup: `${extras[0]}@ht` },
+              ]
+            : []; // 3+ glass layers never reach photo mode (manifestCovers gates)
+    waxSlots.forEach(({ colorId, lookup }, li) => {
+      const wax = layerFor(manifest, "wax", v, lookup);
       if (wax)
         out.push({
           entry: { ...wax, enter: wax.enter ?? "pour" },

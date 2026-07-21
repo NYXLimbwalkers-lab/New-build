@@ -84,8 +84,8 @@ def despill(img: np.ndarray) -> np.ndarray:
     metric, so they lose almost nothing."""
     out = img.copy()
     m = np.clip(np.minimum(out[..., 0], out[..., 2]) - out[..., 1], 0, None)
-    out[..., 0] -= m * 0.8
-    out[..., 2] -= m * 0.8
+    out[..., 0] -= m          # full neutralization — 0.8 left light waxes reading
+    out[..., 2] -= m          # faintly pink from backdrop bounce through the glass
     return np.clip(out, 0, 255)
 
 
@@ -163,12 +163,14 @@ def main() -> int:
         chain = {}
         if (vd / "CHAIN.json").exists():
             chain = json.loads((vd / "CHAIN.json").read_text())
-        legacy = {"wax": "A.png", "whip": "wax-cream.png",
+        legacy = {"waxh": "A.png", "wax": "A.png", "whip": "wax-cream.png",
                   "drizzle": "whip-vanilla.png", "topping": "whip-vanilla.png"}
         cache: dict[str, np.ndarray] = {"A.png": A}
 
         def parent_for(state: Path, kind: str) -> np.ndarray | None:
             name = chain.get(state.name) or legacy.get(kind)
+            if name and not (vd / name).exists():
+                name = legacy.get(kind)      # chain points at a deleted state → self-heal
             if not name or not (vd / name).exists():
                 return None
             if name not in cache:
@@ -180,7 +182,7 @@ def main() -> int:
         # so cross-state edge drift can never leave drips floating in the air (owner-reported
         # artifact, 2026-07-21: caramel hanging past a whip edge drawn slightly differently
         # in the drizzle's own state).
-        order = {"wax": 0, "whip": 1, "drizzle": 2, "topping": 3}
+        order = {"waxh": 0, "wax": 1, "whip": 2, "drizzle": 3, "topping": 4}
         support = ndimage.binary_dilation(a > 0.5, iterations=6)   # vessel silhouette…
         states = sorted(vd.glob("*-*.png"),
                         key=lambda p: (order.get(p.stem.split("-", 1)[0], 9), p.stem))
@@ -192,10 +194,23 @@ def main() -> int:
                 continue
             img = load(state)
             la = diff_alpha(parent, img, scatter=pid in SCATTER,
-                            fill_holes=kind == "wax" or (kind == "whip" and state.name not in chain),
+                            fill_holes=kind in ("wax", "waxh") or (kind == "whip" and state.name not in chain),
                             strip_whip_collar=kind in ("drizzle", "topping"),
                             erode=state.name not in chain,
                             protect_white=pid == "marshmallow")
+            if kind == "waxh":
+                # The half state (a DRAIN edit of the full) yields BOTH parfait bands from
+                # one pixel-consistent pair: @hb = half vs empty vessel (cut from the half
+                # frame), @ht = full vs half (cut from the FULL frame).
+                la = diff_alpha(A, img, fill_holes=True)          # bottom band, from half
+                full_p = vd / f"wax-{pid}.png"
+                if full_p.exists():
+                    full_img = load(full_p)
+                    ht = diff_alpha(img, full_img, fill_holes=True)
+                    save(full_img, ht, PUB / "wax" / f"{v}--{pid}@ht.webp")
+                    manifest["wax"][f"{v}/{pid}@ht"] = {"src": f"/layers/wax/{v}--{pid}@ht.webp", "enter": "pour"}
+                    print(f"  ok {v}/wax/{pid}@ht  coverage={float(ht.mean()):.3f}")
+                kind, pid = "wax", f"{pid}@hb"
             if kind == "whip":
                 support |= ndimage.binary_dilation(la > 0.5, iterations=6)
                 pid = f"whip-{pid}"                     # ids in ingredients.ts carry the prefix
@@ -214,17 +229,23 @@ def main() -> int:
             print(f"  ok {v}/{kind}/{pid}  coverage={float(la.mean()):.3f}")
         # cross-color self-checks: seams show here or nowhere. Two builds — colliding
         # center toppings (worst case) and zone-separated toppings (the honest average).
-        for name, tops in (("selfcheck", ("strawberry", "cherry")),
-                           ("selfcheck2", ("blueberry", "orange-slice"))):
+        builds = [("selfcheck", [("wax", "cocoa")], ("strawberry", "cherry")),
+                  ("selfcheck2", [("wax", "cocoa")], ("blueberry", "orange-slice"))]
+        if (PUB / "wax" / f"{v}--strawberry@hb.webp").exists():
+            # 2-layer parfait: strawberry bottom half + cocoa top half
+            builds.append(("selfcheck-parfait", [("wax", "strawberry@hb"), ("wax", "cocoa@ht")],
+                           ("cherry",)))
+        for name, waxes, tops in builds:
             check = Image.new("RGBA", (SIZE, SIZE), (0xFB, 0xF4, 0xF0, 255))
-            for kind, pid in (("vessel", v), ("wax", f"{v}--cocoa"),
+            for kind, pid in (("vessel", v), *((k, f"{v}--{p}") for k, p in waxes),
                               ("whip", f"{v}--whip-vanilla"), ("drizzle", f"{v}--caramel"),
                               *(("topping", f"{v}--{t}") for t in tops)):
-                p = PUB / kind / f"{pid}.webp"
+                p = PUB / kind / f"{pid if kind != 'vessel' else v}.webp"
                 if p.exists():
                     check.alpha_composite(Image.open(p).convert("RGBA"))
             check.save(GEN / f"{v}-{name}.png")
             print(f"  wrote {v}-{name}.png")
+    validate_bands(manifest)
     flagged = seam_qc(manifest)
     (PUB / "manifest.json").write_text(json.dumps(manifest, indent=1))
     counts = {k: len(vv) for k, vv in manifest.items() if isinstance(vv, dict)}
@@ -235,6 +256,37 @@ def main() -> int:
             print("  ", f)
         return 2
     return 0
+
+
+def _band_extent(a: np.ndarray) -> tuple[int, int] | None:
+    """Vertical [top,bottom) of rows where the layer meaningfully covers the frame width."""
+    rows = (a > 0.5).mean(axis=1) > 0.18
+    idx = np.where(rows)[0]
+    return (int(idx[0]), int(idx[-1]) + 1) if len(idx) else None
+
+
+def validate_bands(manifest: dict) -> None:
+    """Parfait bands ship ONLY if the geometry is real. The model can't count — asked for a
+    37% half-pour it poured ~90%, leaving a sliver @ht band and a floating-whip parfait
+    (visual-QA 2026-07-21). A @hb/@ht pair must split the pour 30/70..70/30 and MEET
+    (gap < 3% of frame); anything else is dropped from the manifest so 2-layer builds fall
+    back to the vector renderer instead of compositing a hole."""
+    wax = manifest.get("wax") or {}
+    for key in [k for k in list(wax) if k.endswith("@hb")]:
+        base = key.removesuffix("@hb")
+        hb, ht = _alpha_of("wax", key), _alpha_of("wax", f"{base}@ht")
+        eb = _band_extent(hb) if hb is not None else None
+        et = _band_extent(ht) if ht is not None else None
+        ok = False
+        if eb and et:
+            thick_b, thick_t = eb[1] - eb[0], et[1] - et[0]
+            share = thick_t / max(thick_b + thick_t, 1)
+            gap = abs(eb[0] - et[1])          # top of hb vs bottom of ht
+            ok = 0.3 <= share <= 0.7 and gap < 0.03 * SIZE
+        if not ok:
+            wax.pop(key, None)
+            wax.pop(f"{base}@ht", None)
+            print(f"  !! bands invalid, dropped: {base}@hb/@ht")
 
 
 def _alpha_of(kind: str, key: str) -> np.ndarray | None:
@@ -286,7 +338,11 @@ def seam_qc(manifest: dict) -> list[str]:
         for name, parent in chain.items():
             kind = name.split("-", 1)[0]
             pid = name.split("-", 1)[1].removesuffix(".png")
-            if kind == "wax":
+            if kind == "waxh":
+                check(name, [("wax", f"{pid}@hb")])
+                # stacked halves must rebuild the FULL pour (the half's chain parent)
+                check(parent, [("wax", f"{pid}@hb"), ("wax", f"{pid}@ht")])
+            elif kind == "wax":
                 check(name, [("wax", pid)])
             elif kind == "whip":
                 pwax = "cream" if parent == "wax-cream.png" else "cocoa"

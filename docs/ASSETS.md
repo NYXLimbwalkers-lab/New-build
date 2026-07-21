@@ -63,6 +63,10 @@ shop.
 > - `CHAIN.json` records each state's true diff parent; manifest keys are
 >   vessel-scoped (`"jar-14/cream"`) because fills only align with the vessel
 >   they were shot on
+> - glass vessels build each wax color as half-pour → full-pour CHAIN, so
+>   2-layer parfaits composite from real bands (`@hb`/`@ht` manifest keys);
+>   opaque vessels (tin) show only their top pour; gel vessels (wine) generate
+>   ONLY gel wax states — the builder's drink flow has no whip/topping steps
 > - re-running `gen_layers.py` only fills missing files — delete a state to
 >   regenerate it; balance-check openrouter.ai credits first (~$0.05/image)
 

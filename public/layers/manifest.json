@@ -1,6 +1,14 @@
 {
  "version": "2",
  "vessel": {
+  "dessert-glass": {
+   "src": "/layers/vessel/dessert-glass.webp",
+   "enter": "fade"
+  },
+  "jar-12": {
+   "src": "/layers/vessel/jar-12.webp",
+   "enter": "fade"
+  },
   "jar-14": {
    "src": "/layers/vessel/jar-14.webp",
    "enter": "fade"
@@ -8,9 +16,69 @@
   "tin": {
    "src": "/layers/vessel/tin.webp",
    "enter": "fade"
+  },
+  "wine": {
+   "src": "/layers/vessel/wine.webp",
+   "enter": "fade"
   }
  },
  "wax": {
+  "dessert-glass/caramel": {
+   "src": "/layers/wax/dessert-glass--caramel.webp",
+   "enter": "pour"
+  },
+  "dessert-glass/cocoa": {
+   "src": "/layers/wax/dessert-glass--cocoa.webp",
+   "enter": "pour"
+  },
+  "dessert-glass/cream": {
+   "src": "/layers/wax/dessert-glass--cream.webp",
+   "enter": "pour"
+  },
+  "dessert-glass/honey": {
+   "src": "/layers/wax/dessert-glass--honey.webp",
+   "enter": "pour"
+  },
+  "dessert-glass/ivory": {
+   "src": "/layers/wax/dessert-glass--ivory.webp",
+   "enter": "pour"
+  },
+  "dessert-glass/orange-cream": {
+   "src": "/layers/wax/dessert-glass--orange-cream.webp",
+   "enter": "pour"
+  },
+  "dessert-glass/strawberry": {
+   "src": "/layers/wax/dessert-glass--strawberry.webp",
+   "enter": "pour"
+  },
+  "jar-12/caramel": {
+   "src": "/layers/wax/jar-12--caramel.webp",
+   "enter": "pour"
+  },
+  "jar-12/cocoa": {
+   "src": "/layers/wax/jar-12--cocoa.webp",
+   "enter": "pour"
+  },
+  "jar-12/cream": {
+   "src": "/layers/wax/jar-12--cream.webp",
+   "enter": "pour"
+  },
+  "jar-12/honey": {
+   "src": "/layers/wax/jar-12--honey.webp",
+   "enter": "pour"
+  },
+  "jar-12/ivory": {
+   "src": "/layers/wax/jar-12--ivory.webp",
+   "enter": "pour"
+  },
+  "jar-12/orange-cream": {
+   "src": "/layers/wax/jar-12--orange-cream.webp",
+   "enter": "pour"
+  },
+  "jar-12/strawberry": {
+   "src": "/layers/wax/jar-12--strawberry.webp",
+   "enter": "pour"
+  },
   "jar-14/caramel": {
    "src": "/layers/wax/jar-14--caramel.webp",
    "enter": "pour"
@@ -69,6 +137,54 @@
   }
  },
  "whip": {
+  "dessert-glass/whip-butter": {
+   "src": "/layers/whip/dessert-glass--whip-butter.webp",
+   "enter": "pipe"
+  },
+  "dessert-glass/whip-chocolate": {
+   "src": "/layers/whip/dessert-glass--whip-chocolate.webp",
+   "enter": "pipe"
+  },
+  "dessert-glass/whip-lavender": {
+   "src": "/layers/whip/dessert-glass--whip-lavender.webp",
+   "enter": "pipe"
+  },
+  "dessert-glass/whip-mint": {
+   "src": "/layers/whip/dessert-glass--whip-mint.webp",
+   "enter": "pipe"
+  },
+  "dessert-glass/whip-strawberry": {
+   "src": "/layers/whip/dessert-glass--whip-strawberry.webp",
+   "enter": "pipe"
+  },
+  "dessert-glass/whip-vanilla": {
+   "src": "/layers/whip/dessert-glass--whip-vanilla.webp",
+   "enter": "pipe"
+  },
+  "jar-12/whip-butter": {
+   "src": "/layers/whip/jar-12--whip-butter.webp",
+   "enter": "pipe"
+  },
+  "jar-12/whip-chocolate": {
+   "src": "/layers/whip/jar-12--whip-chocolate.webp",
+   "enter": "pipe"
+  },
+  "jar-12/whip-lavender": {
+   "src": "/layers/whip/jar-12--whip-lavender.webp",
+   "enter": "pipe"
+  },
+  "jar-12/whip-mint": {
+   "src": "/layers/whip/jar-12--whip-mint.webp",
+   "enter": "pipe"
+  },
+  "jar-12/whip-strawberry": {
+   "src": "/layers/whip/jar-12--whip-strawberry.webp",
+   "enter": "pipe"
+  },
+  "jar-12/whip-vanilla": {
+   "src": "/layers/whip/jar-12--whip-vanilla.webp",
+   "enter": "pipe"
+  },
   "jar-14/whip-butter": {
    "src": "/layers/whip/jar-14--whip-butter.webp",
    "enter": "pipe"
@@ -119,6 +235,38 @@
   }
  },
  "drizzle": {
+  "dessert-glass/berry": {
+   "src": "/layers/drizzle/dessert-glass--berry.webp",
+   "enter": "drizzle"
+  },
+  "dessert-glass/caramel": {
+   "src": "/layers/drizzle/dessert-glass--caramel.webp",
+   "enter": "drizzle"
+  },
+  "dessert-glass/chocolate": {
+   "src": "/layers/drizzle/dessert-glass--chocolate.webp",
+   "enter": "drizzle"
+  },
+  "dessert-glass/honey": {
+   "src": "/layers/drizzle/dessert-glass--honey.webp",
+   "enter": "drizzle"
+  },
+  "jar-12/berry": {
+   "src": "/layers/drizzle/jar-12--berry.webp",
+   "enter": "drizzle"
+  },
+  "jar-12/caramel": {
+   "src": "/layers/drizzle/jar-12--caramel.webp",
+   "enter": "drizzle"
+  },
+  "jar-12/chocolate": {
+   "src": "/layers/drizzle/jar-12--chocolate.webp",
+   "enter": "drizzle"
+  },
+  "jar-12/honey": {
+   "src": "/layers/drizzle/jar-12--honey.webp",
+   "enter": "drizzle"
+  },
   "jar-14/berry": {
    "src": "/layers/drizzle/jar-14--berry.webp",
    "enter": "drizzle"
@@ -153,6 +301,158 @@
   }
  },
  "topping": {
+  "dessert-glass/apple": {
+   "src": "/layers/topping/dessert-glass--apple.webp",
+   "enter": "drop"
+  },
+  "dessert-glass/banana": {
+   "src": "/layers/topping/dessert-glass--banana.webp",
+   "enter": "drop"
+  },
+  "dessert-glass/blueberry": {
+   "src": "/layers/topping/dessert-glass--blueberry.webp",
+   "enter": "drop"
+  },
+  "dessert-glass/candy": {
+   "src": "/layers/topping/dessert-glass--candy.webp",
+   "enter": "drop"
+  },
+  "dessert-glass/cherry": {
+   "src": "/layers/topping/dessert-glass--cherry.webp",
+   "enter": "drop"
+  },
+  "dessert-glass/chocolate": {
+   "src": "/layers/topping/dessert-glass--chocolate.webp",
+   "enter": "drop"
+  },
+  "dessert-glass/cinnamon-roll": {
+   "src": "/layers/topping/dessert-glass--cinnamon-roll.webp",
+   "enter": "drop"
+  },
+  "dessert-glass/crumble": {
+   "src": "/layers/topping/dessert-glass--crumble.webp",
+   "enter": "drop"
+  },
+  "dessert-glass/graham": {
+   "src": "/layers/topping/dessert-glass--graham.webp",
+   "enter": "drop"
+  },
+  "dessert-glass/honey": {
+   "src": "/layers/topping/dessert-glass--honey.webp",
+   "enter": "drop"
+  },
+  "dessert-glass/honeycomb": {
+   "src": "/layers/topping/dessert-glass--honeycomb.webp",
+   "enter": "drop"
+  },
+  "dessert-glass/marshmallow": {
+   "src": "/layers/topping/dessert-glass--marshmallow.webp",
+   "enter": "drop"
+  },
+  "dessert-glass/orange-slice": {
+   "src": "/layers/topping/dessert-glass--orange-slice.webp",
+   "enter": "drop"
+  },
+  "dessert-glass/pecan": {
+   "src": "/layers/topping/dessert-glass--pecan.webp",
+   "enter": "drop"
+  },
+  "dessert-glass/peppermint": {
+   "src": "/layers/topping/dessert-glass--peppermint.webp",
+   "enter": "drop"
+  },
+  "dessert-glass/sprinkles": {
+   "src": "/layers/topping/dessert-glass--sprinkles.webp",
+   "enter": "drop"
+  },
+  "dessert-glass/strawberry": {
+   "src": "/layers/topping/dessert-glass--strawberry.webp",
+   "enter": "drop"
+  },
+  "dessert-glass/wafer": {
+   "src": "/layers/topping/dessert-glass--wafer.webp",
+   "enter": "drop"
+  },
+  "dessert-glass/waffle": {
+   "src": "/layers/topping/dessert-glass--waffle.webp",
+   "enter": "drop"
+  },
+  "jar-12/apple": {
+   "src": "/layers/topping/jar-12--apple.webp",
+   "enter": "drop"
+  },
+  "jar-12/banana": {
+   "src": "/layers/topping/jar-12--banana.webp",
+   "enter": "drop"
+  },
+  "jar-12/blueberry": {
+   "src": "/layers/topping/jar-12--blueberry.webp",
+   "enter": "drop"
+  },
+  "jar-12/candy": {
+   "src": "/layers/topping/jar-12--candy.webp",
+   "enter": "drop"
+  },
+  "jar-12/cherry": {
+   "src": "/layers/topping/jar-12--cherry.webp",
+   "enter": "drop"
+  },
+  "jar-12/chocolate": {
+   "src": "/layers/topping/jar-12--chocolate.webp",
+   "enter": "drop"
+  },
+  "jar-12/cinnamon-roll": {
+   "src": "/layers/topping/jar-12--cinnamon-roll.webp",
+   "enter": "drop"
+  },
+  "jar-12/crumble": {
+   "src": "/layers/topping/jar-12--crumble.webp",
+   "enter": "drop"
+  },
+  "jar-12/graham": {
+   "src": "/layers/topping/jar-12--graham.webp",
+   "enter": "drop"
+  },
+  "jar-12/honey": {
+   "src": "/layers/topping/jar-12--honey.webp",
+   "enter": "drop"
+  },
+  "jar-12/honeycomb": {
+   "src": "/layers/topping/jar-12--honeycomb.webp",
+   "enter": "drop"
+  },
+  "jar-12/marshmallow": {
+   "src": "/layers/topping/jar-12--marshmallow.webp",
+   "enter": "drop"
+  },
+  "jar-12/orange-slice": {
+   "src": "/layers/topping/jar-12--orange-slice.webp",
+   "enter": "drop"
+  },
+  "jar-12/pecan": {
+   "src": "/layers/topping/jar-12--pecan.webp",
+   "enter": "drop"
+  },
+  "jar-12/peppermint": {
+   "src": "/layers/topping/jar-12--peppermint.webp",
+   "enter": "drop"
+  },
+  "jar-12/sprinkles": {
+   "src": "/layers/topping/jar-12--sprinkles.webp",
+   "enter": "drop"
+  },
+  "jar-12/strawberry": {
+   "src": "/layers/topping/jar-12--strawberry.webp",
+   "enter": "drop"
+  },
+  "jar-12/wafer": {
+   "src": "/layers/topping/jar-12--wafer.webp",
+   "enter": "drop"
+  },
+  "jar-12/waffle": {
+   "src": "/layers/topping/jar-12--waffle.webp",
+   "enter": "drop"
+  },
   "jar-14/apple": {
    "src": "/layers/topping/jar-14--apple.webp",
    "enter": "drop"
