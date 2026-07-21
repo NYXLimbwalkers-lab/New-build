@@ -1,0 +1,24 @@
+node_modules
+dist
+dist-ssr
+*.local
+.DS_Store
+.vscode/*
+!.vscode/extensions.json
+.idea
+
+# Crawled source assets (large; re-fetch with scripts/fetch-assets.mjs)
+assets/raw
+
+# Python venv for the asset pipeline (rembg cutout); recreate with scripts/setup-pipeline.sh
+.venv
+
+# Cartoonize pipeline scratch/intermediates
+assets/work
+
+# Dev preview artifact
+candle-preview.png
+
+# Generated chain states (regenerate with scripts/gen_layers.py; ~$0.05/image)
+assets/gen
+scripts/__pycache__

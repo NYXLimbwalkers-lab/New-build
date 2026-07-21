@@ -1,0 +1,292 @@
+@import "tailwindcss";
+
+/*
+  ─────────────────────────────────────────────────────────────────────────
+  "CONFISERIE" DESIGN LANGUAGE
+  Elegant, feminine, couture-confectionery. Parisian patisserie boutique meets
+  luxury beauty house. Restraint over flash — elegance whispers.
+  NO Barbie-pink, NO fast-food energy, NO harsh red, NO stark white.
+  Tailwind v4 CSS-first theme tokens. Reference with e.g. bg-canvas, text-cocoa,
+  border-gold, font-display.
+  ─────────────────────────────────────────────────────────────────────────
+*/
+@theme {
+  /* Canvas — warm porcelain / soft ivory / faintest blush. Never stark white. */
+  --color-canvas: #fbf4f0;
+  --color-canvas-deep: #f4e9e3;
+  --color-porcelain: #fffaf7;
+
+  /* Romance tones — the signature. Used in frames, gradients, accents. */
+  --color-blush: #e8c4c8;
+  --color-blush-soft: #f3dde0;
+  --color-rose: #d99fa6;
+  --color-mauve: #c9a9b4;
+  --color-petal: #f0d4d8;
+
+  /* Champagne + soft gold leaf — a WHISPER only (hairlines, monogram, foil). */
+  --color-champagne: #d8b98c;
+  --color-gold: #c8a15a;
+  /* gold TEXT on light grounds — >=4.5:1 on porcelain (bright gold stays for hairlines/foil) */
+  --color-gold-ink: #8a6a2e;
+  --color-gold-soft: #e3cfa8;
+
+  /* Deep contrast anchors — espresso/cocoa + soft plum. WCAG-safe on canvas. */
+  --color-cocoa: #3a2c2a;
+  --color-espresso: #2a1f1d;
+  --color-plum: #5b3a4a;
+  --color-muted: #79635b; /* warm taupe, ~4.5:1 on the canvas for everyone */
+
+  /* Rare jewel pops — boozy / seasonal only, like an accent earring. */
+  --color-garnet: #7a1f3d;
+  --color-emerald: #1f5b4a;
+
+  /* Type */
+  --font-display: "Playfair Display", "Cormorant Garamond", Georgia, serif;
+  --font-serif: "Cormorant Garamond", Georgia, serif;
+  --font-sans: "Jost", ui-sans-serif, system-ui, sans-serif;
+
+  /* Soft, expensive shadows — warm-tinted, stacked, low-opacity (research:
+     layered + hue-matched reads premium; pure black reads cheap). */
+  --shadow-soft: 0 1px 2px rgba(58, 44, 42, 0.05), 0 3px 6px rgba(74, 50, 38, 0.05),
+    0 8px 16px rgba(90, 58, 38, 0.05);
+  --shadow-lift: 0 2px 4px rgba(58, 44, 42, 0.06), 0 6px 12px rgba(74, 50, 38, 0.07),
+    0 16px 30px rgba(90, 58, 38, 0.08);
+  --shadow-glow: 0 0 40px rgba(216, 185, 140, 0.35);
+
+  /* Gentle motion durations */
+  --ease-confiserie: cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+
+@layer base {
+  :root {
+    color-scheme: light;
+  }
+
+  /* Accessible focus ring (keyboard only) — plum for ≥3:1 contrast on the canvas. */
+  :focus-visible {
+    outline: 2px solid var(--color-plum);
+    outline-offset: 2px;
+    border-radius: 6px;
+  }
+  :focus:not(:focus-visible) {
+    outline: none;
+  }
+
+  html,
+  body,
+  #root {
+    height: 100%;
+  }
+
+  body {
+    margin: 0;
+    background-color: var(--color-canvas);
+    color: var(--color-cocoa);
+    font-family: var(--font-sans);
+    font-weight: 300;
+    font-size: 1.125rem; /* 18px — readable for all ages (research: 18 ideal) */
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+    /* whisper-soft blush -> champagne wash across the boutique */
+    background-image:
+      radial-gradient(120% 80% at 50% -10%, rgba(232, 196, 200, 0.22), transparent 60%),
+      radial-gradient(80% 60% at 100% 100%, rgba(216, 185, 140, 0.1), transparent 55%);
+    background-attachment: fixed;
+  }
+
+  /* Display serif: large, tight, with the faint negative tracking couture type uses. */
+  h1,
+  h2 {
+    font-family: var(--font-display);
+    font-weight: 500;
+    letter-spacing: -0.018em;
+    line-height: 1.1;
+    color: var(--color-espresso);
+  }
+  h3,
+  h4 {
+    font-family: var(--font-display);
+    font-weight: 500;
+    letter-spacing: -0.005em;
+    line-height: 1.22;
+    color: var(--color-espresso);
+  }
+
+  /* Tracked-out small-caps labels — the spacing is what reads "luxury boutique". */
+  .label-caps {
+    font-family: var(--font-sans);
+    text-transform: uppercase;
+    letter-spacing: 0.28em;
+    font-size: 0.7rem;
+    font-weight: 400;
+    color: var(--color-muted);
+  }
+
+  /* Prices look like a couture menu card — light, letter-spaced, never receipt-bold. */
+  .price {
+    font-family: var(--font-serif);
+    font-weight: 400;
+    letter-spacing: 0.06em;
+    font-variant-numeric: lining-nums tabular-nums;
+  }
+}
+
+@layer components {
+  /* Fine gold hairline — borders & dividers throughout. */
+  .hairline {
+    border-color: color-mix(in srgb, var(--color-gold) 45%, transparent);
+  }
+
+  /* Frosted-glass overlay with a faint blush tint. */
+  .glass {
+    background: color-mix(in srgb, var(--color-porcelain) 72%, transparent);
+    backdrop-filter: blur(16px) saturate(1.1);
+    -webkit-backdrop-filter: blur(16px) saturate(1.1);
+    border: 1px solid color-mix(in srgb, var(--color-gold) 30%, transparent);
+  }
+
+  /* Scalloped / arched patisserie-case top edge. */
+  .arch-top {
+    border-top-left-radius: 9999px;
+    border-top-right-radius: 9999px;
+  }
+
+  /* Delicate shimmer sweep on hover. */
+  .shimmer {
+    position: relative;
+    overflow: hidden;
+  }
+  .shimmer::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      105deg,
+      transparent 30%,
+      color-mix(in srgb, var(--color-gold-soft) 55%, transparent) 50%,
+      transparent 70%
+    );
+    transform: translateX(-120%);
+    transition: transform 0.9s var(--ease-confiserie);
+    pointer-events: none;
+  }
+  .shimmer:hover::after {
+    transform: translateX(120%);
+  }
+}
+
+/*
+  ─── ACCESSIBILITY MODES (toggled via the Aa button) ─────────────────────
+  Bigger Text scales every rem-based size; High Contrast darkens text/borders
+  and removes muted grays — critical for children & elderly / low-vision users.
+*/
+html.a11y-big {
+  font-size: 120%;
+}
+/* Simpler shop in Bigger-Text mode: fewer, larger product cards. */
+html.a11y-big .product-grid {
+  grid-template-columns: 1fr !important;
+}
+@media (min-width: 640px) {
+  html.a11y-big .product-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+}
+html.a11y-contrast {
+  --color-cocoa: #2a1f1d;
+  --color-muted: #5a4843;
+  --color-plum: #43232f;
+  --color-rose: #b9555f;
+}
+html.a11y-contrast .hairline {
+  border-color: color-mix(in srgb, var(--color-gold) 85%, transparent);
+}
+html.a11y-contrast .label-caps {
+  color: #5a4843;
+}
+/* Comfortable minimum tap targets for primary controls. */
+button,
+[role="button"],
+a {
+  touch-action: manipulation;
+}
+
+/* Readable form fields; ≥16px prevents iOS zoom-on-focus. Comfortable height. */
+input,
+textarea,
+select {
+  font-size: 1rem;
+}
+input:not([type="checkbox"]):not([type="range"]),
+select {
+  min-height: 46px;
+}
+
+/* Honor reduced-motion everywhere — non-negotiable. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+}
+
+/* Hide scrollbars on kiosk-style horizontal rails while keeping scroll. */
+.no-scrollbar {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+/*
+  ─── SEAMLESS ROUTE TRANSITIONS (View Transitions API) ───────────────────
+  react-router drives document.startViewTransition() on navigations flagged
+  with `viewTransition`. We tune the root crossfade so pages glide rather than
+  blink, and let shared `view-transition-name`s morph the product image from
+  card → detail hero (the "you never notice a switch" effect).
+*/
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation-duration: 0.42s;
+  animation-timing-function: cubic-bezier(0.32, 0.72, 0, 1);
+}
+
+/* Outgoing page eases up & out softly; incoming rises in. */
+@keyframes confiserie-out {
+  to {
+    opacity: 0;
+    transform: translateY(-1.5%) scale(0.992);
+  }
+}
+@keyframes confiserie-in {
+  from {
+    opacity: 0;
+    transform: translateY(1.5%) scale(0.992);
+  }
+}
+::view-transition-old(root) {
+  animation-name: confiserie-out;
+}
+::view-transition-new(root) {
+  animation-name: confiserie-in;
+}
+
+/* The shared product image morph — slower, glossy. */
+::view-transition-group(product-hero) {
+  animation-duration: 0.5s;
+  animation-timing-function: cubic-bezier(0.32, 0.72, 0, 1);
+}
+
+/* Reduced motion: collapse all view transitions to an instant swap. */
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-group(*),
+  ::view-transition-old(*),
+  ::view-transition-new(*) {
+    animation-duration: 0.01ms !important;
+  }
+}

@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <rect width="64" height="64" rx="14" fill="#FBF4F0"/>
+  <circle cx="32" cy="32" r="26" fill="none" stroke="#C8A15A" stroke-width="1"/>
+  <!-- candle jar -->
+  <rect x="24" y="34" width="16" height="18" rx="3" fill="#F4E4C9" stroke="#D8B98C" stroke-width="0.8"/>
+  <!-- whipped swirl -->
+  <path d="M24 34c0-5 3-8 8-8s8 3 8 8z" fill="#FBF3E4"/>
+  <!-- wick -->
+  <rect x="31.2" y="20" width="1.6" height="7" rx="0.8" fill="#3A2C2A"/>
+  <!-- flame -->
+  <path d="M32 12c3 3 4 6 0 9-4-3-3-6 0-9z" fill="#C8A15A"/>
+  <path d="M32 15c1.6 1.8 2 3.6 0 5.4-2-1.8-1.6-3.6 0-5.4z" fill="#E8C4C8"/>
+</svg>
