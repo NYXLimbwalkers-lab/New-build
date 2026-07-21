@@ -1,5 +1,11 @@
 # Asset Pipeline — Real Photos → Live Composite
 
+> **⚠️ START HERE: [`docs/PIPELINE-HANDOFF.md`](PIPELINE-HANDOFF.md)** — the 2026-07-21
+> generative pipeline SHIPPED (186 layers, 5 vessels, parfait bands, self-verifying QC).
+> The handoff doc has the current state, every hard-won rule, cost discipline, and the
+> open queue. This file below is the original design doc; sections 0–1 (crawling her real
+> photos) are still accurate and the crawled photos feed the generator as brand reference.
+
 The preview engine composites **her real product photos**, cut into transparent
 layers, on one fixed camera framing. This doc is the path from "her website" to
 "photoreal candle that updates as you tap."
