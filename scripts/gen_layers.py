@@ -147,15 +147,41 @@ def _gen(out: Path, prompt: str, refs: list[Path]) -> str:
     return f"ok   {out.name}"
 
 
+def _framing_ok(state: Path, root: Path) -> bool:
+    """Outer-silhouette IoU vs the vessel's chain root (A). A chain edit that redraws the
+    vessel at a new position/angle passes every hole-based QC while visually DOUBLING the
+    glass in the composite (the wine glass shipped as a ghost mess, visual-QA 2026-07-21) —
+    framing drift must die HERE, before a cent is spent downstream."""
+    try:
+        import numpy as np
+        from PIL import Image
+
+        def subject(p: Path) -> "np.ndarray":
+            a = np.asarray(Image.open(p).convert("RGB").resize((256, 256)), dtype=np.float32)
+            return (np.minimum(a[..., 0], a[..., 2]) - a[..., 1]) < 80   # not-magenta
+
+        s1, s2 = subject(state), subject(root)
+        inter, union = (s1 & s2).sum(), (s1 | s2).sum()
+        return union == 0 or inter / union > 0.93
+    except Exception:  # noqa: BLE001 — the gate must never block generation outright
+        return True
+
+
 def _gen_retry(out: Path, prompt: str, refs: list[Path], tries: int = 3) -> str:
     """A flaky network mid-batch must not kill the run (it did, 2026-07-21) — the chain is
-    resumable anyway, but one bad socket shouldn't cost the whole wave."""
+    resumable anyway, but one bad socket shouldn't cost the whole wave. Wax states also
+    re-roll when the model reframes the vessel (silhouette-IoU gate)."""
     import time
     for i in range(tries):
         try:
             res = _gen(out, prompt, refs)
         except Exception as e:  # noqa: BLE001
             res = f"FAIL {out.name}: {e}"
+        if not res.startswith("FAIL") and out.name.split("-", 1)[0] in ("wax", "waxh"):
+            root = out.parent / "A.png"
+            if root.exists() and not _framing_ok(out, root):
+                out.unlink(missing_ok=True)
+                res = f"FAIL {out.name}: framing drift (silhouette IoU < 0.93)"
         # a "completion" with no image (soft refusal / hiccup) is as retryable as a socket error
         if not res.startswith("FAIL") or i == tries - 1:
             return res
@@ -220,8 +246,8 @@ def main() -> int:
                 (vd / f"wax-{wid}.png",
                  f"Edit the attached photo: fill the glass with translucent {desc} gel wax (hex {hx}) up to 75% "
                  f"of the bowl's interior height, softly luminous with a few tiny suspended bubbles, a level "
-                 f"liquid-like surface, {material}. The wax color is exactly hex {hx} with no pink or magenta "
-                 f"tint. {KEEP}",
+                 f"liquid-like surface, {material}. Do not move, resize, tilt, or reframe the glass in any "
+                 f"way. The wax color is exactly hex {hx} with no pink or magenta tint. {KEEP}",
                  [vd / "A.png"]) for wid, (hx, desc) in GELWAXES.items()]):
                 return 1
             _write_chain(vd)

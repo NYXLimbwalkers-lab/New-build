@@ -23,6 +23,62 @@
   }
  },
  "wax": {
+  "dessert-glass/caramel@ht": {
+   "src": "/layers/wax/dessert-glass--caramel@ht.webp",
+   "enter": "pour"
+  },
+  "dessert-glass/caramel@hb": {
+   "src": "/layers/wax/dessert-glass--caramel@hb.webp",
+   "enter": "pour"
+  },
+  "dessert-glass/cocoa@ht": {
+   "src": "/layers/wax/dessert-glass--cocoa@ht.webp",
+   "enter": "pour"
+  },
+  "dessert-glass/cocoa@hb": {
+   "src": "/layers/wax/dessert-glass--cocoa@hb.webp",
+   "enter": "pour"
+  },
+  "dessert-glass/cream@ht": {
+   "src": "/layers/wax/dessert-glass--cream@ht.webp",
+   "enter": "pour"
+  },
+  "dessert-glass/cream@hb": {
+   "src": "/layers/wax/dessert-glass--cream@hb.webp",
+   "enter": "pour"
+  },
+  "dessert-glass/honey@ht": {
+   "src": "/layers/wax/dessert-glass--honey@ht.webp",
+   "enter": "pour"
+  },
+  "dessert-glass/honey@hb": {
+   "src": "/layers/wax/dessert-glass--honey@hb.webp",
+   "enter": "pour"
+  },
+  "dessert-glass/ivory@ht": {
+   "src": "/layers/wax/dessert-glass--ivory@ht.webp",
+   "enter": "pour"
+  },
+  "dessert-glass/ivory@hb": {
+   "src": "/layers/wax/dessert-glass--ivory@hb.webp",
+   "enter": "pour"
+  },
+  "dessert-glass/orange-cream@ht": {
+   "src": "/layers/wax/dessert-glass--orange-cream@ht.webp",
+   "enter": "pour"
+  },
+  "dessert-glass/orange-cream@hb": {
+   "src": "/layers/wax/dessert-glass--orange-cream@hb.webp",
+   "enter": "pour"
+  },
+  "dessert-glass/strawberry@ht": {
+   "src": "/layers/wax/dessert-glass--strawberry@ht.webp",
+   "enter": "pour"
+  },
+  "dessert-glass/strawberry@hb": {
+   "src": "/layers/wax/dessert-glass--strawberry@hb.webp",
+   "enter": "pour"
+  },
   "dessert-glass/caramel": {
    "src": "/layers/wax/dessert-glass--caramel.webp",
    "enter": "pour"
@@ -51,6 +107,62 @@
    "src": "/layers/wax/dessert-glass--strawberry.webp",
    "enter": "pour"
   },
+  "jar-12/caramel@ht": {
+   "src": "/layers/wax/jar-12--caramel@ht.webp",
+   "enter": "pour"
+  },
+  "jar-12/caramel@hb": {
+   "src": "/layers/wax/jar-12--caramel@hb.webp",
+   "enter": "pour"
+  },
+  "jar-12/cocoa@ht": {
+   "src": "/layers/wax/jar-12--cocoa@ht.webp",
+   "enter": "pour"
+  },
+  "jar-12/cocoa@hb": {
+   "src": "/layers/wax/jar-12--cocoa@hb.webp",
+   "enter": "pour"
+  },
+  "jar-12/cream@ht": {
+   "src": "/layers/wax/jar-12--cream@ht.webp",
+   "enter": "pour"
+  },
+  "jar-12/cream@hb": {
+   "src": "/layers/wax/jar-12--cream@hb.webp",
+   "enter": "pour"
+  },
+  "jar-12/honey@ht": {
+   "src": "/layers/wax/jar-12--honey@ht.webp",
+   "enter": "pour"
+  },
+  "jar-12/honey@hb": {
+   "src": "/layers/wax/jar-12--honey@hb.webp",
+   "enter": "pour"
+  },
+  "jar-12/ivory@ht": {
+   "src": "/layers/wax/jar-12--ivory@ht.webp",
+   "enter": "pour"
+  },
+  "jar-12/ivory@hb": {
+   "src": "/layers/wax/jar-12--ivory@hb.webp",
+   "enter": "pour"
+  },
+  "jar-12/orange-cream@ht": {
+   "src": "/layers/wax/jar-12--orange-cream@ht.webp",
+   "enter": "pour"
+  },
+  "jar-12/orange-cream@hb": {
+   "src": "/layers/wax/jar-12--orange-cream@hb.webp",
+   "enter": "pour"
+  },
+  "jar-12/strawberry@ht": {
+   "src": "/layers/wax/jar-12--strawberry@ht.webp",
+   "enter": "pour"
+  },
+  "jar-12/strawberry@hb": {
+   "src": "/layers/wax/jar-12--strawberry@hb.webp",
+   "enter": "pour"
+  },
   "jar-12/caramel": {
    "src": "/layers/wax/jar-12--caramel.webp",
    "enter": "pour"
@@ -77,6 +189,62 @@
   },
   "jar-12/strawberry": {
    "src": "/layers/wax/jar-12--strawberry.webp",
+   "enter": "pour"
+  },
+  "jar-14/caramel@ht": {
+   "src": "/layers/wax/jar-14--caramel@ht.webp",
+   "enter": "pour"
+  },
+  "jar-14/caramel@hb": {
+   "src": "/layers/wax/jar-14--caramel@hb.webp",
+   "enter": "pour"
+  },
+  "jar-14/cocoa@ht": {
+   "src": "/layers/wax/jar-14--cocoa@ht.webp",
+   "enter": "pour"
+  },
+  "jar-14/cocoa@hb": {
+   "src": "/layers/wax/jar-14--cocoa@hb.webp",
+   "enter": "pour"
+  },
+  "jar-14/cream@ht": {
+   "src": "/layers/wax/jar-14--cream@ht.webp",
+   "enter": "pour"
+  },
+  "jar-14/cream@hb": {
+   "src": "/layers/wax/jar-14--cream@hb.webp",
+   "enter": "pour"
+  },
+  "jar-14/honey@ht": {
+   "src": "/layers/wax/jar-14--honey@ht.webp",
+   "enter": "pour"
+  },
+  "jar-14/honey@hb": {
+   "src": "/layers/wax/jar-14--honey@hb.webp",
+   "enter": "pour"
+  },
+  "jar-14/ivory@ht": {
+   "src": "/layers/wax/jar-14--ivory@ht.webp",
+   "enter": "pour"
+  },
+  "jar-14/ivory@hb": {
+   "src": "/layers/wax/jar-14--ivory@hb.webp",
+   "enter": "pour"
+  },
+  "jar-14/orange-cream@ht": {
+   "src": "/layers/wax/jar-14--orange-cream@ht.webp",
+   "enter": "pour"
+  },
+  "jar-14/orange-cream@hb": {
+   "src": "/layers/wax/jar-14--orange-cream@hb.webp",
+   "enter": "pour"
+  },
+  "jar-14/strawberry@ht": {
+   "src": "/layers/wax/jar-14--strawberry@ht.webp",
+   "enter": "pour"
+  },
+  "jar-14/strawberry@hb": {
+   "src": "/layers/wax/jar-14--strawberry@hb.webp",
    "enter": "pour"
   },
   "jar-14/caramel": {

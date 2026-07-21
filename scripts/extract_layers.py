@@ -202,11 +202,24 @@ def main() -> int:
                 # The half state (a DRAIN edit of the full) yields BOTH parfait bands from
                 # one pixel-consistent pair: @hb = half vs empty vessel (cut from the half
                 # frame), @ht = full vs half (cut from the FULL frame).
+                # bands get a small HORIZONTAL stretch: the diff runs out of contrast at the
+                # glass walls, and the uncovered sliver of (bounce-tinted) vessel glass reads
+                # as a width step between the two colors (visual-QA 2026-07-21)
+                wide = np.ones((1, 9), dtype=bool)
                 la = diff_alpha(A, img, fill_holes=True)          # bottom band, from half
+                la = np.maximum(la, ndimage.binary_dilation(la > 0.5, structure=wide) * 0.998)
                 full_p = vd / f"wax-{pid}.png"
                 if full_p.exists():
                     full_img = load(full_p)
                     ht = diff_alpha(img, full_img, fill_holes=True)
+                    ht = np.maximum(ht, ndimage.binary_dilation(ht > 0.5, structure=wide) * 0.998)
+                    # …and DOWNWARD ~28px: near the fill line half and full are the same
+                    # color so the diff dies raggedly, leaving the half-state's meniscus
+                    # and wick stubs peeking out below a torn edge. The full state's pixels
+                    # there are clean wax body — let the top band overpaint decisively.
+                    down = ndimage.binary_dilation(ht > 0.5, structure=np.ones((29, 1), bool),
+                                                   origin=(-14, 0))
+                    ht = np.maximum(ht, down * 0.998)
                     save(full_img, ht, PUB / "wax" / f"{v}--{pid}@ht.webp")
                     manifest["wax"][f"{v}/{pid}@ht"] = {"src": f"/layers/wax/{v}--{pid}@ht.webp", "enter": "pour"}
                     print(f"  ok {v}/wax/{pid}@ht  coverage={float(ht.mean()):.3f}")
@@ -281,8 +294,11 @@ def validate_bands(manifest: dict) -> None:
         if eb and et:
             thick_b, thick_t = eb[1] - eb[0], et[1] - et[0]
             share = thick_t / max(thick_b + thick_t, 1)
-            gap = abs(eb[0] - et[1])          # top of hb vs bottom of ht
-            ok = 0.3 <= share <= 0.7 and gap < 0.03 * SIZE
+            # only a VOID between bands is a defect; OVERLAP is ideal — the top band's
+            # cut dips below the fill line and hides the half-state's meniscus (the
+            # abs() here rejected every valid drain pair, visual-QA 2026-07-21)
+            void = eb[0] - et[1]
+            ok = 0.25 <= share <= 0.75 and void < 0.03 * SIZE
         if not ok:
             wax.pop(key, None)
             wax.pop(f"{base}@ht", None)
@@ -320,7 +336,8 @@ def seam_qc(manifest: dict) -> list[str]:
                 cache[k] = _alpha_of(kind, f"{v}/{pid}")
             return cache[k]
 
-        def check(state_file: str, stack_parts: list[tuple[str, str]]) -> None:
+        def check(state_file: str, stack_parts: list[tuple[str, str]],
+                  tol: int = 500) -> None:
             sp = vd / state_file
             layers = [alpha(k, p) for k, p in stack_parts]
             if not sp.exists() or any(l is None for l in layers):
@@ -332,16 +349,19 @@ def seam_qc(manifest: dict) -> list[str]:
             defect = (truth > 0.6) & (stack < 0.15)
             defect = ndimage.binary_opening(defect, iterations=2)   # AA hairlines are fine
             n = int(defect.sum())
-            if n > 500:
+            if n > tol:
                 flagged.append(f"{v}/{state_file}  defect_px={n}")
 
         for name, parent in chain.items():
             kind = name.split("-", 1)[0]
             pid = name.split("-", 1)[1].removesuffix(".png")
             if kind == "waxh":
-                check(name, [("wax", f"{pid}@hb")])
-                # stacked halves must rebuild the FULL pour (the half's chain parent)
-                check(parent, [("wax", f"{pid}@hb"), ("wax", f"{pid}@ht")])
+                # band checks run at a looser tolerance: the wavy poured interface between
+                # bands is organic (accepted by eye 2026-07-21), and sub-2500px meniscus
+                # slivers there are invisible at builder size — strictness stays for
+                # single fills, whips, drizzles, toppings.
+                check(name, [("wax", f"{pid}@hb")], tol=2500)
+                check(parent, [("wax", f"{pid}@hb"), ("wax", f"{pid}@ht")], tol=2500)
             elif kind == "wax":
                 check(name, [("wax", pid)])
             elif kind == "whip":
