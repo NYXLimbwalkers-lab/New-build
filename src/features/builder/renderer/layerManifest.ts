@@ -73,10 +73,11 @@ export function manifestCovers(
 ): boolean {
   const v = parts.vesselId;
   if (!m.vessel?.[v]) return false;
-  // Every wax layer (base + extras) must have a real photo, or the parfait
-  // would silently lose layers in photo mode.
-  for (const id of [parts.waxColorId, ...(parts.extraLayers ?? [])])
-    if (!layerFor(m, "wax", v, id)) return false;
+  // A parfait (extra wax layers) needs BAND assets the library doesn't have yet —
+  // every wax cut is a full fill, so stacked layers would collapse to the top color.
+  // Decline honestly and let the vector renderer draw the bands.
+  if ((parts.extraLayers ?? []).length > 0) return false;
+  if (!layerFor(m, "wax", v, parts.waxColorId)) return false;
   if (parts.whipId && !layerFor(m, "whip", v, parts.whipId)) return false;
   if (parts.drizzleId && !layerFor(m, "drizzle", v, parts.drizzleId)) return false;
   for (const t of parts.toppingIds) if (!layerFor(m, "topping", v, t)) return false;

@@ -7,8 +7,9 @@ This pipeline instead CHAIN-EDITS generated studio states — empty vessel → +
 +drizzle/+topping — so consecutive states are pixel-consistent and each part can be
 extracted as a clean diff-cut by extract_layers.py.
 
-Background is EXACTLY the site canvas (#FBF4F0) so glass see-through areas bake the page
-color in and need no alpha. Her real product photo is passed as identity reference for the
+Background is a vivid-magenta chroma key — the one color no dessert candle uses (owner's
+rule, 2026-07-21) — so extraction can never confuse backdrop with wax, and clear glass keys
+to TRUE transparency. Her real product photo is passed as identity reference for the
 vessel/brand. Idempotent: existing files are skipped, so re-running only fills gaps.
 
   OPENROUTER_API_KEY=... python3 scripts/gen_layers.py [--vessel jar-14] [--only wax]
@@ -30,7 +31,15 @@ ROOT = Path(__file__).resolve().parent.parent
 OUT = ROOT / "assets" / "gen"
 REF = ROOT / "assets" / "raw" / "poc" / "final_compare.png"   # her real jar + brand, best single ref
 MODEL = "google/gemini-3.1-flash-image"
-BG = "uniform warm porcelain-cream studio background, hex FBF4F0, filling the whole frame, with a single very soft natural contact shadow directly under the vessel"
+# The backdrop is a chroma key, and the ONE rule of a chroma key is that its color must
+# never appear on the subject. Candles here are creams/honeys/browns/soft pinks/dusty
+# blues/pale greens — vivid magenta is the color no dessert candle will ever be (the
+# owner's call, 2026-07-21: 'think of colors we might not use in a candle'). A cream
+# backdrop cost us weak ivory-wax diffs and near-white cut ambiguity.
+BG = ("uniform flat vivid magenta (hex FF00FF) studio background filling the whole frame, evenly "
+      "lit edge to edge with no vignetting, with a single very soft natural contact shadow "
+      "directly under the vessel. The magenta backdrop color must NOT appear anywhere on the "
+      "candle, vessel, label, or garnish itself — no magenta reflections or color cast on the subject")
 CAM = "perfectly centered, straight-on front view at eye level, soft even diffused studio light, square 1:1 image"
 
 # ---- the ingredient vocabulary (ids + hexes MUST mirror src/data/ingredients.ts) ----
@@ -83,7 +92,10 @@ TOPPINGS = {
     "cinnamon-roll": "one miniature glazed cinnamon roll resting low at the lower right against the rim",
     "apple": "three thin red-skinned apple slices fanned at the front, just right of center, low",
 }
-KEEP = "Keep EVERYTHING else pixel-identical: same vessel, same label, same fill, same lighting, same camera framing, same plain FBF4F0 background. Photorealistic, no wick, no text besides the label."
+KEEP = ("Keep EVERYTHING else pixel-identical: same vessel, same label, same fill, same lighting, "
+        "same camera framing, same flat vivid magenta (FF00FF) background. The magenta backdrop "
+        "color must never appear ON the candle or garnish. Photorealistic, no wick, no text "
+        "besides the label.")
 
 
 def _data_url(path: Path) -> str:

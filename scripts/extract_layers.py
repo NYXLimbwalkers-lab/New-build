@@ -2,8 +2,8 @@
 """extract_layers.py — cut the generated chain states (assets/gen, from gen_layers.py) into
 transparent WebP layers under public/layers/ and write public/layers/manifest.json.
 
-  vessel  = outer-silhouette cut of A (background flood-filled away from the frame border,
-            the soft contact shadow kept as partial alpha)
+  vessel  = chroma-keyed cut of A (magenta backdrop keyed to TRUE transparency — clear
+            glass shows the page through it in the app; contact shadow rebuilt as soft black)
   wax     = pixels of wax-<id> that differ from A          (full fill incl. glass refraction)
   whip    = pixels of whip-<id> that differ from wax-cream
   drizzle = pixels of drizzle-<id> that differ from whip-vanilla
@@ -31,7 +31,6 @@ from scipy import ndimage
 ROOT = Path(__file__).resolve().parent.parent
 GEN = ROOT / "assets" / "gen"
 PUB = ROOT / "public" / "layers"
-BG = np.array([0xFB, 0xF4, 0xF0], dtype=np.float32)
 SIZE = 1024
 ENTER = {"vessel": "fade", "wax": "pour", "whip": "pipe", "drizzle": "drizzle", "topping": "drop"}
 # scatter-type toppings are many small pieces — the standard median+erode cleanup would eat them
@@ -42,40 +41,52 @@ def load(p: Path) -> np.ndarray:
     return np.asarray(Image.open(p).convert("RGB").resize((SIZE, SIZE), Image.LANCZOS), np.float32)
 
 
-def flood_bg(img: np.ndarray, tol: float = 22.0) -> np.ndarray:
-    """Background mask: pixels close to BG, 4-connected to the frame border (so bg-colored
-    highlights INSIDE the vessel are never cut). Pure numpy BFS on a boolean grid."""
-    near = np.linalg.norm(img - BG, axis=-1) < tol
-    bg = np.zeros_like(near)
-    bg[0, :] = near[0, :]; bg[-1, :] = near[-1, :]
-    bg[:, 0] |= near[:, 0]; bg[:, -1] |= near[:, -1]
-    while True:
-        grown = bg.copy()
-        grown[1:, :] |= bg[:-1, :]; grown[:-1, :] |= bg[1:, :]
-        grown[:, 1:] |= bg[:, :-1]; grown[:, :-1] |= bg[:, 1:]
-        grown &= near
-        if (grown == bg).all():
-            return bg
-        bg = grown
+def keyness(img: np.ndarray) -> np.ndarray:
+    """Per-pixel 'backgroundness' 0..1 against the vivid-magenta chroma key.
+
+    The metric is min(R,B) − G: only true magenta scores high. Her reds (strawberry,
+    cherry) have LOW blue, blues have low red, lavenders/pinks are pale — all score near
+    zero, which is exactly why the backdrop is magenta (owner's rule 2026-07-21: a color
+    no candle will ever use). The key level is SAMPLED from the border so the model's
+    imperfect magenta still keys cleanly."""
+    mag = np.minimum(img[..., 0], img[..., 2]) - img[..., 1]
+    border = np.concatenate([mag[0], mag[-1], mag[:, 0], mag[:, -1]])
+    key_level = max(float(np.median(border)), 40.0)
+    return np.clip(mag / (key_level * 0.55), 0.0, 1.0)
 
 
 def vessel_alpha(img: np.ndarray) -> np.ndarray:
-    """Subject alpha for the empty-vessel frame: solid inside the silhouette, and the soft
-    contact shadow surviving as partial alpha proportional to its darkness."""
-    bg = flood_bg(img)
-    subject = ~bg
+    """Subject alpha for the empty-vessel frame: 1 − keyness, so clear glass showing the
+    backdrop THROUGH it goes genuinely transparent (the page background will show through
+    in the app — physically correct), while glass walls, rim highlights, and the label
+    stay. The contact shadow survives as darkness measured INSIDE the keyed region."""
+    k = keyness(img)
+    a = 1.0 - k
+    subject = a > 0.55
     lab, n = ndimage.label(subject)
     if n > 1:   # a stray backdrop blob (generation artifact) is not the vessel — keep the
         sizes = ndimage.sum(subject, lab, range(1, n + 1))    # largest component only
-        subject = lab == (int(np.argmax(sizes)) + 1)
-    a = subject.astype(np.float32)
-    # keep the contact shadow — but ONLY near the vessel itself; a random dark patch
-    # elsewhere in the backdrop must not survive as a floating smudge (visual-QA 2026-07-21)
+        keep = lab == (int(np.argmax(sizes)) + 1)
+        a = a * np.maximum(keep, k < 0.45)      # drop hard-subject blobs outside the vessel
+    # shadow: within the keyed backdrop, darker-than-key = the vessel's contact shadow.
+    # Rebuild it as translucent black near the vessel only.
+    lum = img.mean(axis=-1)
+    border_lum = float(np.median(np.concatenate([lum[0], lum[-1], lum[:, 0], lum[:, -1]])))
     near = ndimage.binary_dilation(subject, iterations=40)
-    dark = np.clip((BG.mean() - img.mean(axis=-1)) / 60.0, 0.0, 1.0) * near
-    a = np.maximum(a, dark * 0.9)
-    return np.asarray(Image.fromarray((a * 255).astype(np.uint8)).filter(
-        ImageFilter.GaussianBlur(1.2)), np.float32) / 255.0
+    shadow = np.clip((border_lum * 0.88 - lum) / border_lum, 0.0, 1.0) * (k > 0.55) * near
+    return np.asarray(Image.fromarray((np.maximum(a, shadow * 0.55) * 255).astype(np.uint8))
+                      .filter(ImageFilter.GaussianBlur(1.2)), np.float32) / 255.0, shadow
+
+
+def despill(img: np.ndarray) -> np.ndarray:
+    """Kill residual magenta cast on kept pixels (glass edges, feathered seams): pull the
+    magenta excess min(R,B)−G back toward neutral. Her true pinks barely register on this
+    metric, so they lose almost nothing."""
+    out = img.copy()
+    m = np.clip(np.minimum(out[..., 0], out[..., 2]) - out[..., 1], 0, None)
+    out[..., 0] -= m * 0.8
+    out[..., 2] -= m * 0.8
+    return np.clip(out, 0, 255)
 
 
 WHIP_IVORY = np.array([0xFB, 0xF3, 0xE4], dtype=np.float32)
@@ -95,7 +106,7 @@ def diff_alpha(parent: np.ndarray, state: np.ndarray, scatter: bool = False,
       mask's outer ring only (never the interior, or white toppings like marshmallow would
       vanish)."""
     d = np.linalg.norm(state - parent, axis=-1)
-    raw = d > 26.0
+    raw = (d > 26.0) & (keyness(state) < 0.5)     # backdrop can never be part of a layer
     m = Image.fromarray((raw * 255).astype(np.uint8))
     m = m.filter(ImageFilter.MedianFilter(3 if scatter else 9))
     mask = np.asarray(m) > 127
@@ -124,7 +135,7 @@ def diff_alpha(parent: np.ndarray, state: np.ndarray, scatter: bool = False,
 
 def save(img: np.ndarray, alpha: np.ndarray, out: Path) -> None:
     out.parent.mkdir(parents=True, exist_ok=True)
-    rgba = np.dstack([img, alpha * 255]).astype(np.uint8)
+    rgba = np.dstack([despill(img), alpha * 255]).astype(np.uint8)
     Image.fromarray(rgba).save(out, "WEBP", quality=90)
 
 
@@ -135,7 +146,10 @@ def main() -> int:
         if not (vd / "A.png").exists():
             continue
         A = load(vd / "A.png")
-        save(A, vessel_alpha(A), PUB / "vessel" / f"{v}.webp")
+        a, shadow = vessel_alpha(A)
+        A_rgb = A.copy()
+        A_rgb[shadow > 0.05] = 22.0     # the rebuilt contact shadow renders as soft black
+        save(A_rgb, a, PUB / "vessel" / f"{v}.webp")
         manifest["vessel"][v] = {"src": f"/layers/vessel/{v}.webp", "enter": "fade"}
         # CHAIN.json (written by gen_layers.py) records each state's TRUE diff parent. A
         # chain-declared whip was shot over CONTRASTING wax, so its diff is complete and

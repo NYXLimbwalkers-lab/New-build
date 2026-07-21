@@ -56,8 +56,10 @@ shop.
 > - every topping owns a distinct position; only the cherry may claim the center
 > - toppings are cut with their whip "nest" ring stripped, or they stamp vanilla
 >   whip onto whatever whip color is really underneath
-> - the background is the site canvas (#FBF4F0) exactly, so glass see-through
->   needs no alpha; only the OUTER silhouette is cut
+> - the backdrop is a vivid-magenta chroma key — the one color no candle here
+>   will ever use — keyed on sampled min(R,B)−G so her reds/pinks are untouched;
+>   clear glass keys to TRUE transparency and the contact shadow is rebuilt as
+>   soft black from darkness inside the key
 > - `CHAIN.json` records each state's true diff parent; manifest keys are
 >   vessel-scoped (`"jar-14/cream"`) because fills only align with the vessel
 >   they were shot on

@@ -18,3 +18,6 @@ assets/work
 
 # Dev preview artifact
 candle-preview.png
+
+# Generated chain states (regenerate with scripts/gen_layers.py; ~$0.05/image)
+assets/gen
