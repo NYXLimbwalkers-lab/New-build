@@ -15,7 +15,7 @@ import {
 import { SPRING } from "@/lib/motionPresets";
 import { cn } from "@/lib/cn";
 import type { RendererProps } from "./types";
-import type { LayerEntry, LayerManifest } from "./layerManifest";
+import { layerFor, type LayerEntry, type LayerManifest } from "./layerManifest";
 
 /*
   REAL-PHOTO compositing engine. Stacks full-frame transparent-PNG photo layers
@@ -101,14 +101,15 @@ export function PhotoLayerRenderer({
 }: RendererProps & { manifest: LayerManifest }) {
   const layers = useMemo(() => {
     const out: { entry: LayerEntry; hex?: string; key: string }[] = [];
-    const vessel = manifest.vessel?.[config.vesselId];
-    if (vessel) out.push({ entry: { ...vessel, enter: vessel.enter ?? "fade" }, key: `v-${config.vesselId}` });
+    const v = config.vesselId;
+    const vessel = manifest.vessel?.[v];
+    if (vessel) out.push({ entry: { ...vessel, enter: vessel.enter ?? "fade" }, key: `v-${v}` });
 
     // Every wax layer, bottom→top (a parfait must not collapse to one fill).
     // Keys are SLOT-based (not color-based) so a color swap recolors the
     // mounted layer in place instead of replaying the whole pour animation.
     [config.waxColorId, ...(config.extraLayers ?? [])].forEach((colorId, li) => {
-      const wax = manifest.wax?.[colorId];
+      const wax = layerFor(manifest, "wax", v, colorId);
       if (wax)
         out.push({
           entry: { ...wax, enter: wax.enter ?? "pour" },
@@ -118,15 +119,15 @@ export function PhotoLayerRenderer({
     });
 
     if (config.whipId) {
-      const whip = manifest.whip?.[config.whipId];
+      const whip = layerFor(manifest, "whip", v, config.whipId);
       if (whip) out.push({ entry: { ...whip, enter: whip.enter ?? "pipe" }, hex: WHIP_BY_ID[config.whipId]?.hex, key: "whip" });
     }
     if (config.drizzleId) {
-      const dz = manifest.drizzle?.[config.drizzleId];
+      const dz = layerFor(manifest, "drizzle", v, config.drizzleId);
       if (dz) out.push({ entry: { ...dz, enter: dz.enter ?? "drizzle" }, hex: DRIZZLE_BY_ID[config.drizzleId]?.hex, key: "dz" });
     }
     for (const id of config.toppingIds) {
-      const t = manifest.topping?.[id];
+      const t = layerFor(manifest, "topping", v, id);
       if (t) out.push({ entry: { ...t, enter: t.enter ?? "drop" }, hex: TOPPING_BY_ID[id]?.hex, key: `top-${id}` });
     }
     return out;

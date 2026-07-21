@@ -30,6 +30,22 @@ export type LayerManifest = {
   version?: string;
 };
 
+/**
+ * Look up a part layer, preferring the VESSEL-SCOPED key ("jar-14/cream") over the
+ * flat one ("cream"). A wax fill or whipped top only aligns with the vessel it was
+ * shot on, so the library ships per-vessel cuts; the flat key stays supported for
+ * any part whose geometry is genuinely vessel-independent.
+ */
+export function layerFor(
+  m: LayerManifest,
+  kind: IngredientKind,
+  vesselId: string,
+  id: string,
+): LayerEntry | undefined {
+  const table = m[kind];
+  return table?.[`${vesselId}/${id}`] ?? table?.[id];
+}
+
 let cache: Promise<LayerManifest | null> | null = null;
 
 /** Load the layer manifest once. Resolves null if there is no library yet. */
@@ -55,13 +71,14 @@ export function manifestCovers(
     toppingIds: string[];
   },
 ): boolean {
-  if (!m.vessel?.[parts.vesselId]) return false;
+  const v = parts.vesselId;
+  if (!m.vessel?.[v]) return false;
   // Every wax layer (base + extras) must have a real photo, or the parfait
   // would silently lose layers in photo mode.
   for (const id of [parts.waxColorId, ...(parts.extraLayers ?? [])])
-    if (!m.wax?.[id]) return false;
-  if (parts.whipId && !m.whip?.[parts.whipId]) return false;
-  if (parts.drizzleId && !m.drizzle?.[parts.drizzleId]) return false;
-  for (const t of parts.toppingIds) if (!m.topping?.[t]) return false;
+    if (!layerFor(m, "wax", v, id)) return false;
+  if (parts.whipId && !layerFor(m, "whip", v, parts.whipId)) return false;
+  if (parts.drizzleId && !layerFor(m, "drizzle", v, parts.drizzleId)) return false;
+  for (const t of parts.toppingIds) if (!layerFor(m, "topping", v, t)) return false;
   return true;
 }

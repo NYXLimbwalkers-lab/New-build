@@ -39,6 +39,31 @@ shop.
 
 ## 2. Build the transparent-PNG layer library
 
+> **BUILT 2026-07-21 — the generative chain pipeline.** Hand-cutting her raw
+> shots looked posterized (see `assets/raw/poc/`). The shipped pipeline instead
+> CHAIN-EDITS generated studio states with Gemini image gen (her real photo as
+> brand/vessel reference): empty vessel → +wax color → +whip → +drizzle/+topping,
+> each state an edit of its parent so consecutive states stay pixel-consistent.
+> Layers are then extracted as diff-cuts between consecutive states:
+>
+> ```bash
+> OPENROUTER_API_KEY=... python3 scripts/gen_layers.py     # states → assets/gen/
+> python3 scripts/extract_layers.py                        # layers + manifest → public/layers/
+> ```
+>
+> Hard-won rules encoded in those scripts (each one a shipped visual bug):
+> - a whip must be generated over CONTRASTING wax — a diff can only see contrast
+> - every topping owns a distinct position; only the cherry may claim the center
+> - toppings are cut with their whip "nest" ring stripped, or they stamp vanilla
+>   whip onto whatever whip color is really underneath
+> - the background is the site canvas (#FBF4F0) exactly, so glass see-through
+>   needs no alpha; only the OUTER silhouette is cut
+> - `CHAIN.json` records each state's true diff parent; manifest keys are
+>   vessel-scoped (`"jar-14/cream"`) because fills only align with the vessel
+>   they were shot on
+> - re-running `gen_layers.py` only fills missing files — delete a state to
+>   regenerate it; balance-check openrouter.ai credits first (~$0.05/image)
+
 Each ingredient becomes a **full-frame transparent PNG/WebP at ONE shared camera
 framing** (same angle, light, surface) so any stack reads as a single photo.
 
